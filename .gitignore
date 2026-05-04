@@ -1,0 +1,15 @@
+node_modules/
+*.png
+brian-source.jpg
+brian-white-bg.jpg
+hero-bright.jpg
+hero-clean-final.jpg
+hero-clean.jpg
+hero-conference.webp
+hero-cropped.jpg
+hero-final.jpg
+hero-tight.jpg
+hero-wide.jpg
+hero.jpg
+package.json
+package-lock.json
