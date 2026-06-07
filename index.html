@@ -1064,6 +1064,63 @@
       letter-spacing: 0.03em;
     }
 
+    /* ==================== Services Grouped Grid ==================== */
+    .services-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap);
+      max-width: 64em;
+      margin: 3em auto 0;
+      text-align: left;
+    }
+
+    .service-group {
+      padding: 2em 2.5em;
+      background: rgba(0,0,0,0.06);
+      border-radius: 0.5em;
+      transition: background var(--animation-primary);
+    }
+
+    .service-group:hover {
+      background: rgba(0,0,0,0.1);
+    }
+
+    .service-group-label {
+      font-size: 0.7em;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      opacity: 0.5;
+      margin-bottom: 0.5em;
+    }
+
+    .service-group-heading {
+      font-family: var(--font-heading);
+      font-size: clamp(1.2em, 2vw, 1.55em);
+      font-weight: 400;
+      line-height: 1.25;
+      margin-bottom: 0.6em;
+    }
+
+    .service-group-subtitle {
+      font-size: 0.85em;
+      line-height: 1.65;
+      opacity: 0.65;
+      margin-bottom: 1.2em;
+    }
+
+    .service-group-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5em;
+    }
+
+    @media screen and (max-width: 991px) {
+      .services-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     /* ==================== Borders / Dividers ==================== */
     .border-top {
       border-top: 1px solid currentColor;
@@ -1505,25 +1562,62 @@
       <span class="expertises-role">Speaker</span>
     </div>
 
-    <p class="expertises-subtitle reveal reveal-delay-2">I've trained leaders at Fortune 500 companies, coached small business owners through their scariest growth spurts, and built my own company through every stage in between. Whatever you're facing, chances are I've faced it too&mdash;or I've helped someone just like you get through it.</p>
+    <p class="expertises-subtitle reveal reveal-delay-2">Thirty years of seeing what works&mdash;from Fortune 500 boardrooms to the floor of a family-owned shop. Here&rsquo;s where most of my conversations tend to lead.</p>
 
-    <div class="expertises-grid reveal reveal-delay-3">
-      <span class="expertise-tag">Succession Planning</span>
-      <span class="expertise-tag">Family Governance</span>
-      <span class="expertise-tag">Leadership Development</span>
-      <span class="expertise-tag">Operational Scaling</span>
-      <span class="expertise-tag">Strategic Advisory</span>
-      <span class="expertise-tag">Financial Analysis</span>
-      <span class="expertise-tag">Business Valuation</span>
-      <span class="expertise-tag">Team & Culture</span>
-      <span class="expertise-tag">Custom Training Programs</span>
-      <span class="expertise-tag">Multi-Generational Planning</span>
-      <span class="expertise-tag">Ownership Transitions</span>
-      <span class="expertise-tag">Process Optimization</span>
+    <div class="services-grid reveal reveal-delay-3">
+
+      <div class="service-group">
+        <div class="service-group-label">01 &mdash; Growth &amp; operations</div>
+        <h3 class="service-group-heading">Fixing the drag that&rsquo;s keeping you from the next level.</h3>
+        <p class="service-group-subtitle">Processes that worked at 10 employees don&rsquo;t work at 50. I help owners find the bottlenecks, build the systems, and free themselves from the daily grind before it costs them growth.</p>
+        <div class="service-group-tags">
+          <span class="expertise-tag">Operational Scaling</span>
+          <span class="expertise-tag">Process Optimization</span>
+          <span class="expertise-tag">Financial Analysis</span>
+          <span class="expertise-tag">Growth Strategy</span>
+        </div>
+      </div>
+
+      <div class="service-group">
+        <div class="service-group-label">02 &mdash; Leadership &amp; people</div>
+        <h3 class="service-group-heading">Building the bench that carries the business forward.</h3>
+        <p class="service-group-subtitle">You can&rsquo;t scale what only runs through you. I help owners develop managers, build culture, and put the right systems in place so the team can lead without you in every room.</p>
+        <div class="service-group-tags">
+          <span class="expertise-tag">Leadership Development</span>
+          <span class="expertise-tag">Team &amp; Culture</span>
+          <span class="expertise-tag">Executive Coaching</span>
+          <span class="expertise-tag">Custom Training Programs</span>
+        </div>
+      </div>
+
+      <div class="service-group">
+        <div class="service-group-label">03 &mdash; Succession &amp; ownership</div>
+        <h3 class="service-group-heading">Planning the handoff before you have to.</h3>
+        <p class="service-group-subtitle">The best exits take years to build. Whether you&rsquo;re passing to family, a partner, or the market&mdash;I help you get the business, the ownership structure, and the people ready long before the pressure is on.</p>
+        <div class="service-group-tags">
+          <span class="expertise-tag">Succession Planning</span>
+          <span class="expertise-tag">Ownership Transitions</span>
+          <span class="expertise-tag">Family Governance</span>
+          <span class="expertise-tag">Multi-Generational Planning</span>
+        </div>
+      </div>
+
+      <div class="service-group">
+        <div class="service-group-label">04 &mdash; Strategic advisory</div>
+        <h3 class="service-group-heading">Thinking through the big decisions with someone who&rsquo;s made them.</h3>
+        <p class="service-group-subtitle">Acquisitions, pivots, new markets, capital decisions&mdash;the choices that look simple on a spreadsheet but feel anything but. I serve as a confidential sounding board for the calls that keep owners up at night.</p>
+        <div class="service-group-tags">
+          <span class="expertise-tag">Business Valuation</span>
+          <span class="expertise-tag">Strategic Planning</span>
+          <span class="expertise-tag">Market Positioning</span>
+          <span class="expertise-tag">Capital Readiness</span>
+        </div>
+      </div>
+
     </div>
 
     <div style="text-align:center; margin-top:3em;" class="reveal reveal-delay-4">
-      <a href="#contact" class="cta-btn cta-btn-secondary">See How I Can Help</a>
+      <a href="#contact" class="cta-btn cta-btn-secondary">Schedule a Discovery Conversation</a>
     </div>
   </section>
 
