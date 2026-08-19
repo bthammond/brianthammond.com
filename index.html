@@ -2371,7 +2371,10 @@
        Google Appointment Schedule) and every CTA switches over.
        Leave it empty and the CTAs fall back to a pre-filled email.
        ============================================================ */
-    var BOOKING_URL = ''; // e.g. 'https://calendly.com/brianthammond/30min'
+    // Google Calendar appointment schedule (30-minute owner-to-owner call).
+    // Linked directly rather than via Google's scheduling-button script, so the
+    // CTAs keep this site's own styling and no third-party script is loaded.
+    var BOOKING_URL = 'https://calendar.google.com/calendar/appointments/schedules/AcZssZ2x2UOY1HiXgtCNpeRgT25Pmspo53ceUt-b5jGzdFpDHTwY3f0j7XrsHwrDXonbtAaCrQRoGB13?gv=true';
 
     (function wireBooking() {
       var fallback = 'mailto:brian@ble.training'

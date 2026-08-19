@@ -37,7 +37,7 @@ Every `"Schedule"` button resolved to a bare `mailto:` — a scheduler was promi
 
 And one of the four doors was broken: **`coursebldr.ai` 308-redirects to `instructorkit.com`**, a different brand aimed at working trainers, not owners.
 
-**Fixed:** one CTA — *"Book a 30-Minute Owner-to-Owner Call"* — worded identically in all five places, wired through a single `BOOKING_URL` constant, with a pre-filled email as the fallback. Dead CourseBldr door removed.
+**Fixed:** one CTA — *"Book a 30-Minute Owner-to-Owner Call"* — worded identically everywhere, and all eight now open the live Google Calendar 30-minute appointment schedule through a single `BOOKING_URL` constant. Dead CourseBldr door removed.
 
 ### 5. The agreement plan existed but did about a fifth of its job
 `"No pitch. No pressure."` was the right instinct in the wrong volume — it addressed being sold to and nothing else. It never promised **confidentiality**, which is the first thing an owner needs before discussing succession and family conflict. And it never addressed the obvious conflict of interest: *an advisor who owns a training company will recommend training.*
@@ -59,10 +59,11 @@ And one of the four doors was broken: **`coursebldr.ai` 308-redirects to `instru
 | **7. Failure** | 2 | 9 | Dedicated stakes section naming four specific costs, closing on "None of this is urgent. That is exactly the problem." |
 | **Total** | **21/70** | **64/70** | |
 
-**Why not 70/70.** Three items are gated on things only you can supply, and no copywriting closes them:
+**Why not 70/70.** Two items are gated on things only you can supply, and no copywriting closes them:
 1. **Testimonials are still anonymous.** `"Manufacturing Owner"` carries a fraction of the weight of a real name. I did not invent names — that would be fabricating testimonials. Getting four clients to go on record is worth ~3 points and cannot be written.
-2. **No scheduler is connected.** The CTAs currently open a pre-filled email. A real booking link is a one-line change (below) and is worth ~2 points of real conversion.
-3. **No results data anywhere.** Not one number on the page describes a client outcome. One quantified case study would be the single highest-value addition left.
+2. **No results data anywhere.** Not one number on the page describes a client outcome. One quantified case study would be the single highest-value addition left.
+
+*(The third gap — no scheduler — is now closed: all eight CTAs open your Google Calendar 30-minute appointment schedule.)*
 
 ---
 
@@ -171,7 +172,7 @@ Ranked by impact per unit of effort. **Items 1–11 are already done and committ
 | 6 | **Built the Owner's Bottleneck Audit** — 12 questions, 4 domains, scored in-browser, no backend, no email required. First transitional CTA the site has ever had. | Highest |
 | 7 | **Compressed three bio sections into one guide section.** Empathy first, résumé as a sidebar. Swung the pronoun ratio from 1.74:1 "I" to 2.09:1 "you". | High |
 | 8 | **Added Success and Stakes sections.** Both were absent. | High |
-| 9 | **Unified every CTA** to one wording, wired through a single `BOOKING_URL` constant with a pre-filled email fallback. | High |
+| 9 | **Unified every CTA** to one wording, and **wired all eight to the live Google Calendar 30-minute appointment schedule** via a single `BOOKING_URL` constant. Linked directly rather than through Google's `scheduling-button-script`, so the buttons keep this site's styling and no third-party script is added. | High |
 | 10 | **Deleted all jargon** listed above, including all 16 service chips; relabelled the four tabs by the visitor's situation. | Medium |
 | 11 | **Technical:** duplicate `id="ecosystem"` fixed (nav was misrouting) · `"client Impact"` typo · canonical, `og:url`, `sitemap.xml` and `robots.txt` all pointed at the apex domain that 308s to www · unverified `twitter.com`/`github.com` profiles removed from JSON-LD · title/description/OG rewritten problem-first · WCAG AA contrast failures fixed (audit section was 1.53:1; `.quote-author` 3.08:1; `.service-group-label` 3.19:1) · mobile horizontal overflow and sub-44px tap targets fixed. | Medium |
 
@@ -179,7 +180,7 @@ Ranked by impact per unit of effort. **Items 1–11 are already done and committ
 
 | # | Action | Why |
 |:--:|---|---|
-| 12 | **Connect a real scheduler.** Open `index.html`, find `var BOOKING_URL = '';` near the bottom, paste your Calendly/SavvyCal link. Every CTA switches over. **~30 seconds.** | Best effort-to-impact ratio left on the entire list. Until then the CTAs open an email draft. |
+| 12 | ~~Connect a real scheduler.~~ **Done** — all eight CTAs now open your Google Calendar 30-minute appointment schedule in a new tab. To change it later, edit `var BOOKING_URL` near the bottom of `index.html`; every CTA follows. | Closed |
 | 13 | **Get four clients to go on record.** First name, last initial, industry, city — ideally a photo. Anonymous testimonials carry a fraction of the weight, and this is the largest remaining SB7 gap. I would not invent these. | ~3 points of the 6 still missing |
 | 14 | **Decide the assessment story across three properties.** ble.training has a Scorecard, FBPG has a diagnostic, and brianthammond.com now has the Bottleneck Audit. Three overlapping assessments will confuse the same owner. My recommendation: this one is the *owner-personal* diagnostic, BLE's is the *company/team* one, FBPG's is the *family* one — and each should say so in one line. | Medium |
 
@@ -197,7 +198,7 @@ Ranked by impact per unit of effort. **Items 1–11 are already done and committ
 
 The site is one hand-edited `index.html` (~93KB, inline CSS and JS, no build step). Edit it directly.
 
-- **Change every CTA at once:** `var BOOKING_URL` near the bottom of the file.
+- **Change every CTA at once:** `var BOOKING_URL` near the bottom of the file (currently your Google Calendar 30-minute appointment schedule).
 - **Change the audit:** the `auditWidget` IIFE at the bottom — `DOMAINS` holds the 12 questions and the "what to fix first" advice, `BANDS` holds the four score ranges.
 - **Preview locally:** `.claude/launch.json` serves the folder on port 4321.
 
