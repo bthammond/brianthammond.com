@@ -350,31 +350,37 @@
     .header-image-dark-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, rgba(27,27,27,0.95) 0%, rgba(27,27,27,0.2) 50%, rgba(27,27,27,0.5) 100%);
+      /* Left-weighted scrim keeps the headline legible without flattening the
+         portrait on the right; vertical fade still carries into the next section. */
+      background:
+        linear-gradient(to right, rgba(20,20,20,0.92) 0%, rgba(20,20,20,0.82) 32%, rgba(20,20,20,0.42) 58%, rgba(20,20,20,0.12) 100%),
+        linear-gradient(to top, rgba(27,27,27,0.95) 0%, rgba(27,27,27,0.15) 45%, rgba(27,27,27,0.45) 100%);
     }
 
     .header-content {
       position: relative;
       z-index: 2;
+      /* Hold the type in a column so it never runs across the subject's face. */
+      max-width: min(56%, 40em);
     }
 
     /* #3 Better typography - function text */
     .header-function-text {
       font-family: var(--font-body);
-      font-size: clamp(1em, 1.5vw, 1.3em);
-      font-weight: 300;
-      letter-spacing: 0.15em;
+      font-size: clamp(0.72em, 0.95vw, 0.9em);
+      font-weight: 400;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      margin-bottom: 0.5em;
-      opacity: 0.8;
+      margin-bottom: 1.1em;
+      opacity: 0.75;
     }
 
     .header-h1 {
       font-family: var(--font-heading);
-      font-size: clamp(2.5em, 7vw, 7em);
-      line-height: 0.95;
+      font-size: clamp(2.1em, 4.3vw, 4.4em);
+      line-height: 1.04;
       font-weight: 400;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.015em;
     }
 
     .header-h1-span-top,
@@ -388,10 +394,18 @@
 
     .header-p {
       font-size: 0.95em;
-      max-width: 30em;
-      line-height: 1.6;
-      margin-top: 1.5em;
-      opacity: 0.7;
+      max-width: 32em;
+      line-height: 1.65;
+      margin-top: 1.4em;
+      opacity: 0.88;
+    }
+
+    /* Hero text column goes full width once the portrait is no longer beside it */
+    @media (max-width: 900px) {
+      .header-content { max-width: 100%; }
+      .header-image-dark-overlay {
+        background: linear-gradient(to top, rgba(27,27,27,0.96) 0%, rgba(27,27,27,0.55) 55%, rgba(27,27,27,0.72) 100%);
+      }
     }
 
     /* ==================== Sections Common ==================== */
@@ -1371,6 +1385,8 @@
       border: 1px solid currentColor;
       padding: 0.55em 1.1em !important;
       border-radius: 2px;
+      /* .nav-bar-link capitalizes, which would render this as "Book A Call" */
+      text-transform: none;
     }
 
     /* ---- Problem grid ---- */
@@ -1806,7 +1822,7 @@
       <p class="header-p reveal reveal-delay-2">Succession isn&rsquo;t a document &mdash; it&rsquo;s a company that runs without you, and people prepared to take it. I help family and owner-led businesses build both, years before the pressure is on.</p>
       <div class="cta-group reveal reveal-delay-3">
         <a href="#contact" class="cta-btn cta-btn-primary js-book">Book a 30-Minute Owner-to-Owner Call</a>
-        <a href="#audit" class="cta-btn cta-btn-outline">Take the Bottleneck Audit &mdash; 4 min</a>
+        <a href="#audit" class="cta-btn cta-btn-outline">Take the 4-Minute Audit</a>
       </div>
       <p class="header-microcopy reveal reveal-delay-3">No pitch. No deck. And whatever you tell me stays between us.</p>
     </div>
