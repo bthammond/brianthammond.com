@@ -190,9 +190,37 @@
 
     .main-nav-bar {
       display: flex;
+      align-items: center;
       justify-content: center;
       gap: 0.4em;
       pointer-events: auto;
+    }
+
+    /* Wordmark anchors the floating pill nav and carries the name, so the
+       hero eyebrow can do one job instead of two. */
+    .nav-wordmark {
+      position: absolute;
+      left: 1.5em;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--font-heading);
+      font-size: 1.05em;
+      letter-spacing: 0.01em;
+      color: var(--color-light);
+      text-decoration: none;
+      text-shadow: 0 1px 12px rgba(0, 0, 0, 0.75);
+      pointer-events: auto;
+      transition: opacity var(--animation-primary);
+      white-space: nowrap;
+    }
+    .nav-wordmark:hover { opacity: 0.7; }
+    .nav-wordmark em { font-style: italic; }
+
+    @media (max-width: 1100px) {
+      .nav-wordmark { font-size: 0.95em; }
+    }
+    @media (max-width: 860px) {
+      .nav-wordmark { left: 1em; }
     }
 
     .nav-bar-link {
@@ -339,12 +367,17 @@
       z-index: 1;
     }
 
+    /* <picture> would otherwise become the img's sizing parent and collapse it */
+    .header-image picture { display: contents; }
+
     .header-image-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: center 20%;
-      opacity: 0.55;
+      /* Source is a 1056x1408 portrait used full-bleed, so the crop decides
+         where the subject lands. Push him right, clear of the text column. */
+      object-position: 74% 18%;
+      opacity: 0.85;
     }
 
     .header-image-dark-overlay {
@@ -1756,8 +1789,6 @@
     @media (max-width: 900px) {
       .guide-inner { grid-template-columns: 1fr; }
       .guide-cred { border-left: none; border-top: 1px solid rgba(255,255,255,0.18); padding-left: 0; padding-top: 2em; }
-      /* full-width here, so the 3em slide-in of .reveal-right would push the page sideways */
-      .guide-cred.reveal-right { transform: none; }
       .audit-result { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
@@ -1796,6 +1827,7 @@
   <!-- Navigation -->
   <header class="header">
     <nav class="main-nav-bar">
+      <a href="#hero" class="nav-wordmark" aria-label="Brian T. Hammond — home">Brian T. <em>Hammond</em></a>
       <a href="#problem" class="nav-bar-link">The Problem</a>
       <a href="#plan" class="nav-bar-link">How It Works</a>
       <a href="#about" class="nav-bar-link">About Brian</a>
@@ -1813,11 +1845,14 @@
   <!-- Hero Section -->
   <section class="section-header" id="hero">
     <div class="header-image">
-      <img src="hero-conference.jpg" class="header-image-img" alt="Brian T. Hammond speaking to a room of business owners"/>
+      <picture>
+        <source srcset="hero-conference.webp" type="image/webp"/>
+        <img src="hero-conference.jpg" class="header-image-img" width="1056" height="1408" fetchpriority="high" alt="Brian T. Hammond speaking to a room of business owners"/>
+      </picture>
       <div class="header-image-dark-overlay"></div>
     </div>
     <div class="header-content">
-      <div class="header-function-text reveal">Brian T. Hammond &middot; Advisor to Owner-Led &amp; Family Businesses</div>
+      <div class="header-function-text reveal">For Owner-Led &amp; Family Businesses</div>
       <h1 class="header-h1 reveal">One day this business<br>changes hands.<br><em style="font-style:italic">Right now it isn&rsquo;t ready.</em></h1>
       <p class="header-p reveal reveal-delay-2">Succession isn&rsquo;t a document &mdash; it&rsquo;s a company that runs without you, and people prepared to take it. I help family and owner-led businesses build both, years before the pressure is on.</p>
       <div class="cta-group reveal reveal-delay-3">
@@ -1958,7 +1993,7 @@
           <a href="#contact" class="cta-btn cta-btn-primary js-book">Book a 30-Minute Owner-to-Owner Call</a>
         </div>
       </div>
-      <div class="guide-cred reveal-right">
+      <div class="guide-cred reveal reveal-delay-1">
         <div class="card-label card-label-light">Thirty years, briefly</div>
         <ul class="guide-cred-list">
           <li><b>Goodyear</b> Started on the floor, out of college</li>
