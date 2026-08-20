@@ -1594,98 +1594,153 @@
     .quote-author span { font-weight: 400; opacity: 0.6; text-transform: none; letter-spacing: 0; }
 
     /* ---- Bottleneck Audit ---- */
-    .audit { max-width: 54em; }
-    .audit-key {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.5em;
-      padding-bottom: 1.25em;
-      margin-bottom: 0.5em;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.25);
-      font-size: 0.75em;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--color-light);
-      opacity: 0.8;
-    }
-    .audit-key b { font-weight: 700; margin-right: 0.4em; }
+    /* ---- Scenario wizard ---- */
+    .wiz { max-width: 46em; }
 
-    .audit-domain {
-      margin-top: 2.25em;
-      margin-bottom: 0.75em;
-      font-size: 0.72em;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      color: var(--color-dark);
-      opacity: 0.65;
-    }
-
-    .audit-q {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1em;
-      padding: 1.1em 0;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.18);
-    }
-    .audit-q-text {
-      flex: 1 1 22em;
-      font-size: 0.98em;
-      line-height: 1.6;
-      color: var(--color-dark);
-    }
-    .audit-opts { display: flex; gap: 0.5em; flex: 0 0 auto; }
-    .audit-opts label {
-      cursor: pointer;
-      width: 2.4em;
-      height: 2.4em;
+    .wiz-topbar {
       display: flex;
       align-items: center;
-      justify-content: center;
-      border: 1px solid rgba(0, 0, 0, 0.35);
-      font-size: 0.85em;
-      font-weight: 600;
-      color: var(--color-dark);
-      transition: background var(--animation-fast), color var(--animation-fast), border-color var(--animation-fast);
-      user-select: none;
+      gap: 1.25em;
+      margin-bottom: 1.5em;
     }
-    .audit-opts input { position: absolute; opacity: 0; width: 0; height: 0; }
-    .audit-opts label:hover { border-color: var(--color-dark); background: rgba(0, 0, 0, 0.06); }
-    .audit-opts input:focus-visible + span,
-    .audit-opts label:focus-within { outline: 2px solid var(--color-dark); outline-offset: 2px; }
-    .audit-opts input:checked + span {
-      position: absolute;
-      inset: 0;
-      background: var(--color-dark);
-    }
-    .audit-opt { position: relative; }
-    .audit-opt.is-checked label { background: var(--color-dark); color: var(--color-light); border-color: var(--color-dark); }
+    .wiz-topbar[hidden] { display: none; }
 
-    .audit-actions {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 1.5em;
-      margin-top: 2.5em;
-    }
-    .audit-progress { font-size: 0.8em; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.75; }
-    .audit-reset {
+    .wiz-back {
       background: none;
       border: none;
+      padding: 0.3em 0;
       font-family: var(--font-body);
-      font-size: 0.8em;
-      letter-spacing: 0.1em;
+      font-size: 0.78em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      text-decoration: underline;
-      text-underline-offset: 0.25em;
+      color: var(--color-dark);
+      opacity: 0.8; /* 0.7 landed at 4.4:1 on the green ground */
       cursor: pointer;
-      opacity: 0.7;
-      color: inherit;
-      padding: 0;
+      white-space: nowrap;
     }
-    .audit-reset:hover { opacity: 1; }
+    .wiz-back:hover { opacity: 1; }
+    .wiz-back[disabled] { opacity: 0.25; cursor: default; }
+
+    .wiz-rail {
+      flex: 1;
+      height: 2px;
+      background: rgba(0, 0, 0, 0.22);
+      overflow: hidden;
+    }
+    .wiz-rail-fill {
+      height: 100%;
+      width: 0;
+      background: var(--color-dark);
+      transition: width 0.45s cubic-bezier(0.6, 0, 0.4, 1);
+    }
+    .wiz-count {
+      font-size: 0.78em;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-dark);
+      opacity: 0.75;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Reserve height so advancing between cards doesn't jump the page */
+    .wiz-stage { min-height: 27em; }
+
+    .wiz-card {
+      background: #fff;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      padding: 2.5em 2.25em;
+      animation: wizIn 0.42s cubic-bezier(0.2, 0, 0.2, 1) both;
+    }
+    @keyframes wizIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .wiz-scene {
+      font-family: var(--font-heading);
+      font-style: italic;
+      font-size: 1em;
+      color: var(--color-primary);
+      margin-bottom: 0.9em;
+    }
+    .wiz-q {
+      font-family: var(--font-heading);
+      font-size: clamp(1.35em, 2.6vw, 1.9em);
+      line-height: 1.25;
+      font-weight: 400;
+      color: var(--color-dark);
+      margin-bottom: 1.5em;
+    }
+
+    .wiz-opts { display: grid; gap: 0.6em; }
+    .wiz-opt {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: 1px solid rgba(0, 0, 0, 0.28);
+      padding: 0.95em 1.1em;
+      min-height: 44px;
+      font-family: var(--font-body);
+      font-size: 0.95em;
+      line-height: 1.45;
+      color: var(--color-dark);
+      cursor: pointer;
+      transition: background var(--animation-fast), color var(--animation-fast), border-color var(--animation-fast);
+    }
+    .wiz-opt:hover { border-color: var(--color-dark); background: rgba(0, 0, 0, 0.05); }
+    .wiz-opt:focus-visible { outline: 2px solid var(--color-dark); outline-offset: 2px; }
+    .wiz-opt.is-picked {
+      background: var(--color-dark);
+      border-color: var(--color-dark);
+      color: var(--color-light);
+    }
+    .wiz-opt-key {
+      display: inline-block;
+      width: 1.6em;
+      opacity: 0.45;
+      font-variant-numeric: tabular-nums;
+    }
+    .wiz-opt.is-picked .wiz-opt-key { opacity: 0.7; }
+
+    .wiz-hint {
+      margin-top: 1.5em;
+      font-size: 0.78em;
+      letter-spacing: 0.06em;
+      opacity: 0.55;
+    }
+    /* Keyboard shortcuts are meaningless on a touch device */
+    @media (hover: none), (pointer: coarse) {
+      .wiz-hint { display: none; }
+    }
+
+    /* Intro + between-domain interstitials */
+    .wiz-card-quiet {
+      background: rgba(255, 255, 255, 0.55);
+      border-style: dashed;
+    }
+    .wiz-inter-p {
+      font-family: var(--font-heading);
+      font-size: clamp(1.2em, 2.2vw, 1.6em);
+      line-height: 1.4;
+      color: var(--color-dark);
+      margin-bottom: 1.5em;
+      max-width: 26em;
+    }
+    .wiz-lede {
+      font-size: 0.98em;
+      line-height: 1.7;
+      color: var(--color-dark);
+      opacity: 0.8;
+      margin-bottom: 1.75em;
+      max-width: 34em;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .wiz-card { animation: none; }
+      .wiz-rail-fill { transition: none; }
+    }
 
     .audit-result {
       display: grid;
@@ -1766,20 +1821,30 @@
     .audit-next .card-label { color: var(--color-lightgreen); }
     .audit-next p { font-size: 0.98em; line-height: 1.75; color: var(--color-lightgreen); }
 
+    .wiz-restart {
+      display: inline-block;
+      margin-left: 1.5em;
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: var(--font-body);
+      font-size: 0.8em;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: underline;
+      text-underline-offset: 0.25em;
+      color: var(--color-dark);
+      opacity: 0.7;
+      cursor: pointer;
+    }
+    .wiz-restart:hover { opacity: 1; }
+
     /* ---- Contrast: the mid-tone green ground needs dark type, not light ---- */
     .section-green .block-title-light { color: var(--color-dark); }
     .section-green .block-lede-light { color: var(--color-dark); opacity: 0.82; }
     .section-green .eyebrow-on-dark { color: var(--color-dark); opacity: 0.8; }
-    .section-green .audit-key {
-      color: var(--color-dark);
-      opacity: 0.85;
-      border-bottom-color: rgba(0, 0, 0, 0.3);
-    }
-    .section-green .audit-progress { color: var(--color-dark); opacity: 0.85; }
-    .section-green .audit-reset { color: var(--color-dark); opacity: 0.85; }
 
     /* ---- Contrast: low-opacity type that failed WCAG AA at 4.5:1 ---- */
-    .audit-domain { opacity: 0.85; }
     .service-group .service-group-label { opacity: 0.78; }
     .testimonial-card .quote-author { opacity: 0.9; }
     .testimonials-note { opacity: 0.8; }
@@ -1792,13 +1857,11 @@
       .audit-result { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
-      .audit-q { flex-direction: column; align-items: flex-start; gap: 0.75em; }
-      .audit-opts { width: 100%; }
-      .audit-opts .audit-opt { flex: 1; }
-      .audit-opts label { width: 100%; min-height: 44px; } /* touch target */
       .promise-box { padding: 1.5em 1.25em; }
       .problem-card { padding: 1.5em 1.25em; }
-      .audit-key { gap: 0.75em 1.25em; }
+      .wiz-card { padding: 1.75em 1.25em; }
+      .wiz-stage { min-height: 30em; }
+      .wiz-topbar { gap: 0.9em; }
     }
 
   </style>
@@ -1896,22 +1959,21 @@
   <!-- AUDIT / TRANSITIONAL CTA -->
   <section class="section-block section-green" id="audit">
     <div class="block-head">
-      <div class="eyebrow eyebrow-on-dark reveal">Free &middot; 4 minutes &middot; Nothing to fill in but the answers</div>
+      <div class="eyebrow eyebrow-on-dark reveal">Free &middot; 4 minutes &middot; No email required</div>
       <h2 class="block-title block-title-light reveal">The Owner&rsquo;s <em style="font-style:italic">Bottleneck Audit</em></h2>
-      <p class="block-lede block-lede-light reveal reveal-delay-1">Twelve questions. You&rsquo;ll see how much of this business still depends on you personally &mdash; across decisions, revenue, people, and what happens next &mdash; plus the one thing most likely to break first. No email required. Your answers never leave this page.</p>
+      <p class="block-lede block-lede-light reveal reveal-delay-1">Twelve moments from a fortnight you&rsquo;re not there. You&rsquo;ll see how much of this business still runs through you personally &mdash; and the one thing most likely to break first. Nothing is sent anywhere; your answers never leave this page.</p>
     </div>
 
-    <form class="audit" id="auditForm" novalidate>
-      <div class="audit-key">
-        <span><b>0</b> Not true</span><span><b>1</b> Sometimes</span><span><b>2</b> Mostly true</span><span><b>3</b> Exactly true</span>
+    <div class="wiz" id="wiz">
+      <div class="wiz-topbar" id="wizTop" hidden>
+        <button type="button" class="wiz-back" id="wizBack" aria-label="Previous question">&larr; Back</button>
+        <div class="wiz-rail" role="progressbar" aria-valuemin="0" aria-valuemax="12" aria-valuenow="0" id="wizRail">
+          <div class="wiz-rail-fill" id="wizRailFill"></div>
+        </div>
+        <div class="wiz-count" id="wizCount">1 of 12</div>
       </div>
-      <div id="auditQuestions"></div>
-      <div class="audit-actions">
-        <button type="submit" class="cta-btn cta-btn-primary" id="auditSubmit">See my score</button>
-        <span class="audit-progress" id="auditProgress">0 of 12 answered</span>
-        <button type="button" class="audit-reset" id="auditReset">Start over</button>
-      </div>
-    </form>
+      <div class="wiz-stage" id="wizStage" aria-live="polite"></div>
+    </div>
 
     <div class="audit-result" id="auditResult" hidden aria-live="polite" tabindex="-1">
       <div class="audit-score-col">
@@ -1928,6 +1990,7 @@
           <p id="auditFirst"></p>
         </div>
         <a href="#contact" class="cta-btn cta-btn-primary js-book">Talk through my score &mdash; book 30 minutes</a>
+        <button type="button" class="wiz-restart" id="wizRestart">Run it again</button>
       </div>
     </div>
   </section>
@@ -2454,162 +2517,264 @@
     })();
 
     /* ============================================================
-       The Owner's Bottleneck Audit
-       12 questions, 4 domains, scored entirely in the browser.
-       Nothing is transmitted anywhere.
+       The Owner's Bottleneck Audit — scenario wizard
+       ------------------------------------------------------------
+       Twelve moments from a fortnight the owner isn't there, asked
+       one at a time. Scored entirely in the browser; nothing is
+       transmitted anywhere.
+
+       Scoring is unchanged from the original form: each answer is
+       worth 0-3, three questions per domain (max 9), four domains
+       (max 36), normalised to a 0-100 owner-dependency score.
        ============================================================ */
-    (function auditWidget() {
-      var form = document.getElementById('auditForm');
-      if (!form) return;
+    (function bottleneckWizard() {
+      var stage = document.getElementById('wizStage');
+      if (!stage) return;
+
+      var topbar = document.getElementById('wizTop');
+      var backBtn = document.getElementById('wizBack');
+      var railFill = document.getElementById('wizRailFill');
+      var rail = document.getElementById('wizRail');
+      var countEl = document.getElementById('wizCount');
+      var resultEl = document.getElementById('auditResult');
 
       var DOMAINS = [
         {
           key: 'decisions',
           name: 'Decisions',
-          questions: [
-            'In the last month, work stopped somewhere because it was waiting on my approval.',
-            'If I were unreachable for two weeks, real decisions would sit until I got back.',
-            'My managers could not tell you the dollar amount they are allowed to spend without asking me.'
-          ],
-          first: 'Write down the five decisions you were pulled into last week, then give each one to a named person with a written spending limit and a deadline. Do it this week. Most owners find that three of the five never should have reached them.'
+          first: 'Write down the five decisions you were pulled into last week, then hand each one to a named person with a written spending limit and a deadline. Do it this week. Most owners find three of the five never should have reached them.'
         },
         {
           key: 'revenue',
           name: 'Revenue',
-          questions: [
-            'Our largest customer relationships are really relationships with me.',
-            'Nobody else here could close a significant new deal on their own.',
-            'Pricing decisions live in my head rather than in a document anyone can follow.'
-          ],
-          first: 'Pick your top five accounts and introduce a second person into each one within 60 days — on the call, on the email thread, at the review. A buyer discounts revenue that leaves when you do, and so does a bank.'
+          first: 'Pick your top five accounts and put a second person into each one inside 60 days — on the call, on the thread, at the review. Revenue that leaves when you do gets discounted by a buyer and by a bank, and it is the slowest thing on this list to fix.'
         },
         {
           key: 'people',
           name: 'People',
-          questions: [
-            'My managers were promoted for being good at their old job and largely left to work the new one out.',
-            'For most key roles here, I could not name a person who is ready to step up.',
-            'When someone underperforms, it does not really get handled unless I handle it.'
-          ],
-          first: 'Name a successor-in-training for each key role and tell them out loud that is what they are. Untold plans do not retain anyone. Then give each manager one thing to own outright this quarter — with the authority that goes with it, not just the work.'
+          first: 'Name a successor-in-training for each key role and tell them out loud that is what they are. Untold plans retain nobody. Then give each manager one thing to own outright this quarter — with the authority, not just the work.'
         },
         {
           key: 'succession',
-          name: 'What&rsquo;s next',
-          questions: [
-            'If I had to hand this business over in 90 days, there is no written plan for how.',
-            'The people affected by that plan have not been told what it is.',
-            'What this business is worth depends on me personally still being in it.'
-          ],
-          first: 'Write the one-page version this month: who runs it, who owns it, who gets told, and in what order. It will be wrong. Write it anyway — a wrong draft you can revise beats a perfect plan that only exists in your head, and it is the single thing most likely to be needed without warning.'
+          name: 'What’s next',
+          first: 'Write the one-page version this month: who runs it, who owns it, who gets told, and in what order. It will be wrong. Write it anyway — a wrong draft you can revise beats a perfect plan that exists only in your head, and it is the single thing most likely to be needed without warning.'
         }
       ];
+
+      /* scene = the moment; q = what happens; opts ordered best (0) to worst (3) */
+      var QUESTIONS = [
+        { d: 0, scene: 'Monday morning, day one.',
+          q: 'A customer asks for pricing outside the standard sheet.',
+          opts: ['Someone handles it and you hear about it later',
+                 'They check with another manager first',
+                 'They text you and wait',
+                 'It sits until you are back'] },
+        { d: 0, scene: 'Wednesday.',
+          q: 'A supplier wants an answer on a price increase by Friday.',
+          opts: ['Someone owns this and decides',
+                 'Your team decides and tells you after',
+                 'They spend the week trying to reach you',
+                 'Nothing happens until you are back'] },
+        { d: 0, scene: 'Thursday.',
+          q: 'A manager needs to spend four thousand dollars today to fix a problem.',
+          opts: ['They know their limit and they spend it',
+                 'They know roughly, but they ask anyway',
+                 'Nobody knows the limit, so they call you',
+                 'They wait, and the problem gets bigger'] },
+
+        { d: 1, scene: 'End of week one.',
+          q: 'Your largest customer calls with a problem.',
+          opts: ['They ask for their account lead, not you',
+                 'They ask for you, but someone else can handle it',
+                 'They ask for you, and only you will do',
+                 'They ask for you and are annoyed you are away'] },
+        { d: 1, scene: 'Saturday. Something good happens.',
+          q: 'A serious new opportunity comes in.',
+          opts: ['Someone can run it end to end',
+                 'Someone starts it, you would close it',
+                 'It stalls until you are back',
+                 'Nobody would recognise it as serious'] },
+        { d: 1, scene: 'Monday, week two.',
+          q: 'Someone has to quote an unusual job.',
+          opts: ['It is in the pricing document',
+                 'Roughly documented, they would get close',
+                 'It is in your head, so they would guess',
+                 'They would not attempt it'] },
+
+        { d: 2, scene: 'Tuesday.',
+          q: 'Two of your managers disagree about something that matters.',
+          opts: ['They resolve it between them',
+                 'One escalates to another manager',
+                 'They both wait for you',
+                 'It becomes a grudge you hear about months later'] },
+        { d: 2, scene: 'Wednesday.',
+          q: 'Somebody is underperforming, and everyone can see it.',
+          opts: ['Their manager is already handling it',
+                 'Their manager will handle it, slowly',
+                 'It waits for you',
+                 'It has been waiting for you for months already'] },
+        { d: 2, scene: 'Thursday. A phone call you never hear about.',
+          q: 'A recruiter calls one of your key people.',
+          opts: ['They know their path here, and turn it down',
+                 'They would probably stay',
+                 'You genuinely do not know',
+                 'You would find out when they resigned'] },
+
+        { d: 3, scene: 'Friday. Plans change.',
+          q: 'You extend the trip by a month. Someone has to run the company.',
+          opts: ['There is a name, and they know it',
+                 'There is a name, but nobody has told them',
+                 'There are two names and no decision',
+                 'There is no name'] },
+        { d: 3, scene: 'The following week.',
+          q: 'A buyer makes an unsolicited offer for the business.',
+          opts: ['There is a written plan for exactly this',
+                 'You have thought it through, nothing is written',
+                 'You would be starting from scratch',
+                 'The family would disagree about what it even means'] },
+        { d: 3, scene: 'And the one nobody wants to answer.',
+          q: 'Something happens to you, and you do not come back.',
+          opts: ['The plan is written, and the family has heard it from you',
+                 'It is written, but nobody has read it',
+                 'It is in your head',
+                 'There isn’t one'] }
+      ];
+
+      var INTERSTITIALS = {
+        3: 'That is the first few days. The next three are about money — and they are the ones owners tend to answer too generously.',
+        6: 'Halfway. These next three are about people, and they are usually the ones an owner has never said out loud to anybody.',
+        9: 'Last three. These are the ones that decide what this business is actually worth to somebody else.'
+      };
 
       var BANDS = [
-        {
-          max: 25,
-          label: 'Built to run without you',
-          verdict: 'This is rare, and you should treat it as an asset. Your business does not depend on you the way most owner-led companies do — which means your next conversation is probably about growth or a transaction, not about getting out of the middle. The risk at this score is complacency: the dependencies creep back the moment you grow.'
-        },
-        {
-          max: 50,
-          label: 'Delegated, still exposed',
-          verdict: 'You have handed off real work, and it shows. But there are still specific places where the business quietly routes back through you — and those are the ones that break at the worst possible time. This is the easiest score to improve, because the habits already exist; they just have not been extended to everything.'
-        },
-        {
-          max: 75,
-          label: 'The bottleneck is real',
-          verdict: 'You are the ceiling right now, and some part of you already knew that before you took this. This is the most common score for a company between 25 and 200 people, and it is also the point where the cost stops being your calendar and starts being your growth rate, your best people, and what the business is worth.'
-        },
-        {
-          max: 100,
-          label: 'The business is you',
-          verdict: 'Almost everything that matters here runs through one person. That is not a criticism — it is how the company survived long enough to get this big. But it means you do not own a business yet, you own a very demanding job, and right now it cannot be handed to anyone or sold to anyone at the number you have in your head.'
-        }
+        { max: 25, label: 'Built to run without you',
+          verdict: 'This is rare, and you should treat it as an asset. Your business does not depend on you the way most owner-led companies do — which means your next conversation is probably about growth or a transaction, not about getting out of the middle. The risk at this score is complacency: the dependencies creep back the moment you grow.' },
+        { max: 50, label: 'Delegated, still exposed',
+          verdict: 'You have handed off real work, and it shows. But there are specific places where the business quietly routes back through you, and those are the ones that break at the worst possible moment. This is the easiest score to improve, because the habits already exist — they just have not been extended to everything.' },
+        { max: 75, label: 'The bottleneck is real',
+          verdict: 'You are the ceiling right now, and some part of you knew that before you started this. It is the most common score for a company between 25 and 200 people, and it is the point where the cost stops being your calendar and starts being your growth rate, your best people, and what the business is worth.' },
+        { max: 100, label: 'The business is you',
+          verdict: 'Almost everything that matters runs through one person. That is not a criticism — it is how the company survived long enough to get this big. But it means you do not own a business yet, you own a very demanding job, and right now it cannot be handed to anyone or sold to anyone at the number you have in your head.' }
       ];
 
-      var wrap = document.getElementById('auditQuestions');
-      var progressEl = document.getElementById('auditProgress');
-      var resultEl = document.getElementById('auditResult');
-      var total = 0;
-      var html = '';
+      var answers = new Array(QUESTIONS.length).fill(null);
+      var step = -1; // -1 = intro, 0..11 = questions, 12 = done
+      var pendingInter = null;
+      var reduceMotion = window.matchMedia
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      DOMAINS.forEach(function (d, di) {
-        html += '<div class="audit-domain">' + d.name + '</div>';
-        d.questions.forEach(function (q, qi) {
-          var name = 'q_' + di + '_' + qi;
-          total++;
-          html += '<div class="audit-q">';
-          html += '<div class="audit-q-text" id="' + name + '_l">' + q + '</div>';
-          html += '<div class="audit-opts" role="group" aria-labelledby="' + name + '_l">';
-          for (var v = 0; v <= 3; v++) {
-            html += '<span class="audit-opt">'
-              + '<label><input type="radio" name="' + name + '" value="' + v + '" '
-              + 'aria-label="' + v + '"/>' + v + '</label>'
-              + '</span>';
-          }
-          html += '</div></div>';
+      function esc(t) {
+        return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function updateChrome() {
+        var showing = step >= 0 && step < QUESTIONS.length;
+        topbar.hidden = !showing;
+        if (!showing) return;
+        countEl.textContent = (step + 1) + ' of ' + QUESTIONS.length;
+        railFill.style.width = (step / QUESTIONS.length * 100) + '%';
+        rail.setAttribute('aria-valuenow', String(step));
+        backBtn.disabled = step === 0;
+      }
+
+      function focusCard() {
+        var h = stage.querySelector('[data-focus]');
+        if (h) h.focus({ preventScroll: true });
+      }
+
+      function renderIntro() {
+        stage.innerHTML =
+          '<div class="wiz-card wiz-card-quiet">'
+          + '<h3 class="wiz-inter-p" tabindex="-1" data-focus>It is Monday. You are somewhere with no signal, for two weeks.</h3>'
+          + '<p class="wiz-lede">Nothing is on fire. You are simply not reachable. What follows are twelve moments from that fortnight — answer with what would actually happen, not what is supposed to happen. It takes about four minutes, and nothing you click is sent anywhere.</p>'
+          + '<button type="button" class="cta-btn cta-btn-primary" id="wizStart">Start the two weeks</button>'
+          + '</div>';
+        document.getElementById('wizStart').addEventListener('click', function () {
+          step = 0;
+          render();
         });
-      });
-      wrap.innerHTML = html;
-
-      function answered() {
-        return form.querySelectorAll('input[type=radio]:checked').length;
+        updateChrome();
       }
 
-      function updateProgress() {
-        var n = answered();
-        progressEl.textContent = n + ' of ' + total + ' answered';
+      function renderInterstitial(text, nextStep) {
+        stage.innerHTML =
+          '<div class="wiz-card wiz-card-quiet">'
+          + '<h3 class="wiz-inter-p" tabindex="-1" data-focus>' + esc(text) + '</h3>'
+          + '<button type="button" class="cta-btn cta-btn-secondary" id="wizGo">Keep going</button>'
+          + '</div>';
+        document.getElementById('wizGo').addEventListener('click', function () {
+          pendingInter = null;
+          step = nextStep;
+          render();
+        });
+        topbar.hidden = true;
+        focusCard();
       }
 
-      form.addEventListener('change', function (e) {
-        var input = e.target;
-        if (!input || input.type !== 'radio') return;
-        var group = form.querySelectorAll('input[name="' + input.name + '"]');
-        for (var i = 0; i < group.length; i++) {
-          group[i].closest('.audit-opt').classList.toggle('is-checked', group[i].checked);
-        }
-        updateProgress();
-      });
+      function renderQuestion() {
+        var item = QUESTIONS[step];
+        var picked = answers[step];
+        var html = '<div class="wiz-card">'
+          + '<div class="wiz-scene">' + esc(item.scene) + '</div>'
+          + '<h3 class="wiz-q" tabindex="-1" data-focus>' + esc(item.q) + '</h3>'
+          + '<div class="wiz-opts" role="group" aria-label="' + esc(item.q) + '">';
+        item.opts.forEach(function (o, i) {
+          html += '<button type="button" class="wiz-opt' + (picked === i ? ' is-picked' : '')
+            + '" data-v="' + i + '" aria-pressed="' + (picked === i) + '">'
+            + '<span class="wiz-opt-key" aria-hidden="true">' + (i + 1) + '</span>'
+            + esc(o) + '</button>';
+        });
+        html += '</div><p class="wiz-hint">Press 1&ndash;4, or use Backspace to go back.</p></div>';
+        stage.innerHTML = html;
 
-      form.addEventListener('submit', function (e) {
-        e.preventDefault();
+        Array.prototype.forEach.call(stage.querySelectorAll('.wiz-opt'), function (b) {
+          b.addEventListener('click', function () { pick(parseInt(b.getAttribute('data-v'), 10)); });
+        });
+        updateChrome();
+        focusCard();
+      }
 
-        if (answered() < total) {
-          var firstMissing = null;
-          var inputs = form.querySelectorAll('input[type=radio]');
-          for (var i = 0; i < inputs.length; i++) {
-            var nm = inputs[i].name;
-            if (!form.querySelector('input[name="' + nm + '"]:checked')) { firstMissing = inputs[i]; break; }
-          }
-          progressEl.textContent = 'Answer all ' + total + ' to see your score (' + answered() + ' done)';
-          if (firstMissing) {
-            firstMissing.closest('.audit-q').scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-          return;
-        }
+      function pick(v) {
+        answers[step] = v;
+        var btns = stage.querySelectorAll('.wiz-opt');
+        Array.prototype.forEach.call(btns, function (b, i) {
+          b.classList.toggle('is-picked', i === v);
+          b.setAttribute('aria-pressed', String(i === v));
+        });
+        var next = step + 1;
+        var delay = reduceMotion ? 0 : 220;
+        setTimeout(function () {
+          if (next >= QUESTIONS.length) { finish(); return; }
+          if (INTERSTITIALS[next]) { pendingInter = next; renderInterstitial(INTERSTITIALS[next], next); return; }
+          step = next;
+          render();
+        }, delay);
+      }
 
-        var scores = [];
-        var grand = 0;
-        DOMAINS.forEach(function (d, di) {
+      function goBack() {
+        if (pendingInter !== null) { step = pendingInter - 1; pendingInter = null; render(); return; }
+        if (step > 0) { step--; render(); }
+      }
+
+      function render() {
+        if (step < 0) { renderIntro(); return; }
+        renderQuestion();
+      }
+
+      function finish() {
+        var scores = DOMAINS.map(function (d, di) {
           var sum = 0;
-          d.questions.forEach(function (q, qi) {
-            var sel = form.querySelector('input[name="q_' + di + '_' + qi + '"]:checked');
-            sum += sel ? parseInt(sel.value, 10) : 0;
-          });
-          grand += sum;
-          scores.push({ domain: d, raw: sum, pct: Math.round((sum / 9) * 100) });
+          QUESTIONS.forEach(function (q, qi) { if (q.d === di) sum += answers[qi]; });
+          return { domain: d, raw: sum };
         });
+        var grand = scores.reduce(function (a, s) { return a + s.raw; }, 0);
+        var pct = Math.round((grand / (QUESTIONS.length * 3)) * 100);
 
-        var pct = Math.round((grand / (total * 3)) * 100);
-        var band = BANDS[0];
+        var band = BANDS[BANDS.length - 1];
         for (var b = 0; b < BANDS.length; b++) {
           if (pct <= BANDS[b].max) { band = BANDS[b]; break; }
         }
-
-        var worst = scores.slice().sort(function (a, b2) {
-          return b2.raw - a.raw;
-        })[0];
+        var worst = scores.slice().sort(function (a, c) { return c.raw - a.raw; })[0];
 
         document.getElementById('auditScore').textContent = pct;
         document.getElementById('auditBand').textContent = band.label;
@@ -2623,11 +2788,29 @@
             + '</div>';
         });
         document.getElementById('auditBreakdown').innerHTML = bd;
-        document.getElementById('auditFirst').innerHTML = worst.domain.first;
+        document.getElementById('auditFirst').textContent = worst.domain.first;
 
+        stage.innerHTML = '';
+        topbar.hidden = true;
+        railFill.style.width = '100%';
         resultEl.hidden = false;
         document.getElementById('auditMeter').style.width = pct + '%';
-        resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        var again = document.getElementById('wizRestart');
+        if (again) {
+          again.onclick = function () {
+            answers = new Array(QUESTIONS.length).fill(null);
+            step = -1;
+            pendingInter = null;
+            resultEl.hidden = true;
+            document.getElementById('auditMeter').style.width = '0%';
+            railFill.style.width = '0%';
+            render();
+            document.getElementById('audit').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+          };
+        }
+
+        resultEl.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
         resultEl.focus({ preventScroll: true });
 
         if (typeof gtag === 'function') {
@@ -2637,19 +2820,26 @@
             weakest_domain: worst.domain.key
           });
         }
+      }
+
+      backBtn.addEventListener('click', goBack);
+
+      document.addEventListener('keydown', function (e) {
+        if (step < 0 || step >= QUESTIONS.length) return;
+        if (!document.getElementById('audit').contains(document.activeElement)
+            && document.activeElement !== document.body) return;
+        if (e.key >= '1' && e.key <= '4') {
+          var btn = stage.querySelector('.wiz-opt[data-v="' + (parseInt(e.key, 10) - 1) + '"]');
+          if (btn) { e.preventDefault(); btn.click(); }
+        } else if (e.key === 'Backspace') {
+          e.preventDefault();
+          goBack();
+        }
       });
 
-      document.getElementById('auditReset').addEventListener('click', function () {
-        form.reset();
-        var opts = form.querySelectorAll('.audit-opt');
-        for (var i = 0; i < opts.length; i++) opts[i].classList.remove('is-checked');
-        resultEl.hidden = true;
-        document.getElementById('auditMeter').style.width = '0%';
-        updateProgress();
-        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-
-      updateProgress();
+      // Progress counter should reflect answers, not just position, on re-entry
+      updateChrome();
+      render();
     })();
 
   </script>
