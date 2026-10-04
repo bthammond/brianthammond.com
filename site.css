@@ -500,3 +500,17 @@ a.card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(11, 22,
 .page-hero .eyebrow, .page-hero .h-display em, .page-hero .ph { color: var(--gold-400); }
 .about-photo { width: 100%; aspect-ratio: 4 / 4.2; object-fit: cover; object-position: 50% 15%; border: 1px solid var(--line-light); }
 @media (min-width: 900px) { .about-photo { aspect-ratio: 3 / 4; } }
+
+/* Temporary "coming soon" panel (Behavior first section) */
+.coming-soon {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 3rem;
+  padding: 1.75rem 1.5rem;
+  background: var(--paper);
+  border: 1px solid var(--line-light);
+  border-left: 3px solid var(--gold-500);
+}
+.coming-soon h3 { font-family: var(--font-heading); font-weight: 400; font-size: 1.5rem; line-height: 1.25; margin-bottom: 0.4rem; }
+.coming-soon p { color: var(--ink-soft); }
+@media (min-width: 768px) { .coming-soon { grid-template-columns: 1fr auto; align-items: center; padding: 2rem 2.5rem; } }
