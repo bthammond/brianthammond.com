@@ -529,3 +529,11 @@ a.card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(11, 22,
 .audiences b { display: block; font-family: var(--font-heading); font-weight: 400; font-size: 1.3rem; color: var(--navy-800); margin-bottom: 0.2rem; }
 @media (min-width: 1024px) { .timeline.timeline-7 { grid-template-columns: repeat(7, 1fr); } }
 .article-body .h-section { font-size: clamp(2rem, 6vw, 3.4rem); margin: 0 0 0.5rem; }
+
+/* ==================== Photos ==================== */
+.photo-grid { display: grid; gap: 1.25rem; margin-top: 1.5rem; }
+@media (min-width: 900px) { .photo-grid { grid-template-columns: 1.6fr 1fr; align-items: start; } }
+.photo { margin: 0; background: var(--paper); border: 1px solid var(--line-light); border-top: 3px solid var(--gold-500); }
+.photo img { width: 100%; height: auto; }
+.photo figcaption { padding: 0.8rem 1rem; font-size: 0.9rem; color: var(--ink-soft); }
+.speaker-photo { width: 7rem; height: auto; margin-bottom: 1.25rem; }
