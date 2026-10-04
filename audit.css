@@ -1,0 +1,103 @@
+/* ============================================================
+   The Owner's Bottleneck Audit — scenario wizard styles
+   (layout unchanged from the original; recoloured navy and gold)
+   ============================================================ */
+.audit-box {
+  margin-top: 3.5rem;
+  padding: 2rem 1.25rem;
+  background: var(--navy-800);
+  color: var(--on-navy);
+  border-top: 3px solid var(--gold-500);
+}
+@media (min-width: 768px) { .audit-box { padding: 3rem; } }
+.audit-box .h-section { color: var(--paper); font-size: clamp(1.7rem, 4.5vw, 2.6rem); }
+.audit-box .h-section em { color: var(--gold-400); }
+.audit-box .lede { color: var(--on-navy-soft); margin-bottom: 2rem; }
+
+.wiz { max-width: 46em; }
+.wiz-topbar { display: flex; align-items: center; gap: 0.9em; margin-bottom: 1.5em; }
+@media (min-width: 640px) { .wiz-topbar { gap: 1.25em; } }
+.wiz-topbar[hidden] { display: none; }
+.wiz-back {
+  background: none; border: none; padding: 0.3em 0;
+  font-family: var(--font-body); font-size: 0.78em; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--on-navy); cursor: pointer; white-space: nowrap; min-height: 44px;
+}
+.wiz-back:hover { color: var(--gold-400); }
+.wiz-back[disabled] { opacity: 0.3; cursor: default; }
+.wiz-rail { flex: 1; height: 2px; background: rgba(255, 255, 255, 0.2); overflow: hidden; }
+.wiz-rail-fill { height: 100%; width: 0; background: var(--gold-400); transition: width 0.45s cubic-bezier(0.6, 0, 0.4, 1); }
+.wiz-count { font-size: 0.78em; letter-spacing: 0.12em; text-transform: uppercase; color: var(--on-navy-soft); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* Reserve height so advancing between cards doesn't jump the page */
+.wiz-stage { min-height: 30em; }
+@media (min-width: 640px) { .wiz-stage { min-height: 27em; } }
+.wiz-stage:empty { min-height: 0; }
+
+.wiz-card {
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line-light);
+  padding: 1.75em 1.25em;
+  animation: wizIn 0.42s cubic-bezier(0.2, 0, 0.2, 1) both;
+}
+@media (min-width: 640px) { .wiz-card { padding: 2.5em 2.25em; } }
+@keyframes wizIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+.wiz-scene { font-family: var(--font-heading); font-style: italic; color: var(--gold-700); margin-bottom: 0.9em; }
+.wiz-q { font-family: var(--font-heading); font-size: clamp(1.35em, 2.6vw, 1.9em); line-height: 1.25; font-weight: 400; color: var(--ink); margin-bottom: 1.5em; }
+.wiz-opts { display: grid; gap: 0.6em; }
+.wiz-opt {
+  display: block; width: 100%; text-align: left;
+  background: none; border: 1px solid rgba(17, 33, 58, 0.28);
+  padding: 0.95em 1.1em; min-height: 44px;
+  font-family: var(--font-body); font-size: 0.95em; line-height: 1.45; color: var(--ink);
+  cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.wiz-opt:hover { border-color: var(--navy-800); background: rgba(17, 33, 58, 0.05); }
+.wiz-opt:focus-visible { outline: 2px solid var(--gold-500); outline-offset: 2px; }
+.wiz-opt.is-picked { background: var(--navy-800); border-color: var(--navy-800); color: var(--paper); }
+.wiz-opt-key { display: inline-block; width: 1.6em; opacity: 0.45; font-variant-numeric: tabular-nums; }
+.wiz-opt.is-picked .wiz-opt-key { opacity: 0.8; color: var(--gold-400); }
+.wiz-hint { margin-top: 1.5em; font-size: 0.78em; letter-spacing: 0.06em; color: var(--ink-soft); }
+/* Keyboard shortcuts are meaningless on a touch device */
+@media (hover: none), (pointer: coarse) { .wiz-hint { display: none; } }
+
+.wiz-card-quiet { border-style: dashed; border-color: rgba(199, 154, 62, 0.6); }
+.wiz-inter-p { font-family: var(--font-heading); font-weight: 400; font-size: clamp(1.2em, 2.2vw, 1.6em); line-height: 1.4; color: var(--ink); margin-bottom: 1.25em; max-width: 26em; }
+.wiz-lede { font-size: 0.98em; line-height: 1.7; color: var(--ink-soft); margin-bottom: 1.75em; max-width: 34em; }
+.wiz-card .btn { min-width: 12rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .wiz-card { animation: none; }
+  .wiz-rail-fill { transition: none; }
+}
+
+/* ---- Result ---- */
+.audit-result { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 1rem; padding-top: 2rem; border-top: 2px solid var(--gold-500); align-items: start; }
+@media (min-width: 900px) { .audit-result { grid-template-columns: minmax(200px, 260px) 1fr; gap: 3rem; } }
+.audit-result[hidden] { display: none; }
+.audit-result:focus { outline: none; }
+.audit-score { font-family: var(--font-heading); font-size: clamp(4em, 11vw, 7em); line-height: 0.9; color: var(--gold-400); }
+.audit-score-cap { font-size: 0.75em; text-transform: uppercase; letter-spacing: 0.15em; margin-top: 0.6em; color: var(--on-navy-soft); }
+.audit-score-cap b { color: var(--on-navy); }
+.audit-meter { height: 6px; background: rgba(255, 255, 255, 0.18); margin-top: 1.25em; overflow: hidden; }
+.audit-meter-fill { height: 100%; width: 0; background: var(--gold-400); transition: width 0.9s cubic-bezier(0.6, 0, 0.4, 1); }
+.audit-band { margin-top: 1em; font-family: var(--font-heading); font-style: italic; font-size: 1.35em; line-height: 1.3; color: var(--paper); }
+.audit-verdict { font-size: clamp(1.05em, 1.7vw, 1.2em); line-height: 1.7; margin-bottom: 1.75em; color: var(--on-navy); }
+.audit-breakdown { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75em; margin-bottom: 2em; }
+@media (min-width: 640px) { .audit-breakdown { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1em; } }
+.audit-dom { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line-dark); padding: 1em; }
+.audit-dom-name { font-size: 0.68em; text-transform: uppercase; letter-spacing: 0.16em; color: var(--on-navy-soft); margin-bottom: 0.5em; }
+.audit-dom-val { font-family: var(--font-heading); font-size: 1.7em; line-height: 1; color: var(--paper); }
+.audit-dom-val small { font-size: 0.45em; opacity: 0.6; }
+.audit-dom.is-worst { border-color: var(--gold-400); border-width: 2px; }
+.audit-next { background: var(--paper); color: var(--ink); padding: 1.5em; margin-bottom: 2em; border-left: 3px solid var(--gold-500); }
+.audit-next p { font-size: 0.98em; line-height: 1.75; color: var(--ink-soft); }
+.wiz-restart {
+  display: inline-block; margin: 1rem 0 0; background: none; border: none; padding: 0.5rem 0;
+  font-family: var(--font-body); font-size: 0.8em; letter-spacing: 0.1em; text-transform: uppercase;
+  text-decoration: underline; text-underline-offset: 0.25em; color: var(--on-navy-soft); cursor: pointer;
+}
+@media (min-width: 560px) { .wiz-restart { margin: 0 0 0 1.5em; } }
+.wiz-restart:hover { color: var(--gold-400); }
