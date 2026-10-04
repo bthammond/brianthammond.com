@@ -57,6 +57,13 @@
     });
   });
 
+  // "Builder's Notes" signup links (email for now, until a signup page exists)
+  document.querySelectorAll('a.js-notes').forEach(function (a) {
+    a.addEventListener('click', function () {
+      if (typeof gtag === 'function') gtag('event', 'newsletter_signup_click', { event_category: 'cta' });
+    });
+  });
+
   // Close legal modals when clicking the backdrop
   document.querySelectorAll('.legal-modal').forEach(function (m) {
     m.addEventListener('click', function (e) {

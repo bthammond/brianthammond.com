@@ -500,3 +500,23 @@ a.card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(11, 22,
 .page-hero .eyebrow, .page-hero .h-display em, .page-hero .ph { color: var(--gold-400); }
 .about-photo { width: 100%; aspect-ratio: 4 / 4.2; object-fit: cover; object-position: 50% 15%; border: 1px solid var(--line-light); }
 @media (min-width: 900px) { .about-photo { aspect-ratio: 3 / 4; } }
+
+/* ==================== Articles ==================== */
+.article-wrap { max-width: 44rem; }
+.article-title { font-size: clamp(2.2rem, 7vw, 3.6rem); }
+.page-hero .crumb { color: var(--gold-400); text-decoration: none; }
+.page-hero .crumb:hover { text-decoration: underline; }
+.byline { margin-top: 1.5rem; font-size: 0.85rem; letter-spacing: 0.04em; color: var(--on-navy-soft); }
+.article-body { font-size: 1.1rem; line-height: 1.75; }
+.article-body p { margin-bottom: 1.25em; }
+.article-body h2 { font-family: var(--font-heading); font-weight: 400; font-size: 1.7rem; line-height: 1.2; margin: 2.25em 0 0.75em; }
+.article-body h3 { font-size: 1.1rem; font-weight: 600; margin: 1.75em 0 0.5em; color: var(--navy-700); }
+.article-body ul, .article-body ol { margin: 0 0 1.5em; display: grid; gap: 0.75em; }
+.article-body ul li { position: relative; padding-left: 1.5rem; }
+.article-body ul li::before { content: ""; position: absolute; left: 0; top: 0.8em; width: 0.65rem; height: 2px; background: var(--gold-500); }
+.article-body ol { counter-reset: step; }
+.article-body ol li { counter-increment: step; position: relative; padding-left: 2.25rem; }
+.article-body ol li::before { content: counter(step); position: absolute; left: 0; top: 0.1em; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--navy-800); color: var(--gold-400); font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+.article-body strong { color: var(--navy-800); }
+.article-closer { margin-top: 2.5rem; padding: 1.5rem; background: var(--ivory); border-left: 3px solid var(--gold-500); font-size: 1rem; }
+.article-closer p { margin: 0; }
