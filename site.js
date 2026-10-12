@@ -35,7 +35,7 @@
   /* ============================================================
      Booking link
      ------------------------------------------------------------
-     ONE place to change every "Book 30 minutes" link (class js-book).
+     ONE place to change every "Book a 30-Minute Call" link (class js-book).
      Google Calendar appointment schedule, 30-minute call. Leave it
      empty and those links fall back to a pre-filled email.
      ============================================================ */
@@ -50,10 +50,10 @@
     });
   });
 
-  // "Start a Conversation" email links
-  document.querySelectorAll('a.js-talk').forEach(function (a) {
+  // "Take the 4-Minute Bottleneck Audit" links (the transitional CTA)
+  document.querySelectorAll('a.js-audit').forEach(function (a) {
     a.addEventListener('click', function () {
-      if (typeof gtag === 'function') gtag('event', 'start_conversation_click', { event_category: 'cta' });
+      if (typeof gtag === 'function') gtag('event', 'audit_cta_click', { event_category: 'cta' });
     });
   });
 
