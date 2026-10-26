@@ -118,6 +118,14 @@ button,input,select{font:inherit;color:inherit}
 #cmykRow input{-moz-appearance:textfield;padding-left:3px;padding-right:3px}
 #cmykRow input::-webkit-inner-spin-button,#cmykRow input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 #cmSpot{white-space:nowrap}
+.patgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.patgrid button{padding:0;border:1px solid #444;border-radius:4px;background:#1f1f1f;aspect-ratio:1;cursor:pointer;overflow:hidden;display:block}
+.patgrid button svg{width:100%;height:100%;display:block}
+.patgrid button.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.patgrid button.custom{border-style:dashed}
+#glOpacity,#igOpacity,#glSize,#igSize{width:46px;flex:none}
+#glColor,#igColor{flex:none}
+.patclear{display:flex;align-items:center;gap:3px;width:auto!important;white-space:nowrap}
 .alignrow{display:flex;gap:3px;flex-wrap:wrap;align-items:center}
 .alignrow .sep{width:4px}
 #cmykRow input{width:100%;min-width:0;text-align:right}
@@ -319,6 +327,7 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
       <button data-cmd="alDV">Distribute ▸ Vertically</button>
       <hr>
       <button data-cmd="recolor">Recolor Artwork… <span>Ctrl+Alt+Shift+R</span></button>
+      <button data-cmd="makePattern">Make Pattern from Selection</button>
       <hr>
       <button data-cmd="flipH">Flip Horizontal</button>
       <button data-cmd="flipV">Flip Vertical</button>
@@ -417,9 +426,15 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
           <div class="row"><label>Rotate</label><input type="number" id="pRot" value="0" step="15"><button class="btn" id="btnRot">Apply</button></div>
           <div class="row" id="radiusRow"><label>Corners</label><input type="number" id="pRadius" min="0" step="1"></div>
           <div class="row"><label>Fill</label>
-            <select id="fillType"><option value="solid">Solid</option><option value="linear">Linear gradient</option><option value="radial">Radial gradient</option><option value="none">None</option></select>
+            <select id="fillType"><option value="solid">Solid</option><option value="linear">Linear gradient</option><option value="radial">Radial gradient</option><option value="pattern">Pattern</option><option value="none">None</option></select>
           </div>
           <div class="row" id="fillColorRow"><label></label><input type="color" id="fillColor"><button class="btn mini" id="btnRecolor" title="Change every color in the selection at once (Ctrl+Alt+Shift+R)">Recolor…</button></div>
+          <div id="patEd" class="pbody hidden" style="padding:4px 0 2px;gap:6px;border-top:1px solid #3a3a3a;border-bottom:1px solid #3a3a3a">
+            <div class="patgrid" id="patGrid"></div>
+            <div class="row"><label>Colors</label><input type="color" id="patC1" title="Pattern color"><input type="color" id="patC2" title="Background color"><label class="muted patclear" title="No background: shapes underneath show through"><input type="checkbox" id="patBgNone"> Clear</label></div>
+            <div class="row"><label>Scale</label><input type="number" id="patScale" min="5" max="2000" step="10" value="100" title="Pattern size"><span class="muted">%</span><span class="muted">Angle</span><input type="number" id="patAngle" step="15" value="0" title="Pattern angle"><span class="muted">°</span></div>
+            <div class="row"><label></label><button class="btn mini" id="patMake" title="Turn the selected artwork into a pattern swatch">Make from selection</button><button class="btn mini" id="patDel" title="Remove the selected saved pattern swatch">Delete swatch</button></div>
+          </div>
           <div class="row"><label id="cmykLbl" title="Fill color in CMYK. Press X to switch to the stroke">CMYK</label><div class="cmykgrid" id="cmykRow"><input type="number" id="cmC" min="0" max="100" step="1" title="Cyan %"><input type="number" id="cmM" min="0" max="100" step="1" title="Magenta %"><input type="number" id="cmY" min="0" max="100" step="1" title="Yellow %"><input type="number" id="cmK" min="0" max="100" step="1" title="Black %"><span class="k">%</span><span class="k">C</span><span class="k">M</span><span class="k">Y</span><span class="k">K</span></div></div>
           <div class="row"><label></label><input type="text" id="cmHex" maxlength="7" spellcheck="false" title="Hex color, e.g. #1D3557" style="width:86px;flex:none"><button class="btn mini" id="cmSpot" title="Mark this color as a spot ink (e.g. a Pantone color) for printing">Spot…</button><span id="spotTag"></span></div>
           <div class="row"><label>Stroke</label><input type="checkbox" id="strokeOn"><input type="color" id="strokeColor"><select id="strokeType" title="Stroke paint: solid color or gradient"><option value="solid">Solid</option><option value="linear">Linear</option><option value="radial">Radial</option></select><input type="number" id="strokeW" min="0" step="0.5" title="Stroke width"><span class="muted">pt</span></div>
@@ -442,6 +457,9 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
           </div>
           <div class="row"><label>Shadow</label><input type="checkbox" id="fxOn" title="Drop shadow on/off"><input type="color" id="fxColor" value="#000000" title="Shadow color"><span class="muted">Opacity</span><input type="number" id="fxOpacity" min="0" max="100" step="5" value="35"><span class="muted">%</span></div>
           <div class="row"><label></label><span class="muted">X</span><input type="number" id="fxX" step="1" value="4"><span class="muted">Y</span><input type="number" id="fxY" step="1" value="6"><span class="muted">Blur</span><input type="number" id="fxBlur" min="0" step="1" value="10"></div>
+          <div class="row"><label>Glow</label><input type="checkbox" id="glOn" title="Outer glow on/off"><input type="color" id="glColor" value="#ffd84d" title="Glow color"><input type="number" id="glOpacity" min="0" max="100" step="5" value="85" title="Glow opacity %"><span class="muted">%</span><span class="muted">Size</span><input type="number" id="glSize" min="0" step="1" value="14"></div>
+          <div class="row"><label title="Inner glow">Inner</label><input type="checkbox" id="igOn" title="Inner glow on/off"><input type="color" id="igColor" value="#ffffff" title="Inner glow color"><input type="number" id="igOpacity" min="0" max="100" step="5" value="70" title="Inner glow opacity %"><span class="muted">%</span><span class="muted">Size</span><input type="number" id="igSize" min="0" step="1" value="6"></div>
+          <div class="row"><label>Blur</label><input type="number" id="fxSoft" min="0" step="1" value="0" title="Soften the whole object (0 = sharp)"><button class="btn mini" id="glNeon" title="Neon look: a glow in the object's own color with a bright core">Neon</button><button class="btn mini" id="fxClear" title="Remove shadow, glows and blur">None</button></div>
           <div id="textProps" class="pbody" style="padding:0">
             <div class="row"><label>Font</label>
               <select id="fontFamily"></select>
@@ -789,6 +807,8 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
       <kbd>H / Space</kbd><span>Hand (pan). Scroll wheel also pans</span>
       <kbd>Z</kbd><span>Zoom (Alt = out). Ctrl + scroll zooms at the cursor</span>
       <kbd>Shift+M</kbd><span>Shape Builder: drag across overlapping areas to merge them, Alt to remove</span>
+      <kbd>Fill ▸ Pattern</kbd><span>Stripes, dots, checks and more, or your own: select art and choose Object ▸ Make Pattern from Selection</span>
+      <kbd>Glow / Blur</kbd><span>Outer glow, inner glow and blur in Properties. "Neon" makes a glow in the object's own color</span>
       <kbd>Ctrl+Alt+N / Ctrl+O</kbd><span>New / open documents in tabs. Ctrl+Tab or Alt+PgUp/PgDn switches, Ctrl+Alt+W closes</span>
       <kbd>X / Shift+X / D</kbd><span>Fill↔stroke focus / swap colors / default colors</span>
       <kbd>Arrows</kbd><span>Nudge 1 px (Shift = 10 px)</span>
@@ -1691,6 +1711,16 @@ function recolorSlots(objs) { // every place a color is set in the selection, gr
       const cs = getComputedStyle(sh)[prop]; if (!cs || cs === 'none') continue;
       const id = urlRef(cs);
       if (id) { // gradient: recolor each stop
+        const pt = patEl(id);
+        if (pt) { // pattern: recolor each painted part of its tile
+          for (const e of pt.querySelectorAll('*')) for (const p2 of ['fill', 'stroke']) {
+            const v = e.getAttribute(p2); if (!v || v === 'none' || urlRef(v)) continue;
+            if (!seen.has(e)) seen.set(e, new Set());
+            if (seen.get(e).has(p2)) continue;
+            seen.get(e).add(p2); slots.push({ el: e, prop: p2, hex: toHex(v) });
+          }
+          continue;
+        }
         let g = document.getElementById(id);
         for (let k = 0; g && k < 5 && !g.querySelector('stop'); k++) g = document.getElementById((g.getAttribute('href') || g.getAttribute('xlink:href') || '').slice(1));
         if (g) for (const st of g.querySelectorAll('stop')) if (!stops.has(st)) { stops.add(st); slots.push({ el: st, prop: 'stop-color', hex: toHex(getComputedStyle(st).stopColor) }); }
@@ -2616,7 +2646,7 @@ const eyeScale = el => Math.sqrt(Math.abs(docM(el).a * docM(el).d - docM(el).b *
 function eyeStyle(src) { // the visible look of one shape, read from its computed style (works for imported art too)
   const cs = getComputedStyle(src), paint = k => { const v = cs[k]; return !v || v === 'none' ? 'none' : urlRef(v) ? 'grad' : toHex(v); };
   const I = { kind: 'style', src, fill: paint('fill'), stroke: paint('stroke'), fillG: null, strokeG: null };
-  if (I.fill === 'grad') { I.fillG = paintGrad(src, 'fill'); I.fill = I.fillG ? I.fillG.stops[0].c : '#000000'; }
+  if (I.fill === 'grad') { I.fillP = patParams(src); I.fillG = I.fillP ? null : paintGrad(src, 'fill'); I.fill = I.fillG ? I.fillG.stops[0].c : I.fillP ? I.fillP.c1 : '#000000'; }
   if (I.stroke === 'grad') { I.strokeG = paintGrad(src, 'stroke'); I.stroke = I.strokeG ? I.strokeG.stops[0].c : '#000000'; }
   I.fillOp = parseFloat(cs.fillOpacity); I.strokeOp = parseFloat(cs.strokeOpacity);
   I.sw = I.stroke !== 'none' ? (parseFloat(cs.strokeWidth) || 0) * eyeScale(src) : 0; // weight on the page
@@ -2628,7 +2658,7 @@ function eyeStyle(src) { // the visible look of one shape, read from its compute
 function eyeApply(sh, I) {
   if (sh.tagName === 'image') return;
   if (I.kind === 'pixel') { setAttr(sh, 'fill', I.fill); setAttr(sh, 'fill-opacity', null); return; }
-  if (I.fillG) writeGrad(sh, 'fill', JSON.parse(JSON.stringify(I.fillG))); else setAttr(sh, 'fill', I.fill);
+  if (I.fillG) writeGrad(sh, 'fill', JSON.parse(JSON.stringify(I.fillG))); else if (I.fillP && I.fillP.k && patTile(I.fillP.k)) writePat(sh, { ...I.fillP }); else setAttr(sh, 'fill', I.fill);
   setAttr(sh, 'fill-opacity', I.fillOp < 1 ? I.fillOp : null);
   if (I.strokeG) writeGrad(sh, 'stroke', JSON.parse(JSON.stringify(I.strokeG))); else setAttr(sh, 'stroke', I.stroke);
   setAttr(sh, 'stroke-opacity', I.strokeOp < 1 ? I.strokeOp : null);
@@ -2719,7 +2749,7 @@ function eyeHover(e, p) {
     if (I.kind === 'pixel') tx.innerHTML = `<div><span class="k">Color</span><b class="mono">${I.fill.toUpperCase()}</b></div><div class="k" style="min-width:0">${hit && hit.src.tagName === 'image' ? 'from the photo' : 'exact color at this point'}</div>`;
     else {
       const b = bboxOf(hit.o);
-      tx.innerHTML = `<div><span class="k">Fill</span><b class="mono">${I.fillG ? 'Gradient' : I.fill === 'none' ? 'None' : I.fill.toUpperCase()}</b></div>` +
+      tx.innerHTML = `<div><span class="k">Fill</span><b class="mono">${I.fillG ? 'Gradient' : I.fillP ? 'Pattern' : I.fill === 'none' ? 'None' : I.fill.toUpperCase()}</b></div>` +
         `<div><span class="k">Stroke</span><b class="mono">${I.stroke === 'none' ? 'None' : (I.strokeG ? 'Gradient' : I.stroke.toUpperCase()) + ' · ' + r3(I.sw) + ' pt'}</b></div>` +
         (I.font ? `<div><span class="k">Text</span><b>${cleanFamily(String(I.font['font-family']).split(',')[0])} ${r3(I.font['font-size'])} pt</b></div>` : '') +
         (b ? `<div><span class="k">Size</span><b>${fmtU(b.w)} × ${fmtU(b.h)} ${uLabel()}</b></div>` : '');
@@ -2924,8 +2954,14 @@ function setPaintType(which, type) {
 }
 function applyFill() {
   const type = $('#fillType').value, c1 = $('#fillColor').value;
+  if (!S.sel.length && type === 'pattern') { flash('Select a shape first, then choose a pattern.'); refreshPanel(); return; }
   if (!S.sel.length) { S.fill = type === 'none' ? 'none' : c1; updateWells(); refreshPanel(); return; }
   if (type === 'linear' || type === 'radial') setPaintType('fill', type);
+  else if (type === 'pattern') for (const sh of S.sel.flatMap(shapesOf)) {
+    if (!paintable(sh) || patOf(sh)) continue;
+    const f = sh.getAttribute('fill'), base = f && f !== 'none' && !urlRef(f) ? toHex(f) : S.lastPat.c1;
+    writePat(sh, { ...S.lastPat, c1: S.lastPat.k && S.lastPat.k.startsWith('custom:') ? S.lastPat.c1 : base, c2: base === '#ffffff' && S.lastPat.c2 === '#ffffff' ? '#1d3557' : S.lastPat.c2 });
+  }
   else for (const sh of S.sel.flatMap(shapesOf)) {
     if (!paintable(sh)) continue;
     setAttr(sh, 'fill', type === 'none' ? 'none' : c1);
@@ -3100,6 +3136,155 @@ function applyDash() {
   }
 }
 
+/* ---------- pattern fills ----------
+   A pattern fill is <pattern id="pat-<shape id>" data-pat='{"k":kind,"s":scale %,"a":angle}'> in <defs>. Its tile is
+   built from PAT_LIB (the pattern color sits on data-pc="fg" parts, the background on a data-pc="bg" rect) or copied
+   from a saved swatch (<g data-pattile> in <defs>, made with "Make from selection"). Colors are read back from the tile,
+   so Recolor Artwork can change them in place. */
+const PAT_LIB = [ // [kind, name, tile width, tile height, art(F = fill attrs, K = stroke attrs)]
+  ['stripes', 'Stripes', 20, 20, (F) => `<rect width="20" height="10" ${F}/>`],
+  ['pinstripe', 'Pinstripe', 20, 12, (F) => `<rect width="20" height="2.5" ${F}/>`],
+  ['diagonal', 'Diagonal', 20, 20, (F, K) => `<path d="M-5 25L25 -5M-15 15L15 -15M5 35L35 5" ${K} stroke-width="5"/>`],
+  ['dots', 'Dots', 20, 20, (F) => `<circle cx="10" cy="10" r="4.5" ${F}/>`],
+  ['polka', 'Polka', 24, 24, (F) => `<circle cx="6" cy="6" r="3.5" ${F}/><circle cx="18" cy="18" r="3.5" ${F}/>`],
+  ['grid', 'Grid', 20, 20, (F, K) => `<path d="M0 10H20M10 0V20" ${K} stroke-width="1.5"/>`],
+  ['checker', 'Checker', 20, 20, (F) => `<path d="M0 0h10v10H0zM10 10h10v10H10z" ${F}/>`],
+  ['crosshatch', 'Crosshatch', 16, 16, (F, K) => `<path d="M8 0L16 8L8 16L0 8Z" ${K} stroke-width="1.4"/>`],
+  ['diamonds', 'Diamonds', 16, 16, (F) => `<path d="M8 1.5L14.5 8L8 14.5L1.5 8Z" ${F}/>`],
+  ['zigzag', 'Zigzag', 20, 12, (F, K) => `<path d="M-5 3L0 9L5 3L10 9L15 3L20 9L25 3" ${K} stroke-width="2.2" stroke-linejoin="round"/>`],
+  ['waves', 'Waves', 24, 12, (F, K) => `<path d="M-12 6Q-6 12 0 6T12 6T24 6T36 6" ${K} stroke-width="2"/>`],
+  ['triangles', 'Triangles', 20, 18, (F) => `<path d="M0 18L10 0L20 18Z" ${F}/>`],
+  ['honeycomb', 'Honeycomb', 30, 17.32, (F, K) => `<path d="M0 8.66L5 0H15L20 8.66L15 17.32H5ZM20 8.66H30" ${K} stroke-width="1.4"/>`],
+  ['plus', 'Plus', 20, 20, (F, K) => `<path d="M10 5V15M5 10H15" ${K} stroke-width="2.5"/>`],
+  ['bricks', 'Bricks', 40, 20, (F, K) => `<path d="M0 0H40M0 10H40M0 20H40M20 0V10M0 10V20M40 10V20" ${K} stroke-width="2"/>`],
+];
+S.lastPat = { k: 'stripes', c1: '#1d3557', c2: '#ffffff', s: 100, a: 0 };
+function patTile(k) { // {w, h, art(c1), custom}
+  if (!k) return null;
+  if (k.startsWith('custom:')) {
+    const g = document.getElementById(k.slice(7)); if (!g || !g.hasAttribute('data-pattile')) return null;
+    return { w: +g.getAttribute('data-w') || 10, h: +g.getAttribute('data-h') || 10, custom: true, name: g.getAttribute('data-name') || 'Pattern', art: () => g.innerHTML };
+  }
+  const L = PAT_LIB.find(p => p[0] === k); if (!L) return null;
+  return { w: L[2], h: L[3], name: L[1], art: c1 => L[4](`data-pc="fg" fill="${c1}"`, `data-pc="fg" fill="none" stroke="${c1}"`) };
+}
+function patEl(id) { const p = id && document.getElementById(id); return p && p.tagName === 'pattern' ? p : null; }
+function patOf(sh) { return sh && sh.getAttribute ? patEl(urlRef(sh.getAttribute('fill') || (sh.style && sh.style.getPropertyValue('fill')))) : null; }
+function patParams(sh) {
+  const p = patOf(sh); if (!p) return null;
+  let D = {}; try { D = JSON.parse(p.getAttribute('data-pat') || '{}') || {}; } catch (e) { /* imported pattern */ }
+  const fg = p.querySelector('[data-pc="fg"]'), bg = p.querySelector('[data-pc="bg"]');
+  const fgc = fg && (fg.getAttribute('fill') !== 'none' ? fg.getAttribute('fill') : fg.getAttribute('stroke'));
+  return { k: D.k || null, c1: fgc ? toHex(fgc) : S.lastPat.c1, c2: bg ? toHex(bg.getAttribute('fill')) : 'none', s: D.s ?? 100, a: D.a ?? 0 };
+}
+function writePat(sh, P) {
+  const t = patTile(P.k); if (!t) return;
+  const id = 'pat-' + ensureId(sh);
+  let p = getDefs().querySelector('#' + CSS.escape(id));
+  if (!p) p = mk('pattern', { id }, getDefs());
+  const sc = clamp(+P.s || 100, 5, 2000) / 100, a = +P.a || 0;
+  for (const at of [...p.attributes]) if (at.name !== 'id') p.removeAttribute(at.name);
+  Object.entries({ patternUnits: 'userSpaceOnUse', width: r3(t.w), height: r3(t.h), patternTransform: `${a ? `rotate(${r3(a)}) ` : ''}scale(${r3(sc)})`, 'data-pat': JSON.stringify({ k: P.k, s: Math.round(sc * 100), a }) }).forEach(([k, v]) => p.setAttribute(k, v));
+  p.innerHTML = (P.c2 && P.c2 !== 'none' ? `<rect data-pc="bg" width="${r3(t.w)}" height="${r3(t.h)}" fill="${P.c2}"/>` : '') + t.art(P.c1);
+  setAttr(sh, 'fill', `url(#${id})`);
+}
+const patShapes = () => S.sel.flatMap(shapesOf).filter(sh => paintable(sh) && patOf(sh));
+function editPat(fn) { // change the pattern of every selected shape that has one
+  let P0 = null;
+  for (const sh of patShapes()) { const P = patParams(sh); if (!P.k) continue; fn(P); writePat(sh, P); P0 = P0 || P; }
+  if (P0) S.lastPat = { ...P0 };
+  renderPatEd(patShapes()[0]); drawOverlay();
+}
+function patPreview(k, c1, c2, n) { // a small swatch picture of a pattern
+  const t = patTile(k); if (!t) return '';
+  const sc = Math.min(1.4, 40 / Math.max(t.w, t.h) * (t.custom ? 0.95 : 0.9)), id = 'pv' + n;
+  return `<svg viewBox="0 0 40 40"><defs><pattern id="${id}" patternUnits="userSpaceOnUse" width="${t.w}" height="${t.h}" patternTransform="scale(${r3(sc)})">${c2 !== 'none' ? `<rect width="${t.w}" height="${t.h}" fill="${c2}"/>` : ''}${t.art(c1)}</pattern></defs><rect width="40" height="40" fill="${c2 === 'none' ? '#2a2a2a' : c2}"/><rect width="40" height="40" fill="url(#${id})"/></svg>`;
+}
+let patGridSig = '';
+function renderPatEd(sh) {
+  const P = (sh && patParams(sh)) || S.lastPat;
+  const custom = [...getDefs().querySelectorAll('g[data-pattile]')];
+  const kinds = [...PAT_LIB.map(p => p[0]), ...custom.map(g => 'custom:' + g.id)];
+  const c1 = P.c1, c2 = P.c2;
+  const sig = kinds.join() + c1 + c2 + custom.map(g => g.innerHTML.length).join();
+  if (sig !== patGridSig) {
+    patGridSig = sig;
+    $('#patGrid').innerHTML = kinds.map((k, i) => `<button data-pk="${k}" class="${k.startsWith('custom:') ? 'custom' : ''}" title="${String((patTile(k) || {}).name || '').replace(/["<&]/g, '')}">${patPreview(k, c1, c2, i)}</button>`).join('');
+  }
+  $$('#patGrid button').forEach(b => b.classList.toggle('on', b.dataset.pk === P.k));
+  const isCustom = (P.k || '').startsWith('custom:');
+  $('#patC1').value = c1; $('#patC1').classList.toggle('hidden', isCustom);
+  $('#patC2').value = c2 === 'none' ? '#ffffff' : c2; $('#patC2').disabled = c2 === 'none';
+  $('#patBgNone').checked = c2 === 'none';
+  $('#patScale').value = P.s; $('#patAngle').value = P.a;
+  $('#patDel').classList.toggle('hidden', !isCustom);
+}
+function makePattern() {
+  const objs = S.sel.filter(o => o.isConnected && !isLocked(o));
+  if (!objs.length) return flash('Select the artwork to repeat first, then choose Make Pattern.');
+  const B = unionBox(objs); if (!B || B.w < 0.5 || B.h < 0.5) return flash('That selection is too small to make a pattern.');
+  const n = getDefs().querySelectorAll('g[data-pattile]').length + 1;
+  const g = mk('g', { id: uid('ptile'), 'data-pattile': '', 'data-name': `Pattern ${n}`, 'data-w': r3(B.w), 'data-h': r3(B.h) }, getDefs());
+  const inner = mk('g', { transform: `translate(${r3(-B.x)} ${r3(-B.y)})` }, g);
+  for (const o of objs) {
+    const c = o.cloneNode(true), m = docM(o);
+    for (const e of [c, ...c.querySelectorAll('*')]) { for (const a of ['id', 'filter', 'data-shadow', 'data-glow', 'data-blur', 'data-adjust']) e.removeAttribute(a); }
+    c.setAttribute('transform', `matrix(${[m.a, m.b, m.c, m.d, m.e, m.f].map(r6).join(' ')})`);
+    inner.appendChild(c);
+  }
+  S.lastPat = { ...S.lastPat, k: 'custom:' + g.id };
+  patGridSig = '';
+  commit(); refreshPanel();
+  flash(`${g.getAttribute('data-name')} saved. Select a shape, set Fill to Pattern and pick it.`);
+}
+function wirePatterns() {
+  $('#patGrid').addEventListener('click', e => {
+    const b = e.target.closest('button[data-pk]'); if (!b) return;
+    const k = b.dataset.pk;
+    const shs = S.sel.flatMap(shapesOf).filter(paintable);
+    if (!shs.length) { S.lastPat.k = k; renderPatEd(null); return; }
+    for (const sh of shs) { const P = patParams(sh) || { ...S.lastPat }; P.k = k; if (!P.k) continue; writePat(sh, P); S.lastPat = { ...P }; }
+    syncBrushes(); refreshPanel(); drawOverlay(); commit();
+  });
+  const on = (id, fn) => {
+    $(id).addEventListener('input', () => { if (!refreshing) editPat(fn); });
+    $(id).addEventListener('change', () => { if (!refreshing && S.sel.length) commit(); });
+  };
+  on('#patC1', P => { P.c1 = $('#patC1').value; });
+  on('#patC2', P => { P.c2 = $('#patC2').value; });
+  on('#patScale', P => { P.s = clamp(+$('#patScale').value || 100, 5, 2000); });
+  on('#patAngle', P => { P.a = +$('#patAngle').value || 0; });
+  $('#patBgNone').addEventListener('change', () => { if (refreshing) return; editPat(P => { P.c2 = $('#patBgNone').checked ? 'none' : ($('#patC2').value || '#ffffff'); }); if (S.sel.length) commit(); });
+  $('#patMake').onclick = makePattern;
+  $('#patDel').onclick = () => {
+    const k = S.lastPat.k || ''; const shK = (patParams(patShapes()[0]) || {}).k || k;
+    const g = shK.startsWith('custom:') && document.getElementById(shK.slice(7));
+    if (!g) return;
+    g.remove(); patGridSig = ''; S.lastPat = { ...S.lastPat, k: 'stripes' };
+    refreshPanel(); commit(); flash('Pattern swatch deleted. Shapes already using it keep their pattern.');
+  };
+}
+async function drawPattern(el, pat, path, evenodd, bnd, B, op) { // PDF/EPS: clip to the shape, then draw each tile as vectors
+  const w = numAttr(pat, 'width'), h = numAttr(pat, 'height'), x0 = numAttr(pat, 'x'), y0 = numAttr(pat, 'y');
+  if (!(w > 0 && h > 0)) return;
+  const tl = pat.patternTransform && pat.patternTransform.baseVal.consolidate(), PT = tl ? tl.matrix : new DOMMatrix();
+  const inv = DOMMatrix.fromMatrix(PT).inverse();
+  let mnx = Infinity, mny = Infinity, mxx = -Infinity, mxy = -Infinity;
+  for (const [x, y] of [[bnd.x, bnd.y], [bnd.x + bnd.width, bnd.y], [bnd.x, bnd.y + bnd.height], [bnd.x + bnd.width, bnd.y + bnd.height]]) {
+    const q = inv.transformPoint(new DOMPoint(x, y)); mnx = Math.min(mnx, q.x); mny = Math.min(mny, q.y); mxx = Math.max(mxx, q.x); mxy = Math.max(mxy, q.y);
+  }
+  const i0 = Math.floor((mnx - x0) / w), i1 = Math.ceil((mxx - x0) / w), j0 = Math.floor((mny - y0) / h), j1 = Math.ceil((mxy - y0) / h);
+  if ((i1 - i0) * (j1 - j0) > 12000) return rasterizeEl(el, B, op); // a very fine pattern: keep its look as an image
+  const pdf = B instanceof PdfOut, tile = pathOps(paper.PathItem.create(`M0 0H${w}V${h}H0Z`), pdf);
+  B.q(); B.clip(path, evenodd); B.cm({ a: PT.a, b: PT.b, c: PT.c, d: PT.d, e: PT.e, f: PT.f });
+  for (let i = i0; i < i1; i++) for (let j = j0; j < j1; j++) {
+    B.q(); B.cm({ a: 1, b: 0, c: 0, d: 1, e: x0 + i * w, f: y0 + j * h }); B.clip(tile, false);
+    for (const c of pat.children) await drawEl(c, B, op);
+    B.Q();
+  }
+  B.Q();
+}
+
 /* ---------- properties panel ---------- */
 let refreshing = false;
 function refreshPanel(geomOnly) {
@@ -3119,11 +3304,14 @@ function refreshPanel(geomOnly) {
   if (src) {
     const g = paintGrad(src, 'fill'), f = src.getAttribute('fill');
     if (g) { ftype = g.type; c1 = g.stops[0].c; }
+    else if (patOf(src)) { ftype = 'pattern'; c1 = patParams(src).c1; }
     else if (f === 'none') ftype = 'none';
     else c1 = toHex(f || '#000');
   } else if (S.fill === 'none') ftype = 'none';
   $('#fillType').value = ftype; $('#fillColor').value = c1;
   $('#fillColorRow').classList.toggle('hidden', ftype !== 'solid');
+  $('#patEd').classList.toggle('hidden', ftype !== 'pattern');
+  if (ftype === 'pattern') renderPatEd(src);
   const sg = src && paintGrad(src, 'stroke');
   $('#strokeType').value = sg ? sg.type : 'solid';
   $('#strokeColor').classList.toggle('hidden', !!sg);
@@ -3147,6 +3335,12 @@ function refreshPanel(geomOnly) {
   const shp = n ? shadowParams(sel[0]) : null;
   $('#fxOn').checked = !!shp; $('#fxOn').disabled = !n;
   if (shp) { $('#fxX').value = shp.x; $('#fxY').value = shp.y; $('#fxBlur').value = shp.blur; $('#fxColor').value = shp.color; $('#fxOpacity').value = Math.round(shp.opacity * 100); }
+  const glp = n ? glowParams(sel[0]) : null;
+  $('#glOn').checked = !!(glp && glp.o); $('#igOn').checked = !!(glp && glp.i);
+  for (const id of ['#glOn', '#igOn', '#fxSoft', '#glNeon', '#fxClear']) $(id).disabled = !n;
+  if (glp && glp.o) { $('#glColor').value = glp.o.c; $('#glOpacity').value = Math.round(glp.o.a * 100); $('#glSize').value = glp.o.s; }
+  if (glp && glp.i) { $('#igColor').value = glp.i.c; $('#igOpacity').value = Math.round(glp.i.a * 100); $('#igSize').value = glp.i.s; }
+  $('#fxSoft').value = n ? blurParam(sel[0]) : 0;
   // corners
   const rects = shapes.filter(s => s.tagName === 'rect');
   $('#radiusRow').classList.toggle('hidden', !rects.length);
@@ -4148,25 +4342,52 @@ function wireOffset() {
 // (blur → offset → color, merged under the object). PDF export renders the shadow as a transparent image.
 function shadowParams(o) { try { return JSON.parse(o.getAttribute('data-shadow')); } catch (e) { return null; } }
 // One filter per object (fx-<id>) combines its photo adjustments (a color matrix) and its drop shadow.
+function glowParams(o) { try { const G = JSON.parse(o.getAttribute('data-glow')); return G && (G.o || G.i) ? G : null; } catch (e) { return null; } }
+function blurParam(o) { return Math.max(0, parseFloat(o.getAttribute('data-blur')) || 0); }
+const hasFx = o => !!(o.hasAttribute('data-shadow') || adjParams(o) || glowParams(o) || blurParam(o));
+function fxMargin(o) { // how far the effects reach outside the object
+  const P = shadowParams(o), G = glowParams(o), BL = blurParam(o);
+  let m = 2;
+  if (P) m = Math.max(m, 1.5 * Math.max(0, P.blur) + Math.abs(P.x) + Math.abs(P.y) + 20);
+  if (G && G.o) m = Math.max(m, 2 * G.o.s + 20);
+  if (BL) m = Math.max(m, 1.5 * BL + 20);
+  return m;
+}
+// SVG filter primitives for an object's effects. behind = only what is drawn under the object (shadow, outer glow).
+function fxPrims(P, A, G, BL, behind) {
+  let f = '', base = 'SourceGraphic';
+  if (!behind) {
+    if (A) { f += `<feColorMatrix in="SourceGraphic" type="matrix" values="${adjMatrix(A).slice(0, 20).map(v => r6(v)).join(' ')}" result="adj"/>`; base = 'adj'; }
+    if (BL) { f += `<feGaussianBlur in="${base}" stdDeviation="${r3(BL / 2)}" result="soft"/>`; base = 'soft'; }
+    if (G && G.i) {
+      f += `<feGaussianBlur in="SourceAlpha" stdDeviation="${r3(Math.max(0.1, G.i.s / 2))}" result="ib"/><feFlood flood-color="${G.i.c}" flood-opacity="${r3(G.i.a)}"/><feComposite in2="ib" operator="out" result="ic"/><feComposite in="ic" in2="SourceAlpha" operator="in" result="ig"/><feMerge result="wig"><feMergeNode in="${base}"/><feMergeNode in="ig"/></feMerge>`;
+      base = 'wig';
+    }
+  }
+  const under = [];
+  if (P) { f += `<feGaussianBlur in="SourceAlpha" stdDeviation="${r3(Math.max(0, P.blur) / 2)}" result="blur"/><feOffset in="blur" dx="${r3(P.x)}" dy="${r3(P.y)}" result="off"/><feFlood flood-color="${P.color}" flood-opacity="${r3(P.opacity)}" result="col"/><feComposite in="col" in2="off" operator="in" result="shadow"/>`; under.push('shadow'); }
+  if (G && G.o) { f += `<feMorphology in="SourceAlpha" operator="dilate" radius="${r3(G.o.s / 6)}" result="od"/><feGaussianBlur in="od" stdDeviation="${r3(Math.max(0.1, G.o.s / 2))}" result="ob"/><feFlood flood-color="${G.o.c}" flood-opacity="${r3(G.o.a)}"/><feComposite in2="ob" operator="in" result="og"/>`; under.push('og'); }
+  if (behind) return f + `<feMerge>${under.map(n => `<feMergeNode in="${n}"/>`).join('')}</feMerge>`;
+  return under.length ? f + `<feMerge>${[...under, base].map(n => `<feMergeNode in="${n}"/>`).join('')}</feMerge>` : f;
+}
+// One filter per object (fx-<id>) combines its photo adjustments (a color matrix), blur, glows and drop shadow.
 function syncEffects() {
-  for (const o of content.querySelectorAll('[data-shadow],[data-adjust]')) {
+  for (const o of content.querySelectorAll('[data-shadow],[data-adjust],[data-glow],[data-blur]')) {
     if (o.closest('defs')) continue;
-    const P = o.hasAttribute('data-shadow') ? shadowParams(o) : null, A = adjParams(o);
-    if (!P && !A) { if (o.getAttribute('filter') === `url(#fx-${o.id})`) clearFx(o); continue; }
+    const P = o.hasAttribute('data-shadow') ? shadowParams(o) : null, A = adjParams(o), G = glowParams(o), BL = blurParam(o);
+    if (!P && !A && !G && !BL) { if (o.getAttribute('filter') === `url(#fx-${o.id})`) clearFx(o); continue; }
     let b; try { b = o.getBBox(); } catch (e) { continue; }
-    const id = 'fx-' + ensureId(o), sd = P ? Math.max(0, P.blur) / 2 : 0, m = P ? 3 * sd + Math.abs(P.x) + Math.abs(P.y) + 20 : 1;
-    const sig = JSON.stringify([P, A]) + [b.x, b.y, b.width, b.height].map(v => Math.round(v)).join(',');
+    const id = 'fx-' + ensureId(o), m = fxMargin(o);
+    const sig = JSON.stringify([P, A, G, BL]) + [b.x, b.y, b.width, b.height].map(v => Math.round(v)).join(',');
     let f = document.getElementById(id);
     if (!f || f.getAttribute('data-sig') !== sig) {
       if (!f) f = mk('filter', { id }, getDefs());
       Object.entries({ 'data-sig': sig, filterUnits: 'userSpaceOnUse', x: r3(b.x - m), y: r3(b.y - m), width: r3(b.width + 2 * m), height: r3(b.height + 2 * m), 'color-interpolation-filters': 'sRGB' }).forEach(([k, v]) => f.setAttribute(k, v));
-      const src = A ? 'adj' : 'SourceGraphic';
-      f.innerHTML = (A ? `<feColorMatrix in="SourceGraphic" type="matrix" values="${adjMatrix(A).slice(0, 20).map(v => r6(v)).join(' ')}" result="adj"/>` : '') +
-        (P ? `<feGaussianBlur in="SourceAlpha" stdDeviation="${r3(sd)}" result="blur"/><feOffset in="blur" dx="${r3(P.x)}" dy="${r3(P.y)}" result="off"/><feFlood flood-color="${P.color}" flood-opacity="${r3(P.opacity)}" result="col"/><feComposite in="col" in2="off" operator="in" result="shadow"/><feMerge><feMergeNode in="shadow"/><feMergeNode in="${src}"/></feMerge>` : '');
+      f.innerHTML = fxPrims(P, A, G, BL, false);
     }
     if (o.getAttribute('filter') !== `url(#${id})`) o.setAttribute('filter', `url(#${id})`);
   }
-  for (const o of content.querySelectorAll('[filter^="url(#fx-"]')) if (!o.hasAttribute('data-shadow') && !o.hasAttribute('data-adjust')) clearFx(o);
+  for (const o of content.querySelectorAll('[filter^="url(#fx-"]')) if (!hasFx(o)) clearFx(o);
 }
 /* photo adjustments: data-adjust = {b,c,s,w,h,f,p, preset} → one 4×5 color matrix (the same math bakes PDF/EPS images) */
 const ADJ = [['b', 'Brightness', -100, 100], ['c', 'Contrast', -100, 100], ['s', 'Saturation', -100, 100], ['w', 'Warmth', -100, 100], ['h', 'Hue', -180, 180], ['f', 'Fade', 0, 100], ['p', 'Sepia', 0, 100]];
@@ -4274,7 +4495,25 @@ function wireAdjust() {
   $('#adjReset').onclick = () => { selImages().forEach(img => img.removeAttribute('data-adjust')); syncEffects(); refreshAdjust(); commit(); };
 }
 function clearFx(o) { o.removeAttribute('filter'); const f = o.id && document.getElementById('fx-' + o.id); if (f) f.remove(); }
-function removeShadow(o) { o.removeAttribute('data-shadow'); if (!adjParams(o)) clearFx(o); }
+function removeShadow(o) { o.removeAttribute('data-shadow'); if (!hasFx(o)) clearFx(o); }
+function applyGlow() {
+  if (!S.sel.length) return;
+  const g = (on, c, op, sz) => $(on).checked ? { c: $(c).value, a: clamp((+$(op).value || 0) / 100, 0, 1), s: Math.max(0, +$(sz).value || 0) } : null;
+  const o = g('#glOn', '#glColor', '#glOpacity', '#glSize'), i = g('#igOn', '#igColor', '#igOpacity', '#igSize');
+  const bl = Math.max(0, +$('#fxSoft').value || 0);
+  for (const el of S.sel) {
+    if (o || i) el.setAttribute('data-glow', JSON.stringify({ ...(o ? { o } : {}), ...(i ? { i } : {}) })); else el.removeAttribute('data-glow');
+    if (bl) el.setAttribute('data-blur', r3(bl)); else el.removeAttribute('data-blur');
+    if (!hasFx(el)) clearFx(el);
+  }
+  syncEffects(); drawOverlay();
+}
+function neonColor(el) { // the object's own main color
+  const sh = shapesOf(el).find(x => x.tagName !== 'image') || el, cs = getComputedStyle(sh);
+  for (const v of [cs.fill, cs.stroke]) { if (v && v !== 'none' && !urlRef(v)) return toHex(v); }
+  const G = paintGrad(sh, 'fill') || paintGrad(sh, 'stroke'); if (G) return G.stops[0].c;
+  const P = patParams(sh); return P ? P.c1 : '#ff2fb4';
+}
 function applyShadow() {
   if (!S.sel.length) return;
   const on = $('#fxOn').checked;
@@ -4283,23 +4522,40 @@ function applyShadow() {
   syncEffects(); drawOverlay();
 }
 function wireEffects() {
+  wirePatterns();
+  for (const id of ['#glOn', '#igOn']) $(id).addEventListener('change', () => { if (refreshing || !S.sel.length) return; applyGlow(); commit(); });
+  for (const [id, box] of [['#glColor', '#glOn'], ['#glOpacity', '#glOn'], ['#glSize', '#glOn'], ['#igColor', '#igOn'], ['#igOpacity', '#igOn'], ['#igSize', '#igOn'], ['#fxSoft', null]]) {
+    $(id).addEventListener('input', () => { if (refreshing || !S.sel.length) return; if (box) $(box).checked = true; applyGlow(); });
+    $(id).addEventListener('change', () => { if (!refreshing && S.sel.length) commit(); });
+  }
+  $('#glNeon').onclick = () => {
+    if (!S.sel.length) return flash('Select an object or some text first.');
+    for (const el of S.sel) { const c = neonColor(el); el.setAttribute('data-glow', JSON.stringify({ o: { c, a: 0.9, s: 16 }, i: { c: '#ffffff', a: 0.6, s: 4 } })); }
+    syncEffects(); refreshPanel(); drawOverlay(); commit();
+  };
+  $('#fxClear').onclick = () => {
+    if (!S.sel.length) return;
+    for (const el of S.sel) { for (const a of ['data-shadow', 'data-glow', 'data-blur']) el.removeAttribute(a); if (!hasFx(el)) clearFx(el); }
+    syncEffects(); refreshPanel(); drawOverlay(); commit();
+  };
   $('#fxOn').addEventListener('change', () => { if (refreshing || !S.sel.length) return; applyShadow(); commit(); });
   for (const id of ['#fxColor', '#fxOpacity', '#fxX', '#fxY', '#fxBlur']) {
     $(id).addEventListener('input', () => { if (refreshing || !S.sel.length) return; $('#fxOn').checked = true; applyShadow(); });
     $(id).addEventListener('change', () => { if (!refreshing && S.sel.length) commit(); });
   }
 }
-async function drawShadow(el, B, op) {
-  const P = shadowParams(el); if (!P || P.opacity <= 0) return;
+async function drawShadow(el, B, op) { // shadow and outer glow, as a transparent image under the object
+  const P = shadowParams(el), G = glowParams(el), Po = P && P.opacity > 0 ? P : null, Go = G && G.o && G.o.a > 0 ? { o: G.o } : null;
+  if (!Po && !Go) return;
   let b; try { b = el.getBBox(); } catch (e) { return; }
-  const sd = Math.max(0, P.blur) / 2, m = 3 * sd + 12;
-  const R = { x: b.x - m + Math.min(0, P.x), y: b.y - m + Math.min(0, P.y), w: b.width + 2 * m + Math.abs(P.x), h: b.height + 2 * m + Math.abs(P.y) };
+  const m = fxMargin(el);
+  const R = { x: b.x - m, y: b.y - m, w: b.width + 2 * m, h: b.height + 2 * m };
   const M = docM(el), scale = Math.sqrt(Math.abs(M.a * M.d - M.b * M.c)) || 1;
   const k = Math.min(RASTER_K * scale, Math.sqrt((RASTER_K > 3 ? 4e7 : 6e6) / Math.max(1, R.w * R.h)));
   const W = Math.max(1, Math.round(R.w * k)), Hh = Math.max(1, Math.round(R.h * k));
   const clone = el.cloneNode(true);
-  for (const a of ['transform', 'filter', 'data-shadow', 'opacity', 'style', 'id']) clone.removeAttribute(a);
-  const filt = `<filter id="vs-shadow-only" filterUnits="userSpaceOnUse" x="${R.x}" y="${R.y}" width="${R.w}" height="${R.h}" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceAlpha" stdDeviation="${sd}" result="b"/><feOffset in="b" dx="${P.x}" dy="${P.y}" result="o"/><feFlood flood-color="${P.color}" flood-opacity="${P.opacity}" result="c"/><feComposite in="c" in2="o" operator="in"/></filter>`;
+  for (const a of ['transform', 'filter', 'data-shadow', 'data-glow', 'data-blur', 'opacity', 'style', 'id']) clone.removeAttribute(a);
+  const filt = `<filter id="vs-shadow-only" filterUnits="userSpaceOnUse" x="${R.x}" y="${R.y}" width="${R.w}" height="${R.h}" color-interpolation-filters="sRGB">${fxPrims(Po, null, Go, 0, true)}</filter>`;
   const svgText = `<svg xmlns="${NS}" xmlns:xlink="${XLINK}" width="${W}" height="${Hh}" viewBox="${R.x} ${R.y} ${R.w} ${R.h}"><defs>${getDefs().innerHTML}${filt}</defs><g filter="url(#vs-shadow-only)">${clone.outerHTML}</g></svg>`;
   let im; try { im = await loadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText)); } catch (e) { return; }
   const c = document.createElement('canvas'); c.width = W; c.height = Hh;
@@ -4914,15 +5170,15 @@ function wireTemplates() {
   $('#tplUseKit').onchange = renderTplList;
   $('#filePh').onchange = e => { const f = e.target.files[0]; if (f && phTarget) fillPlaceholder(phTarget, f); e.target.value = ''; };
 }
-async function rasterizeEl(el, B, op) { // draw one element as a high-resolution image (used for gradients with transparency in PDF)
+async function rasterizeEl(el, B, op, fx) { // draw one element as a high-resolution image (gradients with transparency, effects)
   let b; try { b = el.getBBox(); } catch (e) { return; }
-  const m = (parseFloat(getComputedStyle(el).strokeWidth) || 0) + 2;
+  const m = (parseFloat(getComputedStyle(el).strokeWidth) || 0) + 2 + (fx ? fxMargin(el) : 0);
   const R = { x: b.x - m, y: b.y - m, w: b.width + 2 * m, h: b.height + 2 * m };
   const M = docM(el), scale = Math.sqrt(Math.abs(M.a * M.d - M.b * M.c)) || 1;
   const k = Math.min(RASTER_K * scale, Math.sqrt((RASTER_K > 3 ? 4e7 : 8e6) / Math.max(1, R.w * R.h)));
   const W = Math.max(1, Math.round(R.w * k)), Hh = Math.max(1, Math.round(R.h * k));
   const clone = el.cloneNode(true);
-  for (const a of ['transform', 'filter', 'data-shadow', 'opacity', 'id']) clone.removeAttribute(a);
+  for (const a of ['transform', ...(fx ? [] : ['filter']), 'data-shadow', 'opacity', 'id']) clone.removeAttribute(a);
   const svgText = `<svg xmlns="${NS}" xmlns:xlink="${XLINK}" width="${W}" height="${Hh}" viewBox="${R.x} ${R.y} ${R.w} ${R.h}"><defs>${getDefs().innerHTML}</defs>${clone.outerHTML}</svg>`;
   let im; try { im = await loadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText)); } catch (e) { return; }
   const c = document.createElement('canvas'); c.width = W; c.height = Hh;
@@ -5682,10 +5938,11 @@ async function drawEl(el, B, alpha) {
   if (!m.isIdentity) B.cm(m);
   if (BLEND[cs.mixBlendMode]) B.blend(BLEND[cs.mixBlendMode]);
   if (el.hasAttribute('clip-path')) { const ci = clipItem(el); if (ci) B.clip(pathOps(ci, B instanceof PdfOut), false); }
-  if (B instanceof PdfOut && el.hasAttribute('data-shadow') && !el.closest('defs')) await drawShadow(el, B, op);
+  if (B instanceof PdfOut && !el.closest('defs') && (blurParam(el) || (glowParams(el) || {}).i)) { await rasterizeEl(el, B, op, true); B.Q(); return; } // blur / inner glow: the object with all its effects as an image
+  if (B instanceof PdfOut && !el.closest('defs') && (el.hasAttribute('data-shadow') || (glowParams(el) || {}).o)) await drawShadow(el, B, op);
   if (tag === 'g' || tag === 'svg' || tag === 'a' || tag === 'switch') { for (const c of el.children) await drawEl(c, B, op); }
   else if (tag === 'use') { const ref = document.getElementById(symRef(el)); if (ref && !ref.contains(el)) for (const c of ref.children) await drawEl(c, B, op); }
-  else if (tag === 'text') { const tg = B instanceof PdfOut && textGrad(el, cs); if (tg && tg.alpha) await rasterizeEl(el, B, op); else await drawText(el, cs, B, op); }
+  else if (tag === 'text') { const tg = B instanceof PdfOut && textGrad(el, cs); if ((tg && tg.alpha) || (B instanceof PdfOut && patEl(urlId(cs.fill)))) await rasterizeEl(el, B, op); else await drawText(el, cs, B, op); }
   else if (tag === 'image') await drawImage(el, B, op);
   else if (ARTSHAPES.includes(tag) && cs.visibility !== 'hidden') await drawShape(el, cs, B, op);
   B.Q();
@@ -5696,7 +5953,9 @@ async function drawShape(el, cs, B, op) {
   if (item.isEmpty()) return;
   const pdf = B instanceof PdfOut, path = pathOps(item, pdf), evenodd = cs.fillRule === 'evenodd';
   const fo = op * parseFloat(cs.fillOpacity || 1), so = op * parseFloat(cs.strokeOpacity || 1);
-  if (cs.fill && cs.fill !== 'none' && tag_fillable(el)) {
+  const pat = cs.fill && patEl(urlId(cs.fill));
+  if (pat && tag_fillable(el)) await drawPattern(el, pat, path, evenodd, item.bounds, B, fo);
+  else if (cs.fill && cs.fill !== 'none' && tag_fillable(el)) {
     const gid = urlId(cs.fill), b = item.bounds;
     const grad = gid && gradInfo(gid, { x: b.x, y: b.y, w: b.width, h: b.height });
     if (grad && grad.alpha && B instanceof PdfOut) return rasterizeEl(el, B, op);
@@ -5726,7 +5985,7 @@ async function drawText(el, cs, B, op) {
   for (const r of runs) {
     const s = r.s.replace(/ /g, ' ');
     if (!s.trim()) continue;
-    const c = parseColor(r.cs.fill) || (urlId(r.cs.fill) && (gradInfo(urlId(r.cs.fill), { x: 0, y: 0, w: 1, h: 1 }) || { stops: [{ c: null }] }).stops[0].c);
+    const pt = patEl(urlId(r.cs.fill)), c = parseColor(r.cs.fill) || (pt && parseColor((patParams(el) || {}).c1 || '#000')) || (urlId(r.cs.fill) && (gradInfo(urlId(r.cs.fill), { x: 0, y: 0, w: 1, h: 1 }) || { stops: [{ c: null }] }).stops[0].c);
     if (!c) continue;
     const size = parseFloat(r.cs.fontSize) || 16, f = stdFont(r.cs), ls = r.cs.letterSpacing === 'normal' ? 0 : parseFloat(r.cs.letterSpacing) || 0;
     const ot = await fontFor(r.cs).catch(() => null);
@@ -5970,7 +6229,7 @@ function packSVG(R, keep, mono, W, H) {
     [...L.children].forEach((o, j) => { if ((keep && !keep.includes(o)) || o.getAttribute('display') === 'none') drop.push(cL.children[j]); });
   });
   drop.forEach(e => e && e.remove());
-  clone.querySelectorAll('[data-shadow]').forEach(e => mono && e.removeAttribute('data-shadow'));
+  clone.querySelectorAll('[data-shadow],[data-glow]').forEach(e => { if (mono) { e.removeAttribute('data-shadow'); e.removeAttribute('data-glow'); } });
   // keep only the embedded fonts this artwork uses
   const attr = (t, a) => t.getAttribute(a) || (t.closest('text') && t.closest('text').getAttribute(a)) || '';
   const used = [...clone.querySelectorAll('text,tspan,textPath')].map(t => ({ f: cleanFamily(attr(t, 'font-family').split(',')[0]).toLowerCase(), w: +normWeight(attr(t, 'font-weight')), s: attr(t, 'font-style') === 'italic' ? 'italic' : 'normal' })).filter(u => u.f);
@@ -6822,7 +7081,7 @@ const CMD = {
   png1: () => exportRaster(1), png2: () => exportRaster(2), png4: () => exportRaster(4), jpg: () => exportRaster(1, 'image/jpeg'),
   typeOnPath: () => { const o = S.sel[0]; if (S.sel.length !== 1 || !canTypeOnPath(o)) return flash('Select one path or shape first, then choose Type on a Path.'); const t = makeTypeOnPath(o); if (t) { setTool('text'); openTextEditor(t); } },
   closeTab: () => closeTab(), nextTab: () => TABS.length > 1 && switchTab((tabIdx + 1) % TABS.length), prevTab: () => TABS.length > 1 && switchTab((tabIdx - 1 + TABS.length) % TABS.length),
-  pressPdf: openPress, preflight: openPreflight, updates: () => checkUpdates(), recolor: () => openRecolor(),
+  pressPdf: openPress, preflight: openPreflight, updates: () => checkUpdates(), recolor: () => openRecolor(), makePattern: () => makePattern(),
   alLeft: () => alignSel('left'), alHC: () => alignSel('hcenter'), alRight: () => alignSel('right'), alTop: () => alignSel('top'), alVC: () => alignSel('vcenter'), alBottom: () => alignSel('bottom'), alDH: () => alignSel('dh'), alDV: () => alignSel('dv'),
   trimView: () => { S.trimView = !S.trimView; renderArtboards(); flash(S.trimView ? 'Trim View: you see the page as it will look after cutting. Press again to show everything.' : 'Trim View off'); },
   printLines: () => { S.doc.print = { ...printSet(), show: !printSet().show }; renderArtboards(); flash(printSet().show ? 'Bleed and safety lines shown' : 'Bleed and safety lines hidden'); },
