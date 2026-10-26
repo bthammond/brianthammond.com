@@ -1,7 +1,7 @@
 {
-  "version": "1.12.0",
-  "file": "VectorStudio-1.12.0.html",
-  "sha256": "b5f6f440f25878af417b67ced14dd8b04f8dc0fdf331ab6b501d5a1cd71689e8",
+  "version": "1.13.0",
+  "file": "VectorStudio-1.13.0.html",
+  "sha256": "f8ea213521b3b57919ad195e3348ca50e804c4cf0b7f5b062b79b1d3d16a9e52",
   "minShell": "1.9.0",
-  "notes": "New: pattern fills (15 built-in patterns plus your own from any artwork), outer glow, inner glow, one-click Neon, and blur."
+  "notes": "New: kerning (Alt+Left/Right between two letters, or pick the pair in Properties) and the Knife tool (Shift+K) for cutting shapes apart."
 }

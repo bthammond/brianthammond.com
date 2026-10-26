@@ -126,6 +126,16 @@ button,input,select{font:inherit;color:inherit}
 #glOpacity,#igOpacity,#glSize,#igSize{width:46px;flex:none}
 #glColor,#igColor{flex:none}
 .patclear{display:flex;align-items:center;gap:3px;width:auto!important;white-space:nowrap}
+.kstrip{display:flex;flex-wrap:wrap;gap:1px;max-height:84px;overflow-y:auto;background:#1f1f1f;border:1px solid #444;border-radius:4px;padding:3px;margin:2px 0 4px}
+.kstrip button{min-width:15px;height:22px;padding:0 2px;border:0;border-left:2px solid transparent;background:none;color:#ddd;font:13px system-ui,sans-serif;cursor:pointer;border-radius:2px}
+.kstrip button:hover{background:#333}
+.kstrip button.k{border-left-color:#e0a030}
+.kstrip button.on{border-left-color:var(--accent);background:#2b3f63;color:#fff}
+.kstrip button.sp{min-width:8px;cursor:default;color:#666}
+.kunit{white-space:nowrap}
+#overlay .kernmark{stroke:#ff2fb4;stroke-width:2;fill:none}
+#overlay .kerntri{fill:#ff2fb4;stroke:none}
+#overlay .knifetrail{fill:none;stroke:#ff3b30;stroke-width:1.5;stroke-dasharray:5 3;stroke-linecap:round;stroke-linejoin:round}
 .alignrow{display:flex;gap:3px;flex-wrap:wrap;align-items:center}
 .alignrow .sep{width:4px}
 #cmykRow input{width:100%;min-width:0;text-align:right}
@@ -471,6 +481,11 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
             <div class="row"><label>Align</label><div class="iconbtns">
               <button class="btn" data-anchor="start">Left</button><button class="btn" data-anchor="middle">Center</button><button class="btn" data-anchor="end">Right</button></div></div>
             <div class="row"><label>Tracking</label><input type="number" id="letterSpacing" step="0.5" value="0"></div>
+            <div class="row"><label>Kerning</label><select id="kernMode" title="Auto uses the spacing pairs built into the font"><option value="auto">Auto (from the font)</option><option value="none">Off</option></select></div>
+            <div id="kernBox">
+              <div class="kstrip" id="kernStrip" title="Click a letter to adjust the space before it"></div>
+              <div class="row"><label>Pair</label><input type="number" id="kernVal" step="10" value="0" title="Space before the chosen letter in 1/1000 em. On the canvas: Alt+← / Alt+→ (add Ctrl for bigger steps)"><span class="muted kunit">/1000 em</span><button class="btn mini" id="kernReset" title="Remove all manual kerning from this text">Reset</button></div>
+            </div>
             <div class="row"><label>Leading</label><input type="number" id="lineHeight" min="0.3" max="10" step="0.05" value="1.2" title="Line height, as a multiple of the font size"><span class="muted">× size</span></div>
             <div class="row"><label>Box</label><label style="min-width:0" title="Wrap the text inside a box of fixed width"><input type="checkbox" id="wrapOn"> Wrap</label><span class="muted">Width</span><input type="number" id="wrapW" min="1" step="1" title="Box width"></div>
             <div class="row hidden" id="tpRow"><label>On path</label><span class="muted">Start</span><input type="number" id="tpOffset" step="1" title="Where the text sits along the path (%)"><span class="muted">%</span><button class="btn mini" id="tpFlip" title="Put the text on the other side of the path">Flip</button><button class="btn mini" id="tpRelease" title="Turn back into normal text plus a path">Release</button></div>
@@ -807,6 +822,8 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
       <kbd>H / Space</kbd><span>Hand (pan). Scroll wheel also pans</span>
       <kbd>Z</kbd><span>Zoom (Alt = out). Ctrl + scroll zooms at the cursor</span>
       <kbd>Shift+M</kbd><span>Shape Builder: drag across overlapping areas to merge them, Alt to remove</span>
+      <kbd>Shift+K</kbd><span>Knife: drag across shapes to cut them into pieces (Alt = straight line)</span>
+      <kbd>Alt+← / →</kbd><span>Kerning: tighten or loosen the space between two letters (put the text cursor between them, or pick the letter in Properties). Ctrl+Alt = bigger steps</span>
       <kbd>Fill ▸ Pattern</kbd><span>Stripes, dots, checks and more, or your own: select art and choose Object ▸ Make Pattern from Selection</span>
       <kbd>Glow / Blur</kbd><span>Outer glow, inner glow and blur in Properties. "Neon" makes a glow in the object's own color</span>
       <kbd>Ctrl+Alt+N / Ctrl+O</kbd><span>New / open documents in tabs. Ctrl+Tab or Alt+PgUp/PgDn switches, Ctrl+Alt+W closes</span>
@@ -1867,6 +1884,8 @@ function drawOverlay() {
   }
   if (S.tool === 'eyedropper' && S.eyeHit && S.eyeHit.isConnected) { const b = bboxOf(S.eyeHit); if (b) mk('rect', { class: 'eyehl', x: b.x - 2 * px, y: b.y - 2 * px, width: b.w + 4 * px, height: b.h + 4 * px }, overlay); }
   drawGuideLines(px);
+  if (d && d.mode === 'knife' && d.pts.length > 1) mk('path', { class: 'knifetrail', d: 'M' + knifePts(d).map(q => q.x + ' ' + q.y).join('L') }, overlay);
+  drawKernMark(px);
   if (S.tool === 'artboard') return drawAbHandles(px);
   S.sel = S.sel.filter(e => e.isConnected);
   if (!S.sel.length) return;
@@ -1991,6 +2010,7 @@ const TOOLS = [
   ['star', 'Star', 'S', '<path d="M10 2l2.4 5 5.4.7-4 3.8 1 5.4L10 14.3 5.2 16.9l1-5.4-4-3.8 5.4-.7z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>'],
   ['line', 'Line Segment', '\\', '<path d="M4 16L16 4" stroke="currentColor" stroke-width="1.6"/>'],
   ['sprayer', 'Symbol Sprayer', 'Shift+S', '<path d="M6.5 8.5h6v9.5h-6z M8 8.5V6h3v2.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="15" cy="3.5" r="1" fill="currentColor"/><circle cx="17.5" cy="6" r="1" fill="currentColor"/><circle cx="14.5" cy="7.5" r="1" fill="currentColor"/><circle cx="17.5" cy="2" r="1" fill="currentColor"/>'],
+  ['knife', 'Knife', 'Shift+K', '<path d="M3 17L14.5 3.5c1.3-1.2 3.2.2 2.2 1.8L8 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 14L3 17" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>'],
   ['shapebuilder', 'Shape Builder', 'Shift+M', '<circle cx="8" cy="9" r="5.5" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="13" cy="11" r="5.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M15 2.5v4M13 4.5h4" stroke="currentColor" stroke-width="1.6"/>'],
   ['artboard', 'Artboard', 'Shift+O', '<rect x="5" y="5" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 1.5v3M1.5 5h3M15 18.5v-3M18.5 15h-3" stroke="currentColor" stroke-width="1.5"/>'],
   ['sep'],
@@ -2014,6 +2034,7 @@ const HINTS = {
   sprayer: 'Drag to spray copies of the current symbol · set size and spread in the Symbols panel',
   artboard: 'Drag empty canvas = new artboard · drag an artboard to move it · handles resize · Del deletes',
   gradient: 'Drag across the selection to set the gradient direction (Shift = 45° steps) · drag the end points or color stops to adjust · edits the fill, or the stroke when Stroke is chosen in Properties',
+  knife: 'Drag across filled shapes to cut them apart · Alt = straight cut · with nothing selected it cuts everything under the line',
   shapebuilder: 'Select overlapping shapes, then drag across the areas to merge them into one shape · Alt+drag (or Alt+click) removes areas · click an area to make it a separate shape',
   hand: 'Drag to pan', zoom: 'Click to zoom in · Alt+click to zoom out',
 };
@@ -2349,10 +2370,111 @@ function writeLines(el, lines) {
   const x = el.getAttribute('x') || 0, lh = textLH(el);
   el.textContent = '';
   lines.forEach((l, k) => { mk('tspan', { x, dy: k ? lh + 'em' : '0' }, el).textContent = l || '\u00a0'; });
+  if (el.hasAttribute('data-kern')) applyKern(el);
+}
+/* ---------- kerning ---------- */
+const nonWs = str => str.replace(/\s/g, '');
+function kernData(el) { try { const K = JSON.parse(el.getAttribute('data-kern')); return K && K.k ? K : null; } catch (e) { return null; } }
+function kernSource(el) { const tp = el.querySelector('textPath'); return (tp || el).textContent; }
+function applyKern(el) { // rebuild the dx list from data-kern (and follow edits of the text)
+  const K = kernData(el), host = el.querySelector('textPath') || el;
+  if (host !== el) el.removeAttribute('dx');
+  if (!K) { host.removeAttribute('dx'); return; }
+  const str = kernSource(el), now = nonWs(str);
+  if (K.s !== now) { // the text was edited: keep pairs before and after the change
+    let a = 0; while (a < K.s.length && a < now.length && K.s[a] === now[a]) a++;
+    let b = 0; while (b < K.s.length - a && b < now.length - a && K.s[K.s.length - 1 - b] === now[now.length - 1 - b]) b++;
+    const k2 = {};
+    for (const [o, v] of Object.entries(K.k)) { const n = +o; if (n <= a) k2[n] = v; else if (n > K.s.length - b) k2[n + now.length - K.s.length] = v; }
+    K.s = now; K.k = k2;
+  }
+  for (const o of Object.keys(K.k)) if (!+K.k[o] || +o < 2 || +o > K.s.length) delete K.k[o];
+  if (!Object.keys(K.k).length) { el.removeAttribute('data-kern'); host.removeAttribute('dx'); return; }
+  el.setAttribute('data-kern', JSON.stringify(K));
+  const dx = []; let n = 0, last = 0;
+  for (const ch of str) {
+    let v = 0;
+    if (!/\s/.test(ch)) { n++; v = +K.k[n] || 0; }
+    for (let u = 0; u < ch.length; u++) dx.push(u ? '0' : v ? r3(v / 1000) + 'em' : '0');
+    if (v) last = dx.length;
+  }
+  host.setAttribute('dx', dx.slice(0, last).join(' '));
+}
+function setKern(el, o, v) {
+  const K = kernData(el) || { s: nonWs(kernSource(el)), k: {} };
+  K.s = nonWs(kernSource(el));
+  if (v) K.k[o] = Math.round(v); else delete K.k[o];
+  el.setAttribute('data-kern', JSON.stringify(K)); applyKern(el);
+}
+function kernGapEl() { const G = S.kernGap; return G && G.el.isConnected && S.sel.length === 1 && S.sel[0] === G.el && !S.editing ? G : null; }
+function kernCharIndex(el, o) { // index (in the text's characters) of the o-th non-space character
+  const str = kernSource(el); let n = 0;
+  for (let i = 0; i < str.length; i++) if (!/\s/.test(str[i]) && ++n === o) return i;
+  return -1;
+}
+function nudgeKern(step) {
+  const G = kernGapEl(); if (!G) return false;
+  const K = kernData(G.el), v = ((K && +K.k[G.o]) || 0) + step;
+  setKern(G.el, G.o, v); drawOverlay(); renderKern(); commit(); return true;
+}
+function drawKernMark(px) {
+  const G = kernGapEl(); if (!G) return;
+  const i = kernCharIndex(G.el, G.o); if (i < 0) return;
+  let p; try { p = G.el.getStartPositionOfChar(i); } catch (e) { return; }
+  const size = parseFloat(getComputedStyle(G.el).fontSize) || 16, rot = G.el.hasAttribute('data-onpath') ? G.el.getRotationOfChar(i) : 0;
+  const M = docM(G.el).multiply(new DOMMatrix().translate(p.x, p.y).rotate(rot));
+  const pt = (x, y) => { const q = M.transformPoint(new DOMPoint(x, y)); return q.x + ' ' + q.y; };
+  mk('path', { class: 'kernmark', d: `M${pt(0, size * 0.25)}L${pt(0, -size * 0.95)}` }, overlay);
+  const t = 5 * px / (Math.sqrt(Math.abs(M.a * M.d - M.b * M.c)) || 1);
+  mk('path', { class: 'kerntri', d: `M${pt(-t, -size * 0.95 - t * 1.4)}L${pt(t, -size * 0.95 - t * 1.4)}L${pt(0, -size * 0.95)}Z` }, overlay);
+}
+function renderKern() {
+  const t = S.sel.length === 1 && S.sel[0].tagName === 'text' ? S.sel[0] : null;
+  $('#kernBox').classList.toggle('hidden', !t);
+  $('#kernMode').value = t && t.style.fontKerning === 'none' ? 'none' : 'auto';
+  if (!t) return;
+  if (!S.kernGap || S.kernGap.el !== t) S.kernGap = { el: t, o: 2 };
+  const str = kernSource(t).slice(0, 400), K = kernData(t) || { k: {} }, G = S.kernGap;
+  let n = 0, html = '';
+  for (const ch of str) {
+    if (/\s/.test(ch)) { html += '<button class="sp" disabled>·</button>'; continue; }
+    n++;
+    const c = ch.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    html += `<button data-o="${n}" class="${n === G.o ? 'on' : ''} ${K.k[n] ? 'k' : ''}"${n === 1 ? ' disabled' : ''}>${c}</button>`;
+  }
+  const strip = $('#kernStrip');
+  if (strip.dataset.sig !== str) { strip.innerHTML = html; strip.dataset.sig = str; }
+  else strip.querySelectorAll('button[data-o]').forEach(bt => { const o = +bt.dataset.o; bt.classList.toggle('on', o === G.o); bt.classList.toggle('k', !!K.k[o]); });
+  if (document.activeElement !== $('#kernVal')) $('#kernVal').value = +K.k[G.o] || 0;
+}
+function wireKern() {
+  $('#kernStrip').addEventListener('click', e => {
+    const b = e.target.closest('button[data-o]'); if (!b || b.disabled) return;
+    S.kernGap = { el: S.sel[0], o: +b.dataset.o }; renderKern(); drawOverlay();
+  });
+  $('#kernVal').addEventListener('input', () => { const G = kernGapEl(); if (refreshing || !G) return; setKern(G.el, G.o, +$('#kernVal').value || 0); drawOverlay(); renderKern(); });
+  $('#kernVal').addEventListener('change', () => { if (!refreshing && kernGapEl()) commit(); });
+  $('#kernVal').addEventListener('keydown', e => { if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { e.preventDefault(); nudgeKern((e.key === 'ArrowLeft' ? -10 : 10) * (e.ctrlKey || e.metaKey ? 5 : 1)); $('#kernVal').value = +(kernData(S.kernGap.el) || { k: {} }).k[S.kernGap.o] || 0; } });
+  $('#kernReset').onclick = () => { const t = S.sel[0]; if (!t || !kernData(t)) return; t.removeAttribute('data-kern'); applyKern(t); renderKern(); drawOverlay(); commit(); };
+  $('#kernMode').addEventListener('change', () => {
+    for (const t of selTexts()) { if ($('#kernMode').value === 'none') t.style.setProperty('font-kerning', 'none'); else { t.style.removeProperty('font-kerning'); if (!t.getAttribute('style')) t.removeAttribute('style'); } }
+    reflowSel(); drawOverlay(); commit();
+  });
+  // Alt+←/→ in the text editor: finish editing and kern the pair at the cursor
+  $('#textEditor').addEventListener('keydown', e => {
+    if (!e.altKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || !S.editing || !S.editing.el) return;
+    e.preventDefault();
+    const ta = $('#textEditor'), o = nonWs(ta.value.slice(0, ta.selectionStart)).length + 1, el = S.editing.el;
+    commitText();
+    if (!el.isConnected) return;
+    setSel([el]); S.kernGap = { el, o: Math.max(2, o) }; refreshPanel();
+    nudgeKern((e.key === 'ArrowLeft' ? -10 : 10) * (e.ctrlKey || e.metaKey ? 5 : 1));
+  });
 }
 function setTextLines(el, lines) {
   if (el.hasAttribute('data-onpath')) {
     const tp = el.querySelector('textPath'); if (tp) tp.textContent = lines.join(' ').replace(/\s+/g, ' ').trim() || ' ';
+    if (el.hasAttribute('data-kern')) applyKern(el);
     return;
   }
   if (el.hasAttribute('data-wrap')) { el.setAttribute('data-text', JSON.stringify(lines)); layoutText(el); return; }
@@ -2364,7 +2486,7 @@ function layoutText(el) {
   const paras = textLines(el), wx = +el.getAttribute('data-wx') || 0;
   const anc = el.getAttribute('text-anchor') || getComputedStyle(el).textAnchor || 'start';
   el.setAttribute('x', r3(anc === 'middle' ? wx + W / 2 : anc === 'end' ? wx + W : wx));
-  el.textContent = '';
+  el.textContent = ''; el.removeAttribute('dx');
   const probe = mk('tspan', {}, el), width = str => { probe.textContent = str; return str ? probe.getComputedTextLength() : 0; };
   const lines = [], fits = str => width(str) <= W + 0.01;
   for (const para of paras) {
@@ -2630,6 +2752,100 @@ H.shapebuilder = {
     d.pts.push(p); drawOverlay();
   },
   up() { const d = S.drag; S.drag = null; if (!d || d.mode !== 'sb') return; if (d.faces.size) sbApply(d.faces, d.alt); else drawOverlay(); },
+};
+/* Knife: a freehand (or Alt = straight) cut. Each filled shape it crosses is split along the line into separate
+   shapes that keep its look. With a selection only the selected objects are cut. */
+function knifePts(d) { return d.alt ? [d.pts[0], d.pts[d.pts.length - 1]] : d.pts; }
+function knifeBlades(pts) { // one hair-thin strip per segment of the cut line (overlapping at the corners)
+  const e = 0.004, out = [];
+  for (let i = 0; i + 1 < pts.length; i++) {
+    const a = pts[i], b = pts[i + 1], l = Math.hypot(b.x - a.x, b.y - a.y); if (l < 1e-6) continue;
+    const ux = (b.x - a.x) / l * e, uy = (b.y - a.y) / l * e;
+    out.push(new paper.Path({ segments: [[a.x - ux - uy, a.y - uy + ux], [b.x + ux - uy, b.y + uy + ux], [b.x + ux + uy, b.y + uy - ux], [a.x - ux + uy, a.y - uy - ux]], closed: true, insert: false }));
+  }
+  return out;
+}
+function simplifyPts(pts, tol) { // Ramer–Douglas–Peucker
+  if (pts.length < 3) return pts;
+  const keep = new Array(pts.length).fill(false); keep[0] = keep[pts.length - 1] = true;
+  const st = [[0, pts.length - 1]];
+  while (st.length) {
+    const [i, j] = st.pop(), a = pts[i], b = pts[j], l = Math.hypot(b.x - a.x, b.y - a.y) || 1e-9;
+    let m = -1, md = tol;
+    for (let k = i + 1; k < j; k++) { const d = Math.abs((b.x - a.x) * (a.y - pts[k].y) - (a.x - pts[k].x) * (b.y - a.y)) / l; if (d > md) { md = d; m = k; } }
+    if (m > 0) { keep[m] = true; st.push([i, m], [m, j]); }
+  }
+  return pts.filter((p, k) => keep[k]);
+}
+function knifeTargets(line) { // the leaf shapes the cut may affect
+  const top = S.sel.length ? inDocOrder(S.sel) : layers().filter(L => L.getAttribute('display') !== 'none' && !L.hasAttribute('data-locked')).flatMap(L => [...L.children]);
+  const out = [];
+  for (const o of top) {
+    if (isLocked(o) || isHidden(o) || o.hasAttribute('data-brushed') || o.tagName === 'use') continue;
+    for (const sh of o.tagName === 'g' ? shapesOf(o) : [o]) {
+      if (['text', 'image', 'use', 'line', 'polyline'].includes(sh.tagName) || isHidden(sh)) continue;
+      const fill = getComputedStyle(sh).fill; if (!fill || fill === 'none') continue;
+      out.push(sh);
+    }
+  }
+  return out;
+}
+function knifeCut(pts) {
+  PJ();
+  if (pts.length < 2 || Math.hypot(pts[pts.length - 1].x - pts[0].x, pts[pts.length - 1].y - pts[0].y) < 1e-6 && pts.length < 3) return;
+  pts = simplifyPts(pts, 0.35 / S.view.zoom);
+  const line = new paper.Path({ segments: pts.map(p => [p.x, p.y]), insert: false }), blades = knifeBlades(pts), opt = { insert: false };
+  const hadSel = S.sel.length > 0;
+  const made = []; let cut = 0;
+  for (const sh of knifeTargets(line)) {
+    const parentM = sh.parentNode.hasAttribute('data-layer') ? new DOMMatrix() : docM(sh.parentNode);
+    let it; try { it = toPaper(sh, parentM); } catch (e) { it = null; }
+    if (!it || pfEmpty(it)) continue;
+    if (!it.bounds.intersects(line.bounds) || !it.getIntersections(line).length) continue;
+    let rest = it;
+    try { for (const bl of blades) if (bl.bounds.intersects(rest.bounds)) rest = rest.subtract(bl, opt); } catch (e) { continue; }
+    const pieces = (rest instanceof paper.CompoundPath ? sbIslands(rest) : [rest]).filter(p => !pfEmpty(p) && Math.abs(p.area) > 0.5);
+    if (pieces.length < 2) continue;
+    const inv = new paper.Matrix(parentM.a, parentM.b, parentM.c, parentM.d, parentM.e, parentM.f).inverted();
+    const src = { o: sh, src: sh };
+    let sb = null; try { sb = sh.getBBox(); } catch (e) { /* not rendered */ }
+    let at = sh;
+    for (const p of pieces) {
+      p.transform(inv);
+      const el = fromPaper(p, src); if (!el) continue;
+      for (const a of ['data-shadow', 'data-glow', 'data-blur', 'style']) if (sh.getAttribute(a)) el.setAttribute(a, sh.getAttribute(a));
+      if (sh.getAttribute('fill-rule') !== 'evenodd' && !(p instanceof paper.CompoundPath)) el.removeAttribute('fill-rule');
+      const fp = patOf(sh); if (fp) { const P = patParams(sh); if (P && P.k && patTile(P.k)) writePat(el, P); else el.setAttribute('fill', sh.getAttribute('fill')); }
+      for (const w of ['fill', 'stroke']) { // each piece keeps its part of the original gradient
+        const G = paintGrad(sh, w); if (!G) continue;
+        const g = writeGrad(el, w, G);
+        if (sb) { const m = getM(sh).multiply(new DOMMatrix([sb.width || 1, 0, 0, sb.height || 1, sb.x, sb.y])); g.setAttribute('gradientUnits', 'userSpaceOnUse'); g.setAttribute('gradientTransform', `matrix(${[m.a, m.b, m.c, m.d, m.e, m.f].map(r6).join(' ')})`); }
+      }
+      at.after(el); at = el; made.push(el);
+    }
+    sh.remove(); cut++;
+  }
+  if (!cut) { drawOverlay(); return flash('Nothing was cut. Drag all the way across a filled shape.'); }
+  const keep = S.sel.filter(o => o.isConnected);
+  setSel(hadSel ? [...keep, ...made.filter(e => e.isConnected && e.parentNode.hasAttribute('data-layer'))] : []);
+  commit();
+  flash(`Cut ${cut} shape${cut > 1 ? 's' : ''} into ${made.length} pieces.`);
+}
+H.knife = {
+  down(e, p) { S.drag = { mode: 'knife', pts: [p], alt: e.altKey }; },
+  move(e, p) {
+    const d = S.drag; if (!d || d.mode !== 'knife') return;
+    d.alt = e.altKey;
+    const last = d.pts[d.pts.length - 1];
+    if (Math.hypot(p.x - last.x, p.y - last.y) * S.view.zoom >= 2) d.pts.push(p); else d.pts[d.pts.length - 1] = p;
+    drawOverlay();
+  },
+  up(e, p) {
+    const d = S.drag; S.drag = null; if (!d || d.mode !== 'knife') return;
+    if (p) d.pts.push(p);
+    knifeCut(knifePts(d).map(q => ({ x: q.x, y: q.y })));
+    drawOverlay();
+  },
 };
 /* Eyedropper: click a shape to pick up its look (fill, stroke, weight, dashes, text style); click a photo, a
    gradient spot or anywhere with Shift to pick up the exact color under the pointer. With objects selected,
@@ -3356,6 +3572,7 @@ function refreshPanel(geomOnly) {
   const anc = (t ? t.getAttribute('text-anchor') : S.font.anchor) || 'start';
   $$('[data-anchor]').forEach(b => b.classList.toggle('on', b.dataset.anchor === anc));
   $('#letterSpacing').value = t ? parseFloat(t.getAttribute('letter-spacing')) || 0 : 0;
+  renderKern();
   $('#lineHeight').value = t ? textLH(t) : (S.font.lh || 1.2);
   const onPath = !!(t && t.hasAttribute('data-onpath')), wr = !!(t && t.hasAttribute('data-wrap'));
   $('#wrapOn').checked = wr; $('#wrapOn').disabled = !t || onPath; $('#wrapW').disabled = !wr;
@@ -4147,6 +4364,18 @@ function textRuns(el) {
       try { pos = el.getStartPositionOfChar(i); rot = el.getRotationOfChar(i); ext = el.getExtentOfChar(i); } catch (e) { continue; }
       if (!ext || (ext.width === 0 && ext.height === 0)) continue; // past the end of the path
       runs.push({ x: pos.x, y: pos.y, s: str[i], cs, rot });
+    }
+    return runs;
+  }
+  if (el.hasAttribute('data-kern') || el.style.fontKerning === 'none') { // exact per-letter positions, as laid out on screen
+    const runs = [], str = el.textContent, css = [];
+    const walk = (node, cs) => { for (const c of node.childNodes) { if (c.nodeType === 3) for (let k = 0; k < c.data.length; k++) css.push(cs); else if (c.nodeType === 1) walk(c, getComputedStyle(c)); } };
+    walk(el, getComputedStyle(el));
+    let n = 0; try { n = el.getNumberOfChars(); } catch (e) { return runs; }
+    for (let i = 0; i < n && i < str.length; i++) {
+      if (!str[i].trim() || str[i] === '\u00a0') continue;
+      let pos; try { pos = el.getStartPositionOfChar(i); } catch (e) { continue; }
+      runs.push({ x: pos.x, y: pos.y, s: str[i], cs: css[i] || getComputedStyle(el), rot: 0 });
     }
     return runs;
   }
@@ -5994,7 +6223,7 @@ async function drawText(el, cs, B, op) {
       if (d) drawGlyphs(el, B, d, r.cs, c, op);
       continue;
     }
-    const w = textWidth(s, f.css, size, ls), anchor = r.cs.textAnchor;
+    const w = textWidth(s, f.css, size, ls), anchor = r.rot != null ? 'start' : r.cs.textAnchor;
     const x = anchor === 'middle' ? r.x - w / 2 : anchor === 'end' ? r.x - w : r.x;
     B.text({ x, y: r.y, s, size, font: f.name, color: c, a: op * parseFloat(r.cs.fillOpacity || 1) * (c.a ?? 1), ls });
   }
@@ -7081,7 +7310,7 @@ const CMD = {
   png1: () => exportRaster(1), png2: () => exportRaster(2), png4: () => exportRaster(4), jpg: () => exportRaster(1, 'image/jpeg'),
   typeOnPath: () => { const o = S.sel[0]; if (S.sel.length !== 1 || !canTypeOnPath(o)) return flash('Select one path or shape first, then choose Type on a Path.'); const t = makeTypeOnPath(o); if (t) { setTool('text'); openTextEditor(t); } },
   closeTab: () => closeTab(), nextTab: () => TABS.length > 1 && switchTab((tabIdx + 1) % TABS.length), prevTab: () => TABS.length > 1 && switchTab((tabIdx - 1 + TABS.length) % TABS.length),
-  pressPdf: openPress, preflight: openPreflight, updates: () => checkUpdates(), recolor: () => openRecolor(), makePattern: () => makePattern(),
+  pressPdf: openPress, preflight: openPreflight, updates: () => checkUpdates(), recolor: () => openRecolor(), knife: () => setTool('knife'), makePattern: () => makePattern(),
   alLeft: () => alignSel('left'), alHC: () => alignSel('hcenter'), alRight: () => alignSel('right'), alTop: () => alignSel('top'), alVC: () => alignSel('vcenter'), alBottom: () => alignSel('bottom'), alDH: () => alignSel('dh'), alDV: () => alignSel('dv'),
   trimView: () => { S.trimView = !S.trimView; renderArtboards(); flash(S.trimView ? 'Trim View: you see the page as it will look after cutting. Press again to show everything.' : 'Trim View off'); },
   printLines: () => { S.doc.print = { ...printSet(), show: !printSet().show }; renderArtboards(); flash(printSet().show ? 'Bleed and safety lines shown' : 'Bleed and safety lines hidden'); },
@@ -7116,6 +7345,7 @@ document.addEventListener('keydown', e => {
     return;
   }
   const mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase(), code = e.code;
+  if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && kernGapEl()) { e.preventDefault(); nudgeKern((e.key === 'ArrowLeft' ? -10 : 10) * (mod ? 5 : 1)); return; }
   if (e.key === ' ' && !mod) { if (!S.space) { S.space = true; stage.classList.add('panning'); } e.preventDefault(); return; }
   if (e.key === 'F1') { e.preventDefault(); CMD.help(); return; }
   if (mod) {
@@ -7168,6 +7398,7 @@ document.addEventListener('keydown', e => {
   if (k === 'o' && e.shiftKey) return setTool('artboard');
   if (k === 's' && e.shiftKey) return setTool('sprayer');
   if (k === 'm' && e.shiftKey) return setTool('shapebuilder');
+  if (k === 'k' && e.shiftKey) return setTool('knife');
   if (k === 'x' && e.shiftKey) return swapColors();
   if (k === 'x') return setColorTarget(S.colorTarget === 'fill' ? 'stroke' : 'fill');
   if (k === 'd') return defaultColors();
@@ -7185,7 +7416,7 @@ function status() {
 
 /* ---------- boot ---------- */
 function boot() {
-  buildToolbar(); wirePanel(); wireLayers(); wireArtboards(); wireBrushes(); wireSymbols(); wireTrace(); wireFonts(); wireOffset(); wireEffects(); wireAdjust(); wireLogoPack(); wireUnits(); wireRulers(); wirePrint(); wireUpdates(); wireCmyk(); wireRecolor();
+  buildToolbar(); wirePanel(); wireLayers(); wireArtboards(); wireBrushes(); wireSymbols(); wireTrace(); wireFonts(); wireOffset(); wireEffects(); wireKern(); wireAdjust(); wireLogoPack(); wireUnits(); wireRulers(); wirePrint(); wireUpdates(); wireCmyk(); wireRecolor();
   $$('[data-align]').forEach(b => b.onclick = () => alignSel(b.dataset.align));
   $('#btnRecolor').onclick = () => openRecolor(); wireCrop(); wireKit(); wireTemplates();
   let restored = false;
