@@ -1,7 +1,7 @@
 {
-  "version": "1.10.0",
-  "file": "VectorStudio-1.10.0.html",
-  "sha256": "dd42d5dac68f7e1c499f9b78efde4c054ac65a53d9b5b39b89e6ba93ad19bb41",
+  "version": "1.11.0",
+  "file": "VectorStudio-1.11.0.html",
+  "sha256": "b339d57fd54c414a79b249e82f491e6c8c4063cb33e829ba06826dfe0fae1927",
   "minShell": "1.9.0",
-  "notes": "New: Align & Distribute, CMYK and spot colors, CMYK press PDFs, and Recolor Artwork."
+  "notes": "New: Shape Builder (Shift+M), documents in tabs, Align & Distribute, CMYK and spot colors, and Recolor Artwork."
 }

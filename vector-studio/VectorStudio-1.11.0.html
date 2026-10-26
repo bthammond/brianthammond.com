@@ -15,7 +15,17 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:12px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none}
 button,input,select{font:inherit;color:inherit}
-#app{display:grid;grid-template-rows:30px 1fr 24px;height:100vh}
+#app{display:grid;grid-template-rows:30px 30px 1fr 24px;height:100vh}
+#tabbar{display:flex;align-items:flex-end;gap:2px;background:#1c1c1c;border-bottom:1px solid #111;padding:0 6px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}
+.dtab{display:flex;align-items:center;gap:6px;height:26px;padding:0 6px 0 12px;background:#262626;color:#aaa;border:1px solid #333;border-bottom:0;border-radius:6px 6px 0 0;cursor:pointer;white-space:nowrap;max-width:220px;font-size:12px;flex:none}
+.dtab:hover{background:#2e2e2e;color:#ddd}
+.dtab.on{background:var(--panel);color:#fff;border-color:#444}
+.dtab .nm{overflow:hidden;text-overflow:ellipsis}
+.dtab .dot{width:7px;height:7px;border-radius:50%;background:#ffcf5c;flex:none}
+.dtab .x{width:18px;height:18px;border-radius:4px;display:grid;place-items:center;color:#999;font-size:13px;line-height:1}
+.dtab .x:hover{background:#444;color:#fff}
+#tabNew{height:24px;width:26px;margin-bottom:1px;background:none;border:0;color:#aaa;font-size:17px;border-radius:5px;cursor:pointer;flex:none}
+#tabNew:hover{background:#333;color:#fff}
 #menubar{display:flex;align-items:center;background:#252525;border-bottom:1px solid #111;padding:0 6px;gap:2px}
 #menubar .brand{font-weight:600;color:#fff;margin:0 12px 0 4px;letter-spacing:.3px}
 #menubar .docname{margin-left:auto;color:var(--muted);padding-right:6px}
@@ -121,6 +131,11 @@ button,input,select{font:inherit;color:inherit}
 .rckit{display:flex;gap:3px;flex-wrap:wrap}
 .rckit b{width:16px;height:16px;border-radius:3px;border:1px solid #666;cursor:pointer;display:inline-block}
 #dlgRecolor{width:min(560px,94vw)}
+#overlay .sbface{fill:rgba(255,47,180,.18);stroke:#ff2fb4;stroke-width:1;stroke-dasharray:3 2}
+#overlay .sbface.on{fill:rgba(255,47,180,.42);stroke-dasharray:none;stroke-width:1.5}
+#overlay .sbface.del{fill:rgba(255,59,48,.35);stroke:#ff3b30}
+#overlay .sbtrail{fill:none;stroke:#ff2fb4;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#overlay .sbedge{fill:none;stroke:var(--accent);stroke-width:1;opacity:.7}
 #overlay .offprev{fill:rgba(255,47,180,.12);stroke:#ff2fb4;stroke-width:1;stroke-dasharray:4 2}
 #overlay .marquee{fill:rgba(45,140,235,.08);stroke:var(--accent);stroke-width:1;stroke-dasharray:4 3}
 #overlay .outline{fill:none;stroke:var(--accent);stroke-width:1}
@@ -248,6 +263,7 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
       <button data-cmd="new">New… <span>Ctrl+Alt+N</span></button>
       <button data-cmd="templates">New from Template… <span>Ctrl+Alt+T</span></button>
       <button data-cmd="open">Open… (SVG, PDF, AI, EPS, images) <span>Ctrl+O</span></button>
+      <button data-cmd="closeTab">Close Document <span>Ctrl+W (desktop) · Ctrl+Alt+W</span></button>
       <button data-cmd="save">Save <span>Ctrl+S</span></button>
       <button data-cmd="saveAs">Save As… <span>Ctrl+Shift+S</span></button>
       <hr>
@@ -358,6 +374,7 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
     <span class="docname" id="docName">Untitled.svg</span>
   </nav>
 
+  <div id="tabbar"><button id="tabNew" title="New document (Ctrl+Alt+N)">+</button></div>
   <div id="main">
     <div id="toolbar"></div>
     <div id="stage">
@@ -771,6 +788,8 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
       <kbd>I</kbd><span>Eyedropper: copies fill &amp; stroke onto the selection</span>
       <kbd>H / Space</kbd><span>Hand (pan). Scroll wheel also pans</span>
       <kbd>Z</kbd><span>Zoom (Alt = out). Ctrl + scroll zooms at the cursor</span>
+      <kbd>Shift+M</kbd><span>Shape Builder: drag across overlapping areas to merge them, Alt to remove</span>
+      <kbd>Ctrl+Alt+N / Ctrl+O</kbd><span>New / open documents in tabs. Ctrl+Tab or Alt+PgUp/PgDn switches, Ctrl+Alt+W closes</span>
       <kbd>X / Shift+X / D</kbd><span>Fill↔stroke focus / swap colors / default colors</span>
       <kbd>Arrows</kbd><span>Nudge 1 px (Shift = 10 px)</span>
       <kbd>Ctrl+Z / Ctrl+Shift+Z</kbd><span>Undo / redo</span>
@@ -1736,6 +1755,61 @@ function wireRecolor() {
   $('#dlgRecolor').addEventListener('cancel', () => { rcRestore(); drawOverlay(); });
   $('#rcOk').onclick = () => { rcApply(); $('#dlgRecolor').close(); commit(); flash(`Recolored ${RC.groups.length} color(s).`); };
 }
+/* ---------- document tabs ----------
+   Several documents can be open at once. Each tab keeps its own drawing, artboards, settings, undo history,
+   view and file. Only the active one lives in the canvas; the others are kept as saved state. */
+const TABS = []; let tabIdx = 0;
+function tabState() { return { html: content.innerHTML, doc: S.doc, history: S.history, future: S.future, view: { ...S.view }, filePath: S.filePath, dirty: !!S.dirty, li: layers().indexOf(activeLayer()), welcome: !!S.welcome }; }
+function leaveDoc() { if (S.editing) commitText(); finishPen(); if (S.crop) cancelCrop(); if (isoLayer()) finishSymbolEdit(); S.direct = null; setSel([]); }
+function saveTab() { TABS[tabIdx] = tabState(); }
+function blankDocState() { return { name: 'Untitled', abs: [{ name: 'Artboard 1', x: 0, y: 0, w: 800, h: 600 }], ab: 0, units: (() => { try { return localStorage.getItem('vectorstudio.units') || 'px'; } catch (e) { return 'px'; } })(), guideLines: [] }; }
+function loadTab(t) {
+  content.innerHTML = t.html; S.doc = t.doc; S.history = t.history || []; S.future = t.future || []; S.view = { ...t.view }; S.filePath = t.filePath || null; S.welcome = !!t.welcome;
+  S.activeLayer = layers()[t.li] || null; activeLayer();
+  if (!S.history.length) S.history.push(snapshot());
+  $('#docName').textContent = S.doc.name + '.svg';
+  renderArtboards(); renderAbPanel(); renderBrushPanel(); renderSymbolPanel(); syncIso(); renderFontList(); renderLayers();
+  setUnits(uKey()); setDirty(!!t.dirty); updateView(); refreshPanel(); renderTabs(); autosave();
+}
+function switchTab(i) { if (i === tabIdx || !TABS[i]) return; leaveDoc(); saveTab(); tabIdx = i; loadTab(TABS[i]); }
+// Make room for a new document: reuse the current tab if it holds nothing worth keeping, else open a new tab.
+function newTab() {
+  leaveDoc();
+  const pristine = !S.dirty && !S.filePath && (S.welcome || !layers().some(L => L.children.length));
+  if (!pristine) { saveTab(); tabIdx++; TABS.splice(tabIdx, 0, null); }
+  S.doc = blankDocState(); S.history = []; S.future = []; S.filePath = null; S.dirty = false; S.welcome = false;
+  content.innerHTML = '<defs></defs>'; S.activeLayer = null; newLayer('Layer 1');
+  TABS[tabIdx] = tabState(); renderTabs();
+}
+function closeTab(i = tabIdx) {
+  if (i !== tabIdx) switchTab(i);
+  if (S.dirty && !confirm(`Close “${S.doc.name}”? Its unsaved changes will be lost.\n\nCancel, then press Ctrl+S, to save it first.`)) return;
+  leaveDoc(); TABS.splice(tabIdx, 1);
+  if (!TABS.length) {
+    TABS.push(null); tabIdx = 0; S.doc = blankDocState(); S.filePath = null; S.welcome = false;
+    content.innerHTML = '<defs></defs>'; S.activeLayer = null; newLayer('Layer 1');
+    S.history = []; S.future = []; commit(); setDirty(false); fit(); saveTab(); renderTabs(); return;
+  }
+  tabIdx = Math.min(tabIdx, TABS.length - 1); loadTab(TABS[tabIdx]);
+}
+const anyDirty = () => !!S.dirty || TABS.some((t, i) => i !== tabIdx && t && t.dirty);
+function renderTabs() {
+  const bar = $('#tabbar'); bar.querySelectorAll('.dtab').forEach(e => e.remove());
+  TABS.forEach((t, i) => {
+    const on = i === tabIdx, name = on ? S.doc.name : t ? t.doc.name : 'Untitled', dirty = on ? S.dirty : t && t.dirty;
+    const el = document.createElement('div'); el.className = 'dtab' + (on ? ' on' : ''); el.title = name + '.svg' + (dirty ? ' (unsaved changes)' : '');
+    el.innerHTML = `${dirty ? '<span class="dot"></span>' : ''}<span class="nm"></span><span class="x" title="Close">×</span>`;
+    el.querySelector('.nm').textContent = name;
+    el.onclick = e => { if (e.target.classList.contains('x')) closeTab(i); else switchTab(i); };
+    el.onauxclick = e => { if (e.button === 1) { e.preventDefault(); closeTab(i); } };
+    bar.insertBefore(el, $('#tabNew'));
+  });
+  const act = bar.querySelector('.dtab.on'); if (act) act.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+}
+function wireTabs() {
+  $('#tabNew').onclick = () => newDoc();
+  TABS.length = 0; TABS.push(null); tabIdx = 0; saveTab(); renderTabs();
+}
 let flashT;
 function flash(msg) {
   const h = $('#stHint'); h.textContent = msg; h.style.color = '#ffcf5c';
@@ -1775,6 +1849,7 @@ function drawOverlay() {
     const M = docM(t); mk('path', { class: 'subbox', d: g.getAttribute('d'), transform: `matrix(${M.a} ${M.b} ${M.c} ${M.d} ${M.e} ${M.f})` }, overlay);
   }
   if (S.tool === 'gradient') return drawGradOverlay(px);
+  if (S.tool === 'shapebuilder') return drawShapeBuilder(px);
   if (S.tool !== 'select') return;
   const hs = 7 * px, cx = B.x + B.w / 2;
   mk('line', { class: 'hline', x1: cx, y1: B.y, x2: cx, y2: B.y - 22 * px }, overlay);
@@ -1867,7 +1942,8 @@ function restore(s) {
 function undo() { finishPen(); if (S.history.length < 2) return; S.future.push(S.history.pop()); restore(S.history[S.history.length - 1]); }
 function redo() { const s = S.future.pop(); if (!s) return; S.history.push(s); restore(s); }
 function autosave() {
-  try { localStorage.setItem('vectorstudio.doc', JSON.stringify({ html: content.innerHTML, abs: S.doc.abs, ab: S.doc.ab, name: S.doc.name, units: S.doc.units, guides: S.doc.guideLines, print: S.doc.print, colors: S.doc.colors })); } catch (e) { /* storage unavailable or full */ }
+  const others = TABS.map((t, i) => (i === tabIdx || !t ? null : { html: t.html, doc: t.doc, view: t.view, filePath: t.filePath, dirty: t.dirty, li: t.li })).filter(Boolean);
+  try { localStorage.setItem('vectorstudio.doc', JSON.stringify({ html: content.innerHTML, abs: S.doc.abs, ab: S.doc.ab, name: S.doc.name, units: S.doc.units, guides: S.doc.guideLines, print: S.doc.print, colors: S.doc.colors, others })); } catch (e) { /* storage unavailable or full */ }
 }
 
 /* ---------- tools ---------- */
@@ -1885,6 +1961,7 @@ const TOOLS = [
   ['star', 'Star', 'S', '<path d="M10 2l2.4 5 5.4.7-4 3.8 1 5.4L10 14.3 5.2 16.9l1-5.4-4-3.8 5.4-.7z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>'],
   ['line', 'Line Segment', '\\', '<path d="M4 16L16 4" stroke="currentColor" stroke-width="1.6"/>'],
   ['sprayer', 'Symbol Sprayer', 'Shift+S', '<path d="M6.5 8.5h6v9.5h-6z M8 8.5V6h3v2.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="15" cy="3.5" r="1" fill="currentColor"/><circle cx="17.5" cy="6" r="1" fill="currentColor"/><circle cx="14.5" cy="7.5" r="1" fill="currentColor"/><circle cx="17.5" cy="2" r="1" fill="currentColor"/>'],
+  ['shapebuilder', 'Shape Builder', 'Shift+M', '<circle cx="8" cy="9" r="5.5" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="13" cy="11" r="5.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M15 2.5v4M13 4.5h4" stroke="currentColor" stroke-width="1.6"/>'],
   ['artboard', 'Artboard', 'Shift+O', '<rect x="5" y="5" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 1.5v3M1.5 5h3M15 18.5v-3M18.5 15h-3" stroke="currentColor" stroke-width="1.5"/>'],
   ['sep'],
   ['gradient', 'Gradient', 'G', '<rect x="3" y="4" width="14" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5 14L15 6" stroke="currentColor" stroke-width="1.4"/><circle cx="5" cy="14" r="1.6" fill="currentColor"/><rect x="13.5" y="4.5" width="3" height="3" fill="currentColor"/>'],
@@ -1907,6 +1984,7 @@ const HINTS = {
   sprayer: 'Drag to spray copies of the current symbol · set size and spread in the Symbols panel',
   artboard: 'Drag empty canvas = new artboard · drag an artboard to move it · handles resize · Del deletes',
   gradient: 'Drag across the selection to set the gradient direction (Shift = 45° steps) · drag the end points or color stops to adjust · edits the fill, or the stroke when Stroke is chosen in Properties',
+  shapebuilder: 'Select overlapping shapes, then drag across the areas to merge them into one shape · Alt+drag (or Alt+click) removes areas · click an area to make it a separate shape',
   hand: 'Drag to pan', zoom: 'Click to zoom in · Alt+click to zoom out',
 };
 function buildToolbar() {
@@ -2430,6 +2508,99 @@ function commitText() {
   setTextLines(t, lines); setSel([t]); commit();
 }
 
+/* ---------- Shape Builder ----------
+   The selected shapes are cut into their smallest overlapping areas ("faces"). Dragging across faces merges them
+   into one shape (colored like the face you started on); Alt removes them. Each original shape keeps the faces it
+   still owns, so untouched parts stay as they were. */
+const SB = { key: '', faces: [], owners: [] };
+function sbPrepare() {
+  const objs = inDocOrder(S.sel).filter(o => !isLocked(o));
+  const key = objs.map(o => o.id).join(',') + '|' + contentVer;
+  if (key === SB.key) return SB;
+  PJ(); SB.key = key; SB.faces = []; SB.owners = [];
+  for (const o of objs) {
+    if (o.tagName === 'text' || o.tagName === 'image' || o.tagName === 'use') continue;
+    let it = null; try { it = toPaper(o); } catch (e) { it = null; }
+    if (it && !pfEmpty(it)) SB.owners.push({ o, it, src: styleSource(o) });
+  }
+  const opt = { insert: false };
+  let faces = [];
+  SB.owners.forEach((ow, i) => { // each shape splits the faces below it; later shapes are on top and own the overlap
+    const next = [];
+    for (const f of faces) { next.push({ item: f.item.intersect(ow.it, opt), owner: i }, { item: f.item.subtract(ow.it, opt), owner: f.owner }); }
+    const covered = faces.length ? faces.reduce((a, f) => (a ? a.unite(f.item, opt) : f.item), null) : null;
+    next.push({ item: covered ? ow.it.subtract(covered, opt) : ow.it, owner: i });
+    faces = next.filter(f => !pfEmpty(f.item));
+  });
+  // a face made of separate islands becomes one face per island, so each can be picked on its own
+  for (const f of faces) {
+    const parts = f.item instanceof paper.CompoundPath ? sbIslands(f.item) : [f.item];
+    for (const it of parts) if (!pfEmpty(it)) SB.faces.push({ item: it, owner: f.owner });
+  }
+  return SB;
+}
+function sbIslands(cp) { // split a compound path into outer contours with their holes
+  const kids = cp.children.map(c => c.clone({ insert: false })), outers = [], out = [];
+  kids.sort((a, b) => Math.abs(b.area) - Math.abs(a.area));
+  for (const k of kids) {
+    const host = outers.find(o => o.contains(k.interiorPoint));
+    if (host && host.holes.length >= 0 && !host.holes.some(h => h.contains(k.interiorPoint))) host.holes.push(k);
+    else { k.holes = []; outers.push(k); }
+  }
+  for (const o of outers) { let it = o; for (const h of o.holes) it = it.subtract(h, { insert: false }); out.push(it); }
+  return out;
+}
+function sbFaceAt(p) {
+  const pt = new paper.Point(p.x, p.y);
+  for (let i = SB.faces.length - 1; i >= 0; i--) if (SB.faces[i].item.contains(pt)) return i;
+  return -1;
+}
+function drawShapeBuilder(px) {
+  if (!SB.faces.length) return;
+  for (const ow of SB.owners) mk('path', { class: 'sbedge', d: ow.it.pathData }, overlay);
+  const d = S.drag && S.drag.mode === 'sb' ? S.drag : null, hot = d ? d.faces : new Set(S.sbHover >= 0 ? [S.sbHover] : []);
+  const del = d ? d.alt : S.sbAlt;
+  for (const i of hot) if (SB.faces[i]) mk('path', { class: 'sbface ' + (d ? (del ? 'del' : 'on') : del ? 'del' : ''), d: SB.faces[i].item.pathData, 'fill-rule': 'evenodd' }, overlay);
+  if (d && d.pts.length > 1) mk('path', { class: 'sbtrail', d: 'M' + d.pts.map(q => q.x + ' ' + q.y).join('L') }, overlay);
+}
+function sbApply(used, del) {
+  const opt = { insert: false }, uniteAll = arr => arr.reduce((a, b) => (a ? a.unite(b, opt) : b), null);
+  const faces = [...used].map(i => SB.faces[i]).filter(Boolean); if (!faces.length) return;
+  const touched = new Set(faces.map(f => f.owner)), made = [];
+  // the merged shape goes just above the highest shape it takes area from
+  const topOwner = Math.max(...touched), first = faces[0];
+  let merged = null;
+  if (!del) { const it = uniteAll(faces.map(f => f.item)); merged = fromPaper(it, SB.owners[first.owner]); if (merged) merged.setAttribute('data-name', 'Shape'); }
+  SB.owners.forEach((ow, i) => {
+    if (!touched.has(i)) { made.push(ow.o); return; }
+    const rest = uniteAll(SB.faces.filter((f, k) => f.owner === i && !used.has(k)).map(f => f.item));
+    const el = rest && fromPaper(rest, ow);
+    if (el) { ow.o.after(el); made.push(el); }
+    if (i === topOwner && merged) { (el || ow.o).after(merged); made.push(merged); }
+    ow.o.remove();
+  });
+  SB.key = ''; S.sbHover = -1;
+  setSel(made.filter(e => e.isConnected)); commit();
+  flash(del ? `Removed ${faces.length} area(s).` : faces.length > 1 ? `Merged ${faces.length} areas into one shape.` : 'Made the area its own shape.');
+}
+H.shapebuilder = {
+  down(e, p) {
+    if (!S.sel.length) return flash('Select the overlapping shapes first (Selection tool, V), then use Shape Builder.');
+    sbPrepare(); if (!SB.faces.length) return flash('Shape Builder works on filled shapes. Text and photos are skipped.');
+    const i = sbFaceAt(p);
+    S.drag = { mode: 'sb', faces: new Set(i >= 0 ? [i] : []), alt: e.altKey, pts: [p] }; drawOverlay();
+  },
+  move(e, p) {
+    if (!S.sel.length) return;
+    sbPrepare();
+    const d = S.drag;
+    if (!d) { const i = sbFaceAt(p); if (i !== S.sbHover || S.sbAlt !== e.altKey) { S.sbHover = i; S.sbAlt = e.altKey; drawOverlay(); } return; }
+    const last = d.pts[d.pts.length - 1], n = Math.ceil(Math.hypot(p.x - last.x, p.y - last.y) * S.view.zoom / 3);
+    for (let k = 1; k <= n; k++) { const q = { x: last.x + (p.x - last.x) * k / n, y: last.y + (p.y - last.y) * k / n }, i = sbFaceAt(q); if (i >= 0) d.faces.add(i); }
+    d.pts.push(p); drawOverlay();
+  },
+  up() { const d = S.drag; S.drag = null; if (!d || d.mode !== 'sb') return; if (d.faces.size) sbApply(d.faces, d.alt); else drawOverlay(); },
+};
 /* Eyedropper: click a shape to pick up its look (fill, stroke, weight, dashes, text style); click a photo, a
    gradient spot or anywhere with Shift to pick up the exact color under the pointer. With objects selected,
    what you pick is applied to them. Alt+click applies the selection's look to the object you click. */
@@ -4658,8 +4829,8 @@ async function renderTplList() {
 }
 async function createFromTemplate(mode) {
   const tpl = TEMPLATES.find(t => t.id === TPLS.tpl), fmt = TPL_FORMATS.find(f => f.id === TPLS.fmt), useKit = $('#tplUseKit').checked;
-  if (mode === 'new' && S.dirty && !confirm('Start a new document from this template? Unsaved changes to the current document will be lost.')) return;
   $('#dlgTpl').close();
+  if (mode === 'new') newTab();
   finishPen(); if (isoLayer()) finishSymbolEdit(); setSel([]);
   const R = await tplRender(tpl, fmt, useKit);
   if (mode === 'new') {
@@ -6449,9 +6620,11 @@ function serialize(box, withArtboards = true) {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="${NS}" xmlns:xlink="${XLINK}" width="${r3(b.w)}" height="${r3(b.h)}" viewBox="${r3(b.x)} ${r3(b.y)} ${r3(b.w)} ${r3(b.h)}"${abAttr}>\n${content.innerHTML}\n</svg>\n`;
 }
 function setDirty(v) {
-  S.dirty = v;
+  S.dirty = v; if (v) S.welcome = false;
   document.title = (v ? '• ' : '') + fileBase() + '.svg — Vector Studio';
-  if (desk) desk.setEdited(v);
+  if (desk) desk.setEdited(anyDirty());
+  if (TABS[tabIdx] && TABS[tabIdx].dirty !== !!v) { TABS[tabIdx].dirty = !!v; }
+  if (typeof renderTabs === 'function' && $('#tabbar')) renderTabs();
 }
 async function save(saveAs) {
   if (S.editing) commitText();
@@ -6467,7 +6640,6 @@ async function save(saveAs) {
 }
 async function openDialog() {
   if (!desk) return $('#fileOpen').click();
-  if (S.dirty && !confirm('Open another file? Unsaved changes to this document will be lost.')) return;
   const f = await desk.openSVG();
   if (f) openAnyFile(new Uint8Array(f.data), f.name, f.path);
 }
@@ -6531,6 +6703,7 @@ function importChildren(root, target) {
 }
 function openSVG(text, name, filePath) {
   const P = parseSVG(text); if (!P) return;
+  newTab(); // each opened file gets its own tab
   finishPen(); setSel([]);
   content.innerHTML = '<defs></defs>';
   S.activeLayer = null;
@@ -6594,7 +6767,7 @@ function dropFiles(files, at) {
   if (!docs.length) return;
   const f = docs[0], hasArt = layers().some(L => L.children.length);
   if (!hasArt) return openFileObject(f, 'open');
-  if (confirm(`Open “${f.name}” for editing as its own document?\n\nOK = open it (unsaved changes to the current document are lost)\nCancel = place it into the current document`)) return openFileObject(f, 'open');
+  if (confirm(`Open “${f.name}” in a new tab for editing?\n\nOK = open it in its own tab\nCancel = place it into the current document`)) return openFileObject(f, 'open');
   docs.forEach(d => openFileObject(d, 'place', at));
 }
 $('#fileOpen').onchange = e => { const f = e.target.files[0]; if (!f) return; openFileObject(f, 'open'); e.target.value = ''; };
@@ -6604,14 +6777,14 @@ stage.addEventListener('drop', e => { e.preventDefault(); const sid = e.dataTran
 // Never let a stray drop navigate the window away (matters in the desktop app).
 document.addEventListener('dragover', e => e.preventDefault());
 document.addEventListener('drop', e => e.preventDefault());
-window.addEventListener('beforeunload', e => { if (S.dirty) { e.preventDefault(); e.returnValue = ''; } });
+window.addEventListener('beforeunload', e => { if (anyDirty()) { e.preventDefault(); e.returnValue = ''; } });
 // Closing (after the unsaved-changes question) clears the working copy, so the next start is a fresh document.
 // If the app crashes instead, the autosaved copy is still there and is recovered on the next start.
 window.addEventListener('pagehide', () => { try { localStorage.removeItem('vectorstudio.doc'); } catch (e) { /* storage unavailable */ } });
-if (desk) desk.onOpenFile(f => { if (!S.dirty || confirm(`Open “${f.name}”? Unsaved changes to the current document will be lost.`)) openAnyFile(new Uint8Array(f.data), f.name, f.path); });
+if (desk) desk.onOpenFile(f => openAnyFile(new Uint8Array(f.data), f.name, f.path));
 
 function newDoc() {
-  if (!confirm('Start a new document? Unsaved changes to the current one will be lost (save first with Ctrl+S).')) return;
+  newTab(); // a new tab, unless the current one is empty
   finishPen(); setSel([]);
   content.innerHTML = '<defs></defs>'; S.activeLayer = null; newLayer('Layer 1');
   S.doc.abs = [{ name: 'Artboard 1', x: 0, y: 0, w: 800, h: 600 }]; S.doc.ab = 0; S.doc.guideLines = []; S.doc.print = undefined; S.doc.colors = undefined;
@@ -6648,6 +6821,7 @@ const CMD = {
   new: newDoc, open: openDialog, save: () => save(), saveAs: () => save(true), place: () => $('#filePlace').click(),
   png1: () => exportRaster(1), png2: () => exportRaster(2), png4: () => exportRaster(4), jpg: () => exportRaster(1, 'image/jpeg'),
   typeOnPath: () => { const o = S.sel[0]; if (S.sel.length !== 1 || !canTypeOnPath(o)) return flash('Select one path or shape first, then choose Type on a Path.'); const t = makeTypeOnPath(o); if (t) { setTool('text'); openTextEditor(t); } },
+  closeTab: () => closeTab(), nextTab: () => TABS.length > 1 && switchTab((tabIdx + 1) % TABS.length), prevTab: () => TABS.length > 1 && switchTab((tabIdx - 1 + TABS.length) % TABS.length),
   pressPdf: openPress, preflight: openPreflight, updates: () => checkUpdates(), recolor: () => openRecolor(),
   alLeft: () => alignSel('left'), alHC: () => alignSel('hcenter'), alRight: () => alignSel('right'), alTop: () => alignSel('top'), alVC: () => alignSel('vcenter'), alBottom: () => alignSel('bottom'), alDH: () => alignSel('dh'), alDV: () => alignSel('dv'),
   trimView: () => { S.trimView = !S.trimView; renderArtboards(); flash(S.trimView ? 'Trim View: you see the page as it will look after cutting. Press again to show everything.' : 'Trim View off'); },
@@ -6698,6 +6872,9 @@ document.addEventListener('keydown', e => {
     else if (k === 'e') f = e.altKey ? CMD.pdf : CMD.png1;
     else if (code === 'KeyP' && e.shiftKey && e.altKey) f = CMD.pressPdf;
     else if (code === 'KeyR' && e.shiftKey && e.altKey) f = CMD.recolor;
+    else if (code === 'KeyW' && (desk || e.altKey)) f = CMD.closeTab;
+    else if (code === 'Tab') f = e.shiftKey ? CMD.prevTab : CMD.nextTab;
+    else if (code === 'PageDown' && e.altKey) f = CMD.nextTab; else if (code === 'PageUp' && e.altKey) f = CMD.prevTab;
     else if (code === 'KeyT' && e.shiftKey && e.altKey) f = CMD.trimView;
     else if (k === 'p' && e.shiftKey) f = CMD.place;
     else if (k === 'p' && e.altKey) f = openSetup;
@@ -6731,6 +6908,7 @@ document.addEventListener('keydown', e => {
   if (e.altKey) return;
   if (k === 'o' && e.shiftKey) return setTool('artboard');
   if (k === 's' && e.shiftKey) return setTool('sprayer');
+  if (k === 'm' && e.shiftKey) return setTool('shapebuilder');
   if (k === 'x' && e.shiftKey) return swapColors();
   if (k === 'x') return setColorTarget(S.colorTarget === 'fill' ? 'stroke' : 'fill');
   if (k === 'd') return defaultColors();
@@ -6760,6 +6938,7 @@ function boot() {
       S.doc.ab = Math.min(saved.ab || 0, S.doc.abs.length - 1);
       S.doc.name = saved.name || 'Untitled'; restored = layers().length > 0;
       if (restored) setTimeout(() => flash('Recovered the work you hadn’t saved when Vector Studio closed unexpectedly. Save it with Ctrl+S.'), 600);
+      if (Array.isArray(saved.others)) S.recoveredTabs = saved.others;
       if (UNITS[saved.units]) S.doc.units = saved.units; if (Array.isArray(saved.guides)) S.doc.guideLines = saved.guides; if (saved.print) S.doc.print = saved.print; if (saved.colors) S.doc.colors = saved.colors;
     }
   } catch (e) { /* ignore corrupt or unavailable storage */ }
@@ -6779,6 +6958,12 @@ function boot() {
   $('#docName').textContent = S.doc.name + '.svg';
   activeLayer(); setTool('select'); setColorTarget('fill');
   commit(); fit(); setDirty(false);
+  S.welcome = !restored; // the welcome sample is replaced by the first new or opened document
+  wireTabs();
+  if (S.recoveredTabs && S.recoveredTabs.length) { // put recovered documents back in their own tabs
+    for (const t of S.recoveredTabs) TABS.push({ ...t, history: [], future: [] });
+    S.recoveredTabs = null; renderTabs(); autosave();
+  }
   requestAnimationFrame(() => fit());
 }
 boot();
