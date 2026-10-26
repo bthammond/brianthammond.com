@@ -1,7 +1,7 @@
 {
-  "version": "1.14.0",
-  "file": "VectorStudio-1.14.0.html",
-  "sha256": "c4eb0038e0e46dc41c402a3db275a99fb6444068f2bfddd3ff25635cbddbfa0b",
+  "version": "1.15.0",
+  "file": "VectorStudio-1.15.0.html",
+  "sha256": "8686a7c090357dfaca3f6459e9a8d6a3f0cb531f4e2659dd12b4d2ad46efffc6",
   "minShell": "1.9.0",
-  "notes": "New: Width tool (Shift+W) and stroke width profiles for tapered, calligraphic strokes, plus the Scissors tool (C) for cutting paths at a point."
+  "notes": "New: mixed styles inside one text (select letters while typing), text warp (arc, arch, flag, wave and more), sticker-style text outlines, ALL CAPS / small caps / superscript / subscript / underline / strikethrough, and choose any folder when saving in the browser."
 }
