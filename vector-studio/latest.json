@@ -1,7 +1,7 @@
 {
-  "version": "1.15.0",
-  "file": "VectorStudio-1.15.0.html",
-  "sha256": "8686a7c090357dfaca3f6459e9a8d6a3f0cb531f4e2659dd12b4d2ad46efffc6",
+  "version": "1.15.1",
+  "file": "VectorStudio-1.15.1.html",
+  "sha256": "c10a4d0dc3f2d109fccd6fdb6d751d6488919d394c91a51d966be50d309cd434",
   "minShell": "1.9.0",
-  "notes": "New: mixed styles inside one text (select letters while typing), text warp (arc, arch, flag, wave and more), sticker-style text outlines, ALL CAPS / small caps / superscript / subscript / underline / strikethrough, and choose any folder when saving in the browser."
+  "notes": "Tidier Properties panel: collapsible sections (Position & Size, Align, Character, Paragraph, Text Effects, Fill, Stroke, Opacity & Blend, Effects), nothing cut off at the edge, and a draggable edge to make the panel wider."
 }
