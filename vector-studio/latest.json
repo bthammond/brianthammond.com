@@ -1,7 +1,7 @@
 {
-  "version": "1.15.1",
-  "file": "VectorStudio-1.15.1.html",
-  "sha256": "c10a4d0dc3f2d109fccd6fdb6d751d6488919d394c91a51d966be50d309cd434",
+  "version": "1.16.0",
+  "file": "VectorStudio-1.16.0.html",
+  "sha256": "cb7fa9e7eee948261fdff3cc08ca2f6f7c85d3b9908b9da3b99f8bf2791a6d13",
   "minShell": "1.9.0",
-  "notes": "Tidier Properties panel: collapsible sections (Position & Size, Align, Character, Paragraph, Text Effects, Fill, Stroke, Opacity & Blend, Effects), nothing cut off at the edge, and a draggable edge to make the panel wider."
+  "notes": "New: right-click menus, scroll bars on the canvas, update checks in the browser version, and clearer Brushes panel clicks."
 }

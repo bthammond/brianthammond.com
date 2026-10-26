@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' data: blob:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' data: blob: https://www.brianthammond.com">
 <title>Vector Studio</title>
 <!--
   Vector Studio — a self-contained, offline vector illustration app.
@@ -38,6 +38,14 @@ button,input,select{font:inherit;color:inherit}
 .items button:hover{background:var(--accent);color:#fff}
 .items button span{color:var(--muted)}.items button:hover span{color:#fff}
 .items hr{border:0;border-top:1px solid #444;margin:4px 2px}
+#ctxMenu{position:fixed;display:none;min-width:230px;background:#2f2f2f;border:1px solid #444;border-radius:6px;padding:4px;z-index:60;box-shadow:0 8px 24px #0009;font-size:13px}
+#ctxMenu .sub{position:relative}
+#ctxMenu .sub>button::after{content:'▸';color:var(--muted);margin-left:auto}
+#ctxMenu .sub>.items{display:none;position:absolute;left:100%;top:-5px;min-width:210px;background:#2f2f2f;border:1px solid #444;border-radius:6px;padding:4px;box-shadow:0 8px 24px #0009}
+#ctxMenu .sub.left>.items{left:auto;right:100%}
+#ctxMenu .sub:hover>.items,#ctxMenu .sub.open>.items{display:block}
+#ctxMenu button:disabled{opacity:.4;pointer-events:none}
+#ctxMenu .ctxhead{padding:3px 10px 5px;color:var(--muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
 #main{display:grid;grid-template-columns:48px 1fr var(--panelw,292px);min-height:0}
 #toolbar{background:var(--panel);border-right:1px solid #111;display:flex;flex-direction:column;align-items:center;padding:6px 0;gap:2px;overflow-y:auto}
 .tool{width:36px;height:32px;display:grid;place-items:center;background:none;border:0;border-radius:4px;color:#ccc}
@@ -55,6 +63,13 @@ button,input,select{font:inherit;color:inherit}
 .wellbtns button:hover{background:#3a3a3a;color:#fff}
 .none-swatch{background:linear-gradient(to top right,#fff 44%,#e33 44%,#e33 56%,#fff 56%)!important}
 #stage{position:relative;background:var(--canvas);overflow:hidden;cursor:default}
+.sbar{position:absolute;z-index:4;background:rgba(0,0,0,.18)}
+#hScroll{left:0;right:12px;bottom:0;height:12px}
+#vScroll{top:0;bottom:12px;right:0;width:12px}
+#stage[data-rulers] #hScroll{left:20px}#stage[data-rulers] #vScroll{top:20px}
+.sthumb{position:absolute;background:#8a8a8a;border-radius:6px;opacity:.55;transition:opacity .15s}
+#hScroll .sthumb{top:2px;height:8px}#vScroll .sthumb{left:2px;width:8px}
+.sbar:hover .sthumb,.sthumb.on{opacity:.9}
 #stage.c-cross{cursor:crosshair}#stage.c-text{cursor:text}#stage.c-hand,#stage.panning{cursor:grab}#stage.c-zoom{cursor:zoom-in}#stage.c-eye{cursor:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2228%22 height=%2228%22 viewBox=%220 0 28 28%22%3E%3Cpath d=%22M23.6 4.4a3 3 0 0 0-4.2 0l-3.1 3.1-1.3-1.3-1.8 1.8 1.4 1.4-8.9 8.9c-.5.5-.8 1.1-.9 1.8l-.3 2.2-1.6 1.6a1.3 1.3 0 0 0 1.8 1.8l1.6-1.6 2.2-.3c.7-.1 1.3-.4 1.8-.9l8.9-8.9 1.4 1.4 1.8-1.8-1.3-1.3 3.1-3.1a3 3 0 0 0 0-4.2z%22 fill=%22%23fff%22 stroke=%22%23000%22 stroke-width=%221.3%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M7.6 16.8l7.9-7.9 3.6 3.6-7.9 7.9c-.3.3-.7.5-1.1.5l-2.6.4.4-2.6c0-.4.2-.8.5-1.1z%22 fill=%22%232f80ff%22/%3E%3Ccircle cx=%223.2%22 cy=%2224.8%22 r=%221.6%22 fill=%22%23ff2fb4%22 stroke=%22%23fff%22 stroke-width=%22.8%22/%3E%3C/svg%3E") 3 25, crosshair}
 #svg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
 #overlay *{vector-effect:non-scaling-stroke;pointer-events:none}
@@ -860,6 +875,7 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
   <div class="dfoot"><button class="btn" id="flRecheck">Check again</button><button class="btn on" id="flClose">Close</button></div>
 </dialog>
 
+<div id="ctxMenu" class="items" role="menu"></div>
 <div id="updBar"><span id="updMsg"></span><button class="btn on" id="updRestart">Restart now</button><button class="btn" id="updLater">Later</button></div>
 
 <dialog id="dlgRecolor">
@@ -898,6 +914,7 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
       <kbd>H / Space</kbd><span>Hand (pan). Scroll wheel also pans</span>
       <kbd>Z</kbd><span>Zoom (Alt = out). Ctrl + scroll zooms at the cursor</span>
       <kbd>Shift+M</kbd><span>Shape Builder: drag across overlapping areas to merge them, Alt to remove</span>
+      <kbd>Right-click</kbd><span>A menu of what you can do with the object (or the canvas) under the pointer</span>
       <kbd>Shift+K</kbd><span>Knife: drag across shapes to cut them into pieces (Alt = straight line)</span>
       <kbd>Shift+W</kbd><span>Width tool: drag out from any stroke to make it thicker or thinner at that spot. Stroke ▸ profile menu has ready-made tapers</span>
       <kbd>C</kbd><span>Scissors: click a path to cut it there (a closed shape opens up)</span>
@@ -1298,7 +1315,7 @@ function updateView() {
   if (!r.width) return;
   svg.setAttribute('viewBox', `${S.view.x} ${S.view.y} ${r.width / S.view.zoom} ${r.height / S.view.zoom}`);
   $('#gridPath').setAttribute('stroke-width', 0.6 / S.view.zoom);
-  renderArtboards(); drawOverlay(); status(); drawRulers();
+  renderArtboards(); drawOverlay(); status(); drawRulers(); updateScrollbars();
 }
 function zoomAt(f, c) {
   const z = clamp(S.view.zoom * f, 0.03, 64);
@@ -1703,11 +1720,50 @@ function wirePrint() {
 function wireUpdates() {
   $('#updLater').onclick = () => { $('#updBar').style.display = 'none'; };
   $('#updRestart').onclick = () => desk && desk.restartApp();
-  if (!desk || !desk.onUpdateReady) return;
+  if (!desk || !desk.onUpdateReady) return autoCheckBrowser();
   desk.onUpdateReady(u => { $('#updMsg').textContent = `Vector Studio ${u.version} is ready.${u.notes ? ' ' + u.notes : ''} Restart to start using it.`; $('#updBar').style.display = 'flex'; });
 }
+/* The browser version checks https://www.brianthammond.com/vector-studio/latest.json and offers the newest VectorStudio.html
+   (checked against its SHA-256 before it is saved). The desktop app updates itself instead. */
+const VS_VERSION = '1.16.0', UPDATE_BASE = 'https://www.brianthammond.com/vector-studio/';
+const vcmp = (a, b) => { const p = String(a).split('.').map(Number), q = String(b).split('.').map(Number); for (let i = 0; i < 3; i++) { const d = (p[i] || 0) - (q[i] || 0); if (d) return d; } return 0; };
+async function fetchLatest() {
+  const r = await fetch(UPDATE_BASE + 'latest.json?t=' + Date.now(), { cache: 'no-store' });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const info = await r.json(); if (!info || !info.version || !/^[\w.-]+\.html$/.test(info.file || '')) throw new Error('bad feed');
+  return info;
+}
+async function downloadUpdate(info) {
+  flash(`Downloading Vector Studio ${info.version}…`);
+  let buf; try { const r = await fetch(UPDATE_BASE + info.file, { cache: 'no-store' }); if (!r.ok) throw new Error('HTTP ' + r.status); buf = await r.arrayBuffer(); }
+  catch (e) { return alert('The download didn’t work (' + e.message + '). Check your internet connection and try again.'); }
+  const hex = [...new Uint8Array(await crypto.subtle.digest('SHA-256', buf))].map(b => b.toString(16).padStart(2, '0')).join('');
+  if (info.sha256 && hex !== info.sha256) return alert('The downloaded file didn’t match its checksum, so it was not saved. Please try again later.');
+  const saved = await download(new Blob([buf], { type: 'text/html' }), 'VectorStudio.html');
+  if (saved === null) return flash('Update not saved.');
+  $('#updBar').style.display = 'none';
+  alert(`Vector Studio ${info.version} was saved${saved && saved.name ? ' as ' + saved.name : ''}.\n\nSave your work, close this tab, then open the new VectorStudio.html (replace the old file when your computer asks).`);
+}
+function offerUpdate(info) {
+  $('#updMsg').textContent = `Vector Studio ${info.version} is available (you have ${VS_VERSION}).${info.notes ? ' ' + String(info.notes).slice(0, 220) : ''}`;
+  $('#updRestart').textContent = 'Download';
+  $('#updRestart').onclick = () => downloadUpdate(info);
+  $('#updBar').style.display = 'flex';
+}
+async function browserCheck(quiet) {
+  if (!quiet) flash('Checking for updates…');
+  let info; try { info = await fetchLatest(); } catch (e) { if (!quiet) alert('Couldn’t reach www.brianthammond.com to check for updates (' + e.message + '). Check your internet connection and try again.'); return; }
+  try { localStorage.setItem('vectorstudio.lastcheck', String(Date.now())); } catch (e) { /* private window */ }
+  if (vcmp(info.version, VS_VERSION) > 0) offerUpdate(info);
+  else if (!quiet) alert(`Vector Studio is up to date (${VS_VERSION}).`);
+}
+function autoCheckBrowser() { // once a day, quietly
+  if (desk || navigator.webdriver || !/^(file|https?):/.test(location.protocol)) return;
+  let last = 0; try { last = +localStorage.getItem('vectorstudio.lastcheck') || 0; } catch (e) { /* private window */ }
+  if (Date.now() - last > 20 * 3600e3) setTimeout(() => browserCheck(true), 4000);
+}
 async function checkUpdates() {
-  if (!desk || !desk.checkUpdates) return alert('Updates install automatically in the desktop app. In the browser version, download the newest VectorStudio.html.');
+  if (!desk || !desk.checkUpdates) return browserCheck(false);
   flash('Checking for updates…');
   const r = await desk.checkUpdates();
   if (r && r.message) flash(r.message);
@@ -6418,9 +6474,13 @@ function brushSelection(fn, verb) {
 }
 function pickBrush(id) {
   S.brush = id;
-  const targets = S.sel.filter(o => o.hasAttribute('data-brushed') || ARTSHAPES.includes(o.tagName));
-  if (targets.length) { setSel(S.sel.map(o => targets.includes(o) ? applyBrush(o, id) : o)); commit(); }
-  else renderBrushPanel();
+  const name = ((brushDef(id) || { getAttribute: () => '' }).getAttribute('data-name')) || 'This';
+  const targets = S.sel.filter(o => (o.hasAttribute('data-brushed') && o.getAttribute('data-brushed') !== WIDTH_ID) || ARTSHAPES.includes(o.tagName));
+  if (targets.length) { setSel(S.sel.map(o => targets.includes(o) ? applyBrush(o, id) : o)); commit(); return flash(`${name} brush applied to ${targets.length} path${targets.length > 1 ? 's' : ''}.`); }
+  renderBrushPanel();
+  if (S.sel.length) return flash(`Brushes go on paths and shapes. Select a path or shape, or press Esc and drag on the canvas to paint with ${name}.`);
+  setTool('brush');
+  flash(`${name} brush ready: drag on the canvas to paint with it. To use it on an existing path, select the path and click the brush again.`);
 }
 const previewCache = new Map();
 function previewSW(def) {
@@ -8045,13 +8105,141 @@ $('#dsBleedPreset').onchange = () => { const v = $('#dsBleedPreset').value; if (
 for (const id of ['#dsBT', '#dsBB', '#dsBL', '#dsBR']) $(id).addEventListener('input', () => { if ($('#dsBLink').checked) for (const o of ['#dsBT', '#dsBB', '#dsBL', '#dsBR']) if (o !== id) $(o).value = $(id).value; $('#dsBleedPreset').value = ''; });
 $('#helpOk').onclick = () => $('#dlgHelp').close();
 
+/* ---------- right-click menu ----------
+   Right-click an object for what you can do with it; right-click empty canvas for paste, select, zoom and view. */
+function ctxItems() {
+  const sel = S.sel.filter(o => o.isConnected), n = sel.length, o = sel[0];
+  const isText = n === 1 && (o.tagName === 'text' || o.hasAttribute('data-warp')), isImg = n === 1 && o.tagName === 'image';
+  const grouped = sel.some(x => x.tagName === 'g' && !x.hasAttribute('data-brushed') && !x.hasAttribute('data-warp') && !x.hasAttribute('clip-path'));
+  const it = (label, cmd, key, on = true) => ({ label, cmd, key, on });
+  if (!n) return [
+    it('Undo', 'undo', 'Ctrl+Z', S.history.length > 1), it('Redo', 'redo', 'Ctrl+Shift+Z', S.future.length > 0), '-',
+    it('Paste', 'paste', 'Ctrl+V'), it('Select All', 'selectAll', 'Ctrl+A'), '-',
+    { label: 'Zoom', items: [it('Fit Artboard in Window', 'fit', 'Ctrl+0'), it('Fit All', 'fitAll', 'Ctrl+Alt+0'), it('Actual Size', 'actual', 'Ctrl+1'), it('Zoom In', 'zoomIn', 'Ctrl++'), it('Zoom Out', 'zoomOut', 'Ctrl+−')] },
+    { label: 'View', items: [it('Rulers', 'rulers', 'Ctrl+R'), it('Guides', 'guides', 'Ctrl+;'), it('Grid', 'grid', "Ctrl+'"), it('Smart Guides', 'smart', 'Ctrl+U'), it('Snap to Grid', 'snap', "Ctrl+Shift+'"), it('Trim View', 'trimView', '')] },
+    '-', it('Unlock All', 'unlockAll', 'Ctrl+Alt+2'), it('Show All', 'showAll', 'Ctrl+Alt+3'), '-',
+    it('Document Setup…', 'setup', 'Ctrl+Alt+P'), it('Fit Artboard to Artwork', 'abFitArt', ''),
+  ];
+  const items = [
+    it('Undo', 'undo', 'Ctrl+Z', S.history.length > 1), it('Redo', 'redo', 'Ctrl+Shift+Z', S.future.length > 0), '-',
+    it('Cut', 'cut', 'Ctrl+X'), it('Copy', 'copy', 'Ctrl+C'), it('Paste', 'paste', 'Ctrl+V'), it('Duplicate', 'duplicate', 'Ctrl+D'), it('Delete', 'delete', 'Del'), '-',
+  ];
+  if (isText) items.push(it('Edit Text', 'ctxEditText', 'double-click'), it('Create Outlines', 'outlines', 'Ctrl+Shift+O'), '-');
+  if (isImg) items.push(it('Crop Image…', 'crop', ''), it('Image Trace…', 'trace', ''), '-');
+  if (n > 1) items.push(it('Group', 'group', 'Ctrl+G'));
+  if (grouped) items.push(it('Ungroup', 'ungroup', 'Ctrl+Shift+G'));
+  items.push(
+    { label: 'Arrange', items: [it('Bring to Front', 'front', 'Ctrl+Shift+]'), it('Bring Forward', 'forward', 'Ctrl+]'), it('Send Backward', 'backward', 'Ctrl+['), it('Send to Back', 'back', 'Ctrl+Shift+[')] },
+    { label: 'Align', items: [it('Left', 'alLeft'), it('Horizontal Centers', 'alHC'), it('Right', 'alRight'), '-', it('Top', 'alTop'), it('Vertical Centers', 'alVC'), it('Bottom', 'alBottom'), '-', it('Distribute Horizontally', 'alDH', '', n > 2), it('Distribute Vertically', 'alDV', '', n > 2)] },
+    { label: 'Transform', items: [it('Flip Horizontal', 'flipH'), it('Flip Vertical', 'flipV'), it('Rotate 90° Right', 'ctxRot90'), it('Rotate 90° Left', 'ctxRotM90')] },
+  );
+  if (n > 1) items.push({ label: 'Pathfinder', items: [it('Unite', 'pfUnite'), it('Minus Front', 'pfMinusFront'), it('Intersect', 'pfIntersect'), it('Exclude', 'pfExclude'), it('Divide', 'pfDivide')] });
+  items.push('-', it(n > 1 ? 'Make Clipping Mask' : 'Release Clipping Mask', n > 1 ? 'clip' : 'unclip', n > 1 ? 'Ctrl+7' : 'Ctrl+Alt+7', n > 1 || !!(o && o.hasAttribute('clip-path'))));
+  items.push(it('Lock', 'lock', 'Ctrl+2'), it('Hide', 'hide', 'Ctrl+3'), '-');
+  items.push({ label: 'Make', items: [it('Symbol', 'makeSymbol', 'F8'), it('Pattern Swatch', 'makePattern'), it('Convert to Editable Path', 'toPath'), it('Outline Stroke', 'outlineStroke'), it('Offset Path…', 'offsetPath')] });
+  items.push(it('Recolor Artwork…', 'recolor', 'Ctrl+Alt+Shift+R'), it('Fit Artboard to Selection', 'abFitSel', 'Ctrl+Alt+Shift+B'));
+  return items;
+}
+function buildCtx(list, into) {
+  for (const x of list) {
+    if (x === '-') { into.appendChild(document.createElement('hr')); continue; }
+    if (x.items) {
+      const w = document.createElement('div'); w.className = 'sub';
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = x.label; w.appendChild(b);
+      const box = document.createElement('div'); box.className = 'items'; buildCtx(x.items, box); w.appendChild(box);
+      b.onclick = e => { e.stopPropagation(); $$('#ctxMenu .sub.open').forEach(q => q !== w && q.classList.remove('open')); w.classList.toggle('open'); };
+      into.appendChild(w); continue;
+    }
+    const b = document.createElement('button'); b.type = 'button'; b.disabled = !x.on;
+    b.innerHTML = '<b style="font-weight:400"></b><span></span>'; b.firstChild.textContent = x.label; b.lastChild.textContent = x.key || '';
+    b.onclick = () => { hideCtx(); const f = CMD[x.cmd]; if (f) f(); };
+    into.appendChild(b);
+  }
+}
+function hideCtx() { $('#ctxMenu').style.display = 'none'; }
+function showCtx(e) {
+  const m = $('#ctxMenu'); m.innerHTML = '';
+  const n = S.sel.length;
+  if (n) { const h = document.createElement('div'); h.className = 'ctxhead'; h.textContent = n === 1 ? objName(S.sel[0]) : n + ' objects'; m.appendChild(h); }
+  buildCtx(ctxItems(), m);
+  m.style.display = 'block'; m.style.left = '0px'; m.style.top = '0px';
+  const r = m.getBoundingClientRect(), W = innerWidth, Hh = innerHeight;
+  const x = Math.min(e.clientX, W - r.width - 4), y = Math.min(e.clientY, Hh - r.height - 4);
+  m.style.left = Math.max(4, x) + 'px'; m.style.top = Math.max(4, y) + 'px';
+  if (x + r.width + 220 > W) m.querySelectorAll('.sub').forEach(sb => sb.classList.add('left'));
+}
+stage.addEventListener('contextmenu', e => {
+  if (e.target.closest('#textEditor')) return; // the normal menu (spelling, copy/paste) while typing
+  e.preventDefault(); closeMenus();
+  if (S.editing) commitText();
+  if (S.pen) finishPen();
+  const el = document.elementFromPoint(e.clientX, e.clientY), o = el && objectOf(el);
+  if (o && !isLocked(o) && !S.sel.includes(o)) setSel([o]);
+  else if (!o && S.sel.length) { const B = unionBox(S.sel), q = pt(e); if (!B || q.x < B.x || q.y < B.y || q.x > B.x + B.w || q.y > B.y + B.h) setSel([]); } // empty canvas (outside the selection)
+  showCtx(e);
+});
+document.addEventListener('pointerdown', e => { if (!e.target.closest('#ctxMenu')) hideCtx(); }, true);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtx(); }, true);
+window.addEventListener('blur', hideCtx);
+
+/* ---------- scroll bars ----------
+   Bars on the right and bottom show where you are; drag them (or click the track) to move around. */
+let sbExt = null, sbDrag = null;
+function viewRect() { const r = svg.getBoundingClientRect(); return { x: S.view.x, y: S.view.y, w: r.width / S.view.zoom, h: r.height / S.view.zoom }; }
+function scrollExtent() {
+  let B = null;
+  const add = b => { if (!b || !isFinite(b.x)) return; if (!B) B = { ...b }; else { const x = Math.min(B.x, b.x), y = Math.min(B.y, b.y); B.w = Math.max(B.x + B.w, b.x + b.w) - x; B.h = Math.max(B.y + B.h, b.y + b.h) - y; B.x = x; B.y = y; } };
+  for (const a of S.doc.abs) add({ x: a.x, y: a.y, w: a.w, h: a.h });
+  try { const g = content.getBBox(); if (g.width || g.height) add({ x: g.x, y: g.y, w: g.width, h: g.height }); } catch (e) { /* nothing drawn */ }
+  const V = viewRect(); if (!B) B = { ...V };
+  const E = { x: B.x - V.w * 0.5, y: B.y - V.h * 0.5, w: B.w + V.w, h: B.h + V.h };
+  const x0 = Math.min(E.x, V.x), y0 = Math.min(E.y, V.y), x1 = Math.max(E.x + E.w, V.x + V.w), y1 = Math.max(E.y + E.h, V.y + V.h);
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+}
+function updateScrollbars() {
+  const hb = $('#hScroll'), vb = $('#vScroll'); if (!hb) return;
+  const V = viewRect(), E = sbDrag ? sbExt : (sbExt = scrollExtent());
+  const ht = hb.firstChild, vt = vb.firstChild, HW = hb.clientWidth, VH = vb.clientHeight;
+  const hw = Math.max(28, HW * V.w / E.w), vh = Math.max(28, VH * V.h / E.h);
+  ht.style.width = hw + 'px'; ht.style.left = clamp((V.x - E.x) / Math.max(1e-6, E.w - V.w) * (HW - hw), 0, HW - hw) + 'px';
+  vt.style.height = vh + 'px'; vt.style.top = clamp((V.y - E.y) / Math.max(1e-6, E.h - V.h) * (VH - vh), 0, VH - vh) + 'px';
+}
+function wireScrollbars() {
+  for (const [id, axis] of [['hScroll', 'x'], ['vScroll', 'y']]) {
+    const bar = document.createElement('div'); bar.id = id; bar.className = 'sbar'; bar.innerHTML = '<div class="sthumb"></div>'; stage.appendChild(bar);
+    const thumb = bar.firstChild;
+    thumb.addEventListener('pointerdown', e => {
+      e.preventDefault(); e.stopPropagation(); thumb.setPointerCapture(e.pointerId); thumb.classList.add('on');
+      sbExt = scrollExtent(); sbDrag = { axis, c0: axis === 'x' ? e.clientX : e.clientY, v0: axis === 'x' ? S.view.x : S.view.y };
+    });
+    thumb.addEventListener('pointermove', e => {
+      if (!sbDrag || sbDrag.axis !== axis) return;
+      const V = viewRect(), E = sbExt, track = axis === 'x' ? bar.clientWidth - thumb.offsetWidth : bar.clientHeight - thumb.offsetHeight;
+      const span = axis === 'x' ? E.w - V.w : E.h - V.h, d = ((axis === 'x' ? e.clientX : e.clientY) - sbDrag.c0) / Math.max(1, track) * span;
+      if (axis === 'x') S.view.x = clamp(sbDrag.v0 + d, E.x, E.x + span); else S.view.y = clamp(sbDrag.v0 + d, E.y, E.y + span);
+      updateView();
+    });
+    const end = () => { sbDrag = null; thumb.classList.remove('on'); updateScrollbars(); };
+    thumb.addEventListener('pointerup', end); thumb.addEventListener('pointercancel', end);
+    bar.addEventListener('pointerdown', e => { // click the track: move one screen that way
+      if (e.target !== bar) return; e.preventDefault();
+      const r = thumb.getBoundingClientRect(), V = viewRect(), before = axis === 'x' ? e.clientX < r.left : e.clientY < r.top;
+      if (axis === 'x') S.view.x += (before ? -1 : 1) * V.w * 0.9; else S.view.y += (before ? -1 : 1) * V.h * 0.9;
+      updateView();
+    });
+  }
+  updateScrollbars();
+}
+
 /* ---------- menus & commands ---------- */
 const CMD = {
   new: newDoc, open: openDialog, save: () => save(), saveAs: () => save(true), place: () => $('#filePlace').click(),
   png1: () => exportRaster(1), png2: () => exportRaster(2), png4: () => exportRaster(4), jpg: () => exportRaster(1, 'image/jpeg'),
   typeOnPath: () => { const o = S.sel[0]; if (S.sel.length !== 1 || !canTypeOnPath(o)) return flash('Select one path or shape first, then choose Type on a Path.'); const t = makeTypeOnPath(o); if (t) { setTool('text'); openTextEditor(t); } },
   closeTab: () => closeTab(), nextTab: () => TABS.length > 1 && switchTab((tabIdx + 1) % TABS.length), prevTab: () => TABS.length > 1 && switchTab((tabIdx - 1 + TABS.length) % TABS.length),
-  pressPdf: openPress, preflight: openPreflight, updates: () => checkUpdates(), recolor: () => openRecolor(), width: () => setTool('width'), scissors: () => setTool('scissors'), knife: () => setTool('knife'), makePattern: () => makePattern(),
+  pressPdf: openPress, preflight: openPreflight, updates: () => checkUpdates(), recolor: () => openRecolor(),
+  ctxEditText: () => { const o = S.sel[0]; const t = o && (o.tagName === 'text' ? o : o.querySelector(':scope > text')); if (t) { setTool('text'); openTextEditor(t); } },
+  ctxRot90: () => { $('#pRot').value = 90; $('#btnRot').click(); }, ctxRotM90: () => { $('#pRot').value = -90; $('#btnRot').click(); }, width: () => setTool('width'), scissors: () => setTool('scissors'), knife: () => setTool('knife'), makePattern: () => makePattern(),
   alLeft: () => alignSel('left'), alHC: () => alignSel('hcenter'), alRight: () => alignSel('right'), alTop: () => alignSel('top'), alVC: () => alignSel('vcenter'), alBottom: () => alignSel('bottom'), alDH: () => alignSel('dh'), alDV: () => alignSel('dv'),
   trimView: () => { S.trimView = !S.trimView; renderArtboards(); flash(S.trimView ? 'Trim View: you see the page as it will look after cutting. Press again to show everything.' : 'Trim View off'); },
   printLines: () => { S.doc.print = { ...printSet(), show: !printSet().show }; renderArtboards(); flash(printSet().show ? 'Bleed and safety lines shown' : 'Bleed and safety lines hidden'); },
@@ -8158,7 +8346,7 @@ function status() {
 
 /* ---------- boot ---------- */
 function boot() {
-  buildToolbar(); wirePanel(); wireLayers(); wireArtboards(); wireBrushes(); wireSymbols(); wireTrace(); wireFonts(); wireOffset(); wireEffects(); wireKern(); wireTextExtras(); wireSections(); wireAdjust(); wireLogoPack(); wireUnits(); wireRulers(); wirePrint(); wireUpdates(); wireCmyk(); wireRecolor();
+  buildToolbar(); wirePanel(); wireLayers(); wireArtboards(); wireBrushes(); wireSymbols(); wireTrace(); wireFonts(); wireOffset(); wireEffects(); wireKern(); wireTextExtras(); wireSections(); wireScrollbars(); wireAdjust(); wireLogoPack(); wireUnits(); wireRulers(); wirePrint(); wireUpdates(); wireCmyk(); wireRecolor();
   $$('[data-align]').forEach(b => b.onclick = () => alignSel(b.dataset.align));
   $('#btnRecolor').onclick = () => openRecolor(); wireCrop(); wireKit(); wireTemplates();
   let restored = false;
