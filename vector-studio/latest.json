@@ -1,0 +1,7 @@
+{
+  "version": "1.10.0",
+  "file": "VectorStudio-1.10.0.html",
+  "sha256": "dd42d5dac68f7e1c499f9b78efde4c054ac65a53d9b5b39b89e6ba93ad19bb41",
+  "minShell": "1.9.0",
+  "notes": "New: Align & Distribute, CMYK and spot colors, CMYK press PDFs, and Recolor Artwork."
+}
