@@ -1,7 +1,7 @@
 {
-  "version": "1.11.0",
-  "file": "VectorStudio-1.11.0.html",
-  "sha256": "b339d57fd54c414a79b249e82f491e6c8c4063cb33e829ba06826dfe0fae1927",
+  "version": "1.12.0",
+  "file": "VectorStudio-1.12.0.html",
+  "sha256": "b5f6f440f25878af417b67ced14dd8b04f8dc0fdf331ab6b501d5a1cd71689e8",
   "minShell": "1.9.0",
-  "notes": "New: Shape Builder (Shift+M), documents in tabs, Align & Distribute, CMYK and spot colors, and Recolor Artwork."
+  "notes": "New: pattern fills (15 built-in patterns plus your own from any artwork), outer glow, inner glow, one-click Neon, and blur."
 }
