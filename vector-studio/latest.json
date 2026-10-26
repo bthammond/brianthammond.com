@@ -1,7 +1,7 @@
 {
-  "version": "1.13.0",
-  "file": "VectorStudio-1.13.0.html",
-  "sha256": "f8ea213521b3b57919ad195e3348ca50e804c4cf0b7f5b062b79b1d3d16a9e52",
+  "version": "1.14.0",
+  "file": "VectorStudio-1.14.0.html",
+  "sha256": "c4eb0038e0e46dc41c402a3db275a99fb6444068f2bfddd3ff25635cbddbfa0b",
   "minShell": "1.9.0",
-  "notes": "New: kerning (Alt+Left/Right between two letters, or pick the pair in Properties) and the Knife tool (Shift+K) for cutting shapes apart."
+  "notes": "New: Width tool (Shift+W) and stroke width profiles for tapered, calligraphic strokes, plus the Scissors tool (C) for cutting paths at a point."
 }
