@@ -1,7 +1,7 @@
 {
-  "version": "1.16.1",
-  "file": "VectorStudio-1.16.1.html",
-  "sha256": "e33e9307b224420f97648156a5247e61ce622f547b413683a0e26ffbf7d8d6b5",
+  "version": "1.16.2",
+  "file": "VectorStudio-1.16.2.html",
+  "sha256": "ecd27f5f3ec6268a43c4878a95fb2701f00cac784935e1fabff3a55891fffc55",
   "minShell": "1.9.0",
-  "notes": "New: zoom controls in the status bar (− / + buttons, slider, type an exact zoom, and a menu with Fit Artboard, Fit Selection and preset sizes)."
+  "notes": "New: File > Document Properties & Metadata (Ctrl+Alt+Shift+I): title, author, description, keywords, client/project, version and status, copyright notice and usage terms, plus a Document Info tab (file, artboards, layers, fonts, colors, images). The metadata is saved in the SVG and written into PDF, EPS and PNG exports."
 }

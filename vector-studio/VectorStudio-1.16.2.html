@@ -278,6 +278,22 @@ dialog::backdrop{background:#0007}
 dialog h2{margin:0;padding:12px 16px;font-size:14px;border-bottom:1px solid #444}
 dialog .dbody{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-content:flex-end;gap:8px}
+#dlgProps{width:min(620px,96vw)}
+#dlgProps .dbody{height:380px;overflow-y:auto;box-sizing:border-box}
+#dlgProps .row>label:first-child{min-width:92px}
+#dlgProps .row input[type=text],#dlgProps textarea{flex:1;min-width:0}
+#dlgProps .row.top{align-items:flex-start}
+#dlgProps .row.top>label{padding-top:4px}
+#dlgProps textarea{background:#1f1f1f;border:1px solid #444;border-radius:4px;color:var(--text);font:inherit;padding:4px 6px;resize:vertical}
+.ptabs{display:flex;gap:2px;padding:8px 16px 0;border-bottom:1px solid #444}
+.ptabs button{background:none;border:1px solid transparent;border-bottom:none;color:var(--muted);padding:6px 12px;border-radius:5px 5px 0 0;cursor:pointer;font:inherit}
+.ptabs button:hover{color:var(--text)}
+.ptabs button.on{background:#383838;border-color:#4a4a4a;color:var(--text);margin-bottom:-1px}
+.dpinfo{display:grid;grid-template-columns:150px 1fr;gap:5px 12px;font-size:12.5px;user-select:text}
+.dpinfo .k{color:var(--muted)}
+.dpinfo .v{word-break:break-word}
+.dpinfo .h{grid-column:1/-1;font-weight:600;margin-top:8px;padding-bottom:2px;border-bottom:1px solid #444}
+.dpinfo .h:first-child{margin-top:0}
 .pf .btn{display:flex;align-items:center;gap:5px;padding:3px 7px}
 .pf svg{width:16px;height:16px;flex:none}
 #brushList{display:grid;grid-template-columns:1fr 1fr;gap:4px;max-height:310px;overflow-y:auto}
@@ -370,6 +386,7 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
       <button data-cmd="logoPack">Export Logo Pack (.zip)… <span>Ctrl+Alt+L</span></button>
       <hr>
       <button data-cmd="setup">Document Setup… <span>Ctrl+Alt+P</span></button>
+      <button data-cmd="docProps">Document Properties &amp; Metadata… <span>Ctrl+Alt+Shift+I</span></button>
     </div></div>
     <div class="menu"><button>Edit</button><div class="items">
       <button data-cmd="undo">Undo <span>Ctrl+Z</span></button>
@@ -771,7 +788,35 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
     <div class="row"><label>Safety</label><input type="text" inputmode="decimal" id="dsSafe" title="Keep text and important art at least this far inside the trim"><span class="muted uLbl">px</span><span class="muted">inside the trim</span></div>
     <div class="row"><label></label><label style="min-width:0"><input type="checkbox" id="dsShowPrint" checked> Show bleed (red) and safety (dashed) lines</label></div>
   </div>
-  <div class="dfoot"><button class="btn" id="dsCancel">Cancel</button><button class="btn on" id="dsOk">OK</button></div>
+  <div class="dfoot"><button class="btn" id="dsProps" style="margin-right:auto" title="Title, author, copyright, keywords and document info">Properties &amp; Metadata…</button><button class="btn" id="dsCancel">Cancel</button><button class="btn on" id="dsOk">OK</button></div>
+</dialog>
+
+<dialog id="dlgProps">
+  <h2>Document Properties</h2>
+  <div class="ptabs"><button class="on" data-ptab="meta">Description</button><button data-ptab="rights">Copyright</button><button data-ptab="info">Document Info</button></div>
+  <div class="dbody" data-ppane="meta">
+    <div class="row"><label>Title</label><input type="text" id="dpTitle" placeholder="Shown in PDF viewers, file browsers and search"></div>
+    <div class="row"><label>Author</label><input type="text" id="dpAuthor" placeholder="Your name or company"></div>
+    <div class="row"><label>Author title</label><input type="text" id="dpRole" placeholder="e.g. Designer"></div>
+    <div class="row top"><label>Description</label><textarea id="dpDesc" rows="3" placeholder="What this file is"></textarea></div>
+    <div class="row"><label>Keywords</label><input type="text" id="dpKeys" placeholder="logo, brand, spring campaign (comma separated)"></div>
+    <div class="row"><label>Client</label><input type="text" id="dpClient"><label style="min-width:auto">Project</label><input type="text" id="dpProject"></div>
+    <div class="row"><label>Version</label><input type="text" id="dpRev" placeholder="e.g. v2 / Final" style="flex:0 0 130px"><label style="min-width:auto">Status</label><select id="dpStage" style="flex:1"><option value="">—</option><option>Draft</option><option>In review</option><option>Approved</option><option>Final</option></select></div>
+    <div class="row top"><label>Notes</label><textarea id="dpNotes" rows="2" placeholder="Private notes (saved in the file)"></textarea></div>
+  </div>
+  <div class="dbody hidden" data-ppane="rights">
+    <div class="row"><label>Copyright</label><select id="dpStatus"><option value="">Unknown</option><option value="c">Copyrighted</option><option value="pd">Public domain</option></select></div>
+    <div class="row"><label>Notice</label><input type="text" id="dpCopy" placeholder="© 2026 Your Name. All rights reserved."><button class="btn" id="dpCopyFill" title="Fill in from the author and this year">Auto</button></div>
+    <div class="row top"><label>Usage terms</label><textarea id="dpTerms" rows="2" placeholder="e.g. Licensed to Client for web and print use only"></textarea></div>
+    <div class="row"><label>License URL</label><input type="text" id="dpLicense" placeholder="https://…"></div>
+    <div class="row"><label>Website</label><input type="text" id="dpUrl" placeholder="https://yourwebsite.com"></div>
+    <div class="row"><label>Email</label><input type="text" id="dpEmail" placeholder="you@example.com"></div>
+    <div class="muted">Saved inside the .svg (standard Dublin Core / XMP metadata), and written into PDF, EPS and PNG exports.</div>
+  </div>
+  <div class="dbody hidden" data-ppane="info">
+    <div id="dpInfo" class="dpinfo"></div>
+  </div>
+  <div class="dfoot"><button class="btn" id="dpCopyInfo" style="margin-right:auto" title="Copy the document info to the clipboard">Copy Info</button><button class="btn" id="dpCancel">Cancel</button><button class="btn on" id="dpOk">OK</button></div>
 </dialog>
 
 <dialog id="dlgBrush">
@@ -1733,7 +1778,7 @@ function wireUpdates() {
 }
 /* The browser version checks https://www.brianthammond.com/vector-studio/latest.json and offers the newest VectorStudio.html
    (checked against its SHA-256 before it is saved). The desktop app updates itself instead. */
-const VS_VERSION = '1.16.1', UPDATE_BASE = 'https://www.brianthammond.com/vector-studio/';
+const VS_VERSION = '1.16.2', UPDATE_BASE = 'https://www.brianthammond.com/vector-studio/';
 const vcmp = (a, b) => { const p = String(a).split('.').map(Number), q = String(b).split('.').map(Number); for (let i = 0; i < 3; i++) { const d = (p[i] || 0) - (q[i] || 0); if (d) return d; } return 0; };
 async function fetchLatest() {
   const r = await fetch(UPDATE_BASE + 'latest.json?t=' + Date.now(), { cache: 'no-store' });
@@ -2163,7 +2208,7 @@ function undo() { finishPen(); if (S.history.length < 2) return; S.future.push(S
 function redo() { const s = S.future.pop(); if (!s) return; S.history.push(s); restore(s); }
 function autosave() {
   const others = TABS.map((t, i) => (i === tabIdx || !t ? null : { html: t.html, doc: t.doc, view: t.view, filePath: t.filePath, dirty: t.dirty, li: t.li })).filter(Boolean);
-  try { localStorage.setItem('vectorstudio.doc', JSON.stringify({ html: content.innerHTML, abs: S.doc.abs, ab: S.doc.ab, name: S.doc.name, units: S.doc.units, guides: S.doc.guideLines, print: S.doc.print, colors: S.doc.colors, others })); } catch (e) { /* storage unavailable or full */ }
+  try { localStorage.setItem('vectorstudio.doc', JSON.stringify({ html: content.innerHTML, abs: S.doc.abs, ab: S.doc.ab, name: S.doc.name, units: S.doc.units, guides: S.doc.guideLines, print: S.doc.print, colors: S.doc.colors, meta: S.doc.meta, others })); } catch (e) { /* storage unavailable or full */ }
 }
 
 /* ---------- tools ---------- */
@@ -7154,7 +7199,10 @@ async function buildPDF(boards, title, press) {
   D.set(pagesId, `<< /Type /Pages /Kids [${kids.map(k => k + ' 0 R').join(' ')}] /Count ${kids.length} >>`);
   D.set(catalog, `<< /Type /Catalog /Pages ${pagesId} 0 R >>`);
   const t = new Date(), p2 = v => String(v).padStart(2, '0');
-  const info = D.add(`<< /Title ${pdfTextString(title)} /Creator (Vector Studio) /Producer (Vector Studio) /CreationDate (D:${t.getFullYear()}${p2(t.getMonth() + 1)}${p2(t.getDate())}${p2(t.getHours())}${p2(t.getMinutes())}${p2(t.getSeconds())}) >>`);
+  const pd = d => `(D:${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}${p2(d.getHours())}${p2(d.getMinutes())}${p2(d.getSeconds())})`, m = docMeta();
+  const cd = m.created && !isNaN(new Date(m.created)) ? new Date(m.created) : t;
+  const extra = [m.author && `/Author ${pdfTextString(m.author)}`, m.desc && `/Subject ${pdfTextString(m.desc)}`, metaKeywords(m).length && `/Keywords ${pdfTextString(metaKeywords(m).join(', '))}`, m.copyright && `/Copyright ${pdfTextString(m.copyright)}`].filter(Boolean).join(' ');
+  const info = D.add(`<< /Title ${pdfTextString(m.title || title)}${extra ? ' ' + extra : ''} /Creator (Vector Studio ${VS_VERSION}) /Producer (Vector Studio ${VS_VERSION}) /CreationDate ${pd(cd)} /ModDate ${pd(t)} >>`);
   return D.build(catalog, info);
 }
 async function buildEPS(ab, title) {
@@ -7162,10 +7210,10 @@ async function buildEPS(ab, title) {
   const B = new PsOut();
   B.ops.push(`[1 0 0 -1 ${fmt(-ab.x)} ${fmt(ab.y + ab.h)}] concat`);
   for (const L of layers()) await drawEl(L, B, 1);
-  const safe = title.replace(/[^\x20-\x7e]/g, '?');
+  const safe = asciiDsc(title);
   return enc([
     '%!PS-Adobe-3.0 EPSF-3.0', `%%BoundingBox: 0 0 ${Math.ceil(ab.w)} ${Math.ceil(ab.h)}`, `%%HiResBoundingBox: 0 0 ${fmt(ab.w)} ${fmt(ab.h)}`,
-    `%%Title: ${safe}`, '%%Creator: Vector Studio', `%%CreationDate: ${new Date().toISOString()}`, '%%LanguageLevel: 3', '%%DocumentData: Clean7Bit', '%%EndComments',
+    `%%Title: ${safe}`, `%%Creator: Vector Studio ${VS_VERSION}`, ...(docMeta().author ? [`%%For: ${asciiDsc(docMeta().author)}`] : []), ...(docMeta().copyright ? [`%%Copyright: ${asciiDsc(docMeta().copyright)}`] : []), `%%CreationDate: ${new Date().toISOString()}`, '%%LanguageLevel: 3', '%%DocumentData: Clean7Bit', '%%EndComments',
     '%%BeginProlog', '/reencodeISO { findfont dup length dict begin { 1 index /FID ne { def } { pop pop } ifelse } forall /Encoding ISOLatin1Encoding def currentdict end definefont pop } bind def', '%%EndProlog',
     '%%BeginSetup', ...[...B.fonts.keys()].map(f => `/${f}-ISO /${f} reencodeISO`), '%%EndSetup',
     'gsave', ...B.ops.filter(Boolean), 'grestore', 'showpage', '%%EOF', '',
@@ -7180,9 +7228,9 @@ async function exportVector(kind) {
   await new Promise(r => setTimeout(r, 30));
   try {
     let bytes, name, type;
-    if (kind === 'pdf') { bytes = await buildPDF(S.doc.abs, base); name = base + '.pdf'; type = 'application/pdf'; }
+    if (kind === 'pdf') { bytes = await buildPDF(S.doc.abs, metaTitle()); name = base + '.pdf'; type = 'application/pdf'; }
     else if (kind === 'ai') { bytes = await buildPDF([ab], base); name = safeName(base + (multi ? '-' + ab.name : '')) + '.ai'; type = 'application/postscript'; }
-    else { bytes = await buildEPS(ab, base); name = safeName(base + (multi ? '-' + ab.name : '')) + '.eps'; type = 'application/postscript'; }
+    else { bytes = await buildEPS(ab, docMeta().title || base); name = safeName(base + (multi ? '-' + ab.name : '')) + '.eps'; type = 'application/postscript'; }
     const saved = await download(new Blob([bytes], { type }), name);
     if (saved === null || (desk && !saved)) return flash('Export cancelled.');
     flash(kind === 'pdf' ? `Exported ${name} (${S.doc.abs.length} page${S.doc.abs.length > 1 ? 's' : ''}).` : `Exported ${name}${multi ? ' (current artboard)' : ''}.`);
@@ -7900,6 +7948,134 @@ async function convertPdfPage(ctx, page, vp, ops, ox) {
 }
 
 const escAttr = v => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+/* ---------- document properties & metadata ----------
+   Kept in S.doc.meta and saved three ways: data-meta (exact round trip), <title>/<desc> (what browsers and file
+   browsers show) and an RDF <metadata> block with Dublin Core + XMP Rights, which Illustrator, Inkscape and
+   asset managers read. PDF, EPS and PNG exports carry the same fields. */
+const META_KEYS = ['title', 'author', 'role', 'desc', 'keywords', 'client', 'project', 'rev', 'stage', 'notes', 'status', 'copyright', 'terms', 'license', 'url', 'email', 'created', 'modified'];
+const escXml = v => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function docMeta() { const m = S.doc.meta || {}; const o = {}; for (const k of META_KEYS) if (m[k]) o[k] = String(m[k]); return o; }
+const metaKeywords = m => (m.keywords || '').split(/[,;]/).map(v => v.trim()).filter(Boolean);
+const metaTitle = () => docMeta().title || fileBase();
+function metaMarkup() {
+  const m = docMeta(); if (!Object.keys(m).length) return '';
+  const li = v => `<rdf:li>${escXml(v)}</rdf:li>`, alt = v => `<rdf:Alt><rdf:li xml:lang="x-default">${escXml(v)}</rdf:li></rdf:Alt>`;
+  const rdf = [
+    m.title && `<dc:title>${alt(m.title)}</dc:title>`, m.author && `<dc:creator><rdf:Seq>${li(m.author)}</rdf:Seq></dc:creator>`,
+    m.desc && `<dc:description>${alt(m.desc)}</dc:description>`, metaKeywords(m).length && `<dc:subject><rdf:Bag>${metaKeywords(m).map(li).join('')}</rdf:Bag></dc:subject>`,
+    m.copyright && `<dc:rights>${alt(m.copyright)}</dc:rights>`, m.created && `<dc:date>${escXml(m.created)}</dc:date>`, '<dc:format>image/svg+xml</dc:format>',
+    m.status && `<xmpRights:Marked>${m.status === 'c' ? 'True' : 'False'}</xmpRights:Marked>`, m.terms && `<xmpRights:UsageTerms>${alt(m.terms)}</xmpRights:UsageTerms>`,
+    (m.license || m.url) && `<xmpRights:WebStatement>${escXml(m.license || m.url)}</xmpRights:WebStatement>`,
+    m.modified && `<xmp:ModifyDate>${escXml(m.modified)}</xmp:ModifyDate>`, `<xmp:CreatorTool>Vector Studio ${VS_VERSION}</xmp:CreatorTool>`,
+  ].filter(Boolean).join('');
+  return (m.title ? `<title>${escXml(m.title)}</title>\n` : '') + (m.desc ? `<desc>${escXml(m.desc)}</desc>\n` : '')
+    + `<metadata><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xmp="http://ns.adobe.com/xap/1.0/" xmlns:xmpRights="http://ns.adobe.com/xap/1.0/rights/"><rdf:Description rdf:about="">${rdf}</rdf:Description></rdf:RDF></metadata>\n`;
+}
+// Read metadata from an SVG made elsewhere (Inkscape, Illustrator…) when it has no data-meta of ours.
+function readForeignMeta(root) {
+  const m = {}, txt = el => el && el.textContent.trim();
+  const pick = (local) => { const els = root.getElementsByTagNameNS('*', local); return els.length ? els[0] : null; };
+  const t = [...root.children].find(c => c.localName === 'title'), d = [...root.children].find(c => c.localName === 'desc');
+  const dcT = pick('title'), dcC = pick('creator'), dcD = pick('description'), dcS = pick('subject'), dcR = pick('rights'), dcDate = pick('date');
+  m.title = txt(dcT && dcT !== t ? dcT : t) || ''; m.desc = txt(dcD) || txt(d) || '';
+  if (dcC) m.author = [...dcC.getElementsByTagNameNS('*', 'li')].map(txt).filter(Boolean).join(', ') || txt(dcC);
+  if (dcS) { const lis = [...dcS.getElementsByTagNameNS('*', 'li')].map(txt).filter(Boolean); m.keywords = lis.length ? lis.join(', ') : txt(dcS); }
+  if (dcR) m.copyright = txt(dcR); if (dcDate) m.created = txt(dcDate);
+  for (const k of Object.keys(m)) if (!m[k]) delete m[k];
+  return Object.keys(m).length ? m : undefined;
+}
+const asciiDsc = v => String(v).replace(/[\u2013\u2014]/g, '-').replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/\u00a9/g, '(c)').replace(/\u00ae/g, '(R)').replace(/\u2122/g, '(TM)').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\x20-\x7e]/g, '?');
+function openProps(tab) {
+  if (S.editing) commitText();
+  const m = S.doc.meta || {};
+  const set = (id, v) => { $(id).value = v || ''; };
+  set('#dpTitle', m.title); set('#dpAuthor', m.author); set('#dpRole', m.role); set('#dpDesc', m.desc); set('#dpKeys', m.keywords); set('#dpClient', m.client); set('#dpProject', m.project);
+  set('#dpRev', m.rev); set('#dpStage', m.stage); set('#dpNotes', m.notes); set('#dpStatus', m.status); set('#dpCopy', m.copyright); set('#dpTerms', m.terms); set('#dpLicense', m.license); set('#dpUrl', m.url); set('#dpEmail', m.email);
+  if (!m.author) { try { $('#dpAuthor').placeholder = localStorage.getItem('vectorstudio.author') || 'Your name or company'; } catch (e) { /* storage unavailable */ } }
+  renderDocInfo(); propsTab(tab || 'meta');
+  $('#dlgProps').showModal(); setTimeout(() => $('#dpTitle').focus(), 30);
+}
+function propsTab(t) { $$('.ptabs button').forEach(b => b.classList.toggle('on', b.dataset.ptab === t)); $$('[data-ppane]').forEach(p => p.classList.toggle('hidden', p.dataset.ppane !== t)); }
+const fmtBytes = n => n < 1024 ? n + ' bytes' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB';
+const fmtDate = v => { const d = new Date(v); return v && !isNaN(d) ? d.toLocaleString() : '—'; };
+function docInfo() {
+  const objs = layers().flatMap(L => [...L.querySelectorAll('*')]).filter(e => !e.closest('defs'));
+  const tag = t => objs.filter(e => e.tagName === t).length;
+  const fonts = new Set(); for (const e of [...content.querySelectorAll('[font-family]')]) fonts.add(e.getAttribute('font-family').split(',')[0].replace(/["']/g, '').trim());
+  const imgs = [...content.querySelectorAll('image')], imgBytes = imgs.reduce((a, im) => a + ((im.getAttribute('href') || im.getAttributeNS(XLINK, 'href') || '').length * 0.75), 0);
+  const top = layers().reduce((a, L) => a + L.children.length, 0), m = docMeta(), pr = S.doc.print, sp = S.doc.colors && S.doc.colors.spots ? Object.entries(S.doc.colors.spots) : [];
+  const size = new Blob([serialize()]).size, fills = new Set();
+  for (const e of objs) for (const a of ['fill', 'stroke']) { const v = e.getAttribute(a); if (v && /^#[0-9a-f]{3,8}$/i.test(v)) fills.add(v.toLowerCase()); }
+  const rows = [
+    ['File'],
+    ['Name', fileBase() + '.svg'], ['Location', S.filePath || (S.fh ? S.fh.name + ' (chosen folder)' : 'Not saved to disk yet')], ['Size when saved', fmtBytes(size)],
+    ['Created', fmtDate(m.created)], ['Last saved', fmtDate(m.modified)], ['Unsaved changes', S.dirty ? 'Yes' : 'No'], ['Made with', 'Vector Studio ' + VS_VERSION],
+    ['Pages'],
+    ['Units', UNITS[uKey()][1]], ['Artboards', String(S.doc.abs.length)],
+    ...S.doc.abs.map((a, i) => [`  ${i + 1}. ${a.name}`, `${fmtU(a.w)} × ${fmtU(a.h, true)}${uKey() !== 'px' ? `  (${Math.round(a.w)} × ${Math.round(a.h)} px)` : ''}`]),
+    ['Bleed', pr && pr.bleed && (pr.bleed.t || pr.bleed.r || pr.bleed.b || pr.bleed.l) ? `${fmtU(pr.bleed.t)} / ${fmtU(pr.bleed.r)} / ${fmtU(pr.bleed.b)} / ${fmtU(pr.bleed.l, true)} (T/R/B/L)` : 'None'],
+    ['Safety margin', pr && pr.safety ? fmtU(pr.safety, true) : 'None'],
+    ['Contents'],
+    ['Layers', String(layers().length)], ['Top-level objects', String(top)], ['All shapes & groups', String(objs.length)],
+    ['Text objects', String(tag('text'))], ['Paths', String(tag('path'))], ['Groups', String(tag('g'))],
+    ['Images', imgs.length ? `${imgs.length} embedded (about ${fmtBytes(Math.round(imgBytes))})` : 'None'],
+    ['Symbols', String(content.querySelectorAll('defs symbol').length)], ['Gradients', String(content.querySelectorAll('defs linearGradient, defs radialGradient').length)], ['Patterns', String(content.querySelectorAll('defs pattern').length)],
+    ['Colors'],
+    ['Color mode', 'RGB' + (S.doc.colors && Object.keys(S.doc.colors.cmyk || {}).length ? ` (with ${Object.keys(S.doc.colors.cmyk).length} CMYK-defined colors)` : '')],
+    ['Solid colors used', String(fills.size)], ['Spot colors', sp.length ? sp.map(([h, v]) => `${v.name} (${h})`).join(', ') : 'None'],
+    ['Fonts'],
+    ['Fonts used', fonts.size ? [...fonts].sort().join(', ') : 'None'],
+  ];
+  return rows;
+}
+function renderDocInfo() {
+  const box = $('#dpInfo'); box.innerHTML = '';
+  for (const [k, v] of docInfo()) {
+    const a = document.createElement('div');
+    if (v === undefined) { a.className = 'h'; a.textContent = k; box.appendChild(a); continue; }
+    a.className = 'k'; a.textContent = k.trim(); if (k.startsWith('  ')) a.style.paddingLeft = '12px';
+    const b = document.createElement('div'); b.className = 'v'; b.textContent = v; box.append(a, b);
+  }
+}
+function wireProps() {
+  $$('.ptabs button').forEach(b => b.onclick = () => { if (b.dataset.ptab === 'info') renderDocInfo(); propsTab(b.dataset.ptab); });
+  $('#dpCancel').onclick = () => $('#dlgProps').close();
+  $('#dsProps').onclick = () => { $('#dlgSetup').close(); openProps(); };
+  $('#dpCopyFill').onclick = () => { const who = $('#dpAuthor').value.trim() || $('#dpAuthor').placeholder.replace(/^Your name or company$/, '') || 'Your Name'; $('#dpCopy').value = `© ${new Date().getFullYear()} ${who}. All rights reserved.`; if (!$('#dpStatus').value) $('#dpStatus').value = 'c'; };
+  $('#dpCopyInfo').onclick = async () => {
+    const m = docMeta(), lines = [];
+    for (const [k, l] of [['title', 'Title'], ['author', 'Author'], ['client', 'Client'], ['project', 'Project'], ['rev', 'Version'], ['copyright', 'Copyright']]) if (m[k]) lines.push(`${l}: ${m[k]}`);
+    for (const [k, v] of docInfo()) lines.push(v === undefined ? `\n${k.toUpperCase()}` : `${k.trim()}: ${v}`);
+    try { await navigator.clipboard.writeText(lines.join('\n').trim()); flash('Document info copied.'); } catch (e) { flash('Couldn’t reach the clipboard.'); }
+  };
+  $('#dpOk').onclick = () => {
+    const v = id => $(id).value.trim(), prev = S.doc.meta || {};
+    const m = { title: v('#dpTitle'), author: v('#dpAuthor'), role: v('#dpRole'), desc: v('#dpDesc'), keywords: v('#dpKeys'), client: v('#dpClient'), project: v('#dpProject'), rev: v('#dpRev'), stage: $('#dpStage').value, notes: v('#dpNotes'), status: $('#dpStatus').value, copyright: v('#dpCopy'), terms: v('#dpTerms'), license: v('#dpLicense'), url: v('#dpUrl'), email: v('#dpEmail'), created: prev.created || '', modified: prev.modified || '' };
+    for (const k of Object.keys(m)) if (!m[k]) delete m[k];
+    const changed = JSON.stringify(m) !== JSON.stringify(Object.fromEntries(Object.entries(prev).filter(([, x]) => x)));
+    S.doc.meta = Object.keys(m).length ? m : undefined;
+    if (m.author) { try { localStorage.setItem('vectorstudio.author', m.author); } catch (e) { /* storage unavailable */ } }
+    $('#dlgProps').close();
+    if (changed) { setDirty(true); autosave(); flash('Document properties updated.'); }
+  };
+}
+// PNG text chunks (Title, Author, Description, Copyright…) so the metadata travels with exported images.
+async function pngWithMeta(blob) {
+  const m = docMeta(); if (!blob || !Object.keys(m).length) return blob;
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  if (bytes[0] !== 0x89 || bytes[1] !== 0x50) return blob;
+  const latin = v => String(v).replace(/[^\x20-\x7e\xa0-\xff\n]/g, '?');
+  const fields = [['Title', m.title], ['Author', m.author], ['Description', m.desc], ['Copyright', m.copyright], ['Disclaimer', m.terms], ['Comment', metaKeywords(m).length ? 'Keywords: ' + metaKeywords(m).join(', ') : ''], ['Software', 'Vector Studio ' + VS_VERSION], ['Creation Time', new Date().toUTCString()]].filter(f => f[1]);
+  const chunks = fields.map(([k, val]) => { // plain Latin-1 text when it fits, otherwise a UTF-8 (iTXt) chunk
+    const wide = /[^\x00-\xff]/.test(val), type = enc(wide ? 'iTXt' : 'tEXt');
+    const data = wide ? new Uint8Array([...enc(k), 0, 0, 0, 0, 0, ...enc(val)]) : new Uint8Array([...enc(k), 0, ...[...latin(val)].map(c => c.charCodeAt(0))]);
+    const out = new Uint8Array(12 + data.length), dv = new DataView(out.buffer);
+    dv.setUint32(0, data.length); out.set(type, 4); out.set(data, 8); dv.setUint32(8 + data.length, crc32(concatBytes([type, data])));
+    return out;
+  });
+  const ihdrEnd = 8 + 12 + new DataView(bytes.buffer).getUint32(8); // signature + IHDR chunk
+  return new Blob([bytes.slice(0, ihdrEnd), ...chunks, bytes.slice(ihdrEnd)], { type: 'image/png' });
+}
 const fileBase = () => (S.doc.name || 'Untitled').replace(/\.svg$/i, '');
 const safeName = v => v.replace(/[\\/:*?"<>|]+/g, '-');
 // The whole document is saved with a viewBox covering every artboard; artboard data rides along so it reopens intact.
@@ -7907,7 +8083,8 @@ function sweepGuides() { for (const g of getDefs().querySelectorAll('[data-guide
 function serialize(box, withArtboards = true) {
   sweepGuides();
   const b = box || allAbBox(), abAttr = withArtboards ? ` data-artboards="${escAttr(JSON.stringify(S.doc.abs))}" data-units="${uKey()}"${S.doc.print ? ` data-print="${escAttr(JSON.stringify(S.doc.print))}"` : ''}${S.doc.colors ? ` data-colors="${escAttr(JSON.stringify(S.doc.colors))}"` : ''}${(S.doc.guideLines || []).length ? ` data-guides="${escAttr(JSON.stringify(S.doc.guideLines))}"` : ''}` : '';
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="${NS}" xmlns:xlink="${XLINK}" width="${r3(b.w)}" height="${r3(b.h)}" viewBox="${r3(b.x)} ${r3(b.y)} ${r3(b.w)} ${r3(b.h)}"${abAttr}>\n${content.innerHTML}\n</svg>\n`;
+  const meta = S.doc.meta && Object.keys(docMeta()).length ? ` data-meta="${escAttr(JSON.stringify(docMeta()))}"` : '';
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="${NS}" xmlns:xlink="${XLINK}" width="${r3(b.w)}" height="${r3(b.h)}" viewBox="${r3(b.x)} ${r3(b.y)} ${r3(b.w)} ${r3(b.h)}"${abAttr}${withArtboards ? meta : ''}>\n${metaMarkup()}${content.innerHTML}\n</svg>\n`;
 }
 function setDirty(v) {
   S.dirty = v; if (v) S.welcome = false;
@@ -7920,6 +8097,7 @@ async function save(saveAs) {
   if (S.editing) commitText();
   if (isoLayer()) finishSymbolEdit();
   finishPen();
+  { const now = new Date().toISOString(), m = S.doc.meta = S.doc.meta || {}; if (!m.created) m.created = now; m.modified = now; }
   if (desk) {
     const p = await desk.saveText({ path: saveAs ? null : S.filePath, defaultName: fileBase() + '.svg', text: serialize() });
     if (!p) return;
@@ -7956,7 +8134,7 @@ function exportRaster(scale, type = 'image/png', ab = AB(), dir) {
       if (type === 'image/jpeg') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); }
       ctx.drawImage(img, 0, 0, c.width, c.height);
       const name = safeName(fileBase() + (S.doc.abs.length > 1 ? '-' + ab.name : ''));
-      c.toBlob(async b => { await download(b, name + (scale !== 1 ? `@${scale}x` : '') + (type === 'image/png' ? '.png' : '.jpg'), dir); done(); }, type, 0.92);
+      c.toBlob(async b => { if (type === 'image/png') b = await pngWithMeta(b); await download(b, name + (scale !== 1 ? `@${scale}x` : '') + (type === 'image/png' ? '.png' : '.jpg'), dir); done(); }, type, 0.92);
     };
     img.onerror = () => { alert('Export failed — the drawing may reference something the browser cannot render.'); done(); };
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(serialize(ab, false));
@@ -8015,6 +8193,7 @@ function openSVG(text, name, filePath) {
   if (UNITS[P.root.getAttribute('data-units')]) setUnits(P.root.getAttribute('data-units'));
   try { S.doc.print = JSON.parse(P.root.getAttribute('data-print') || 'null') || undefined; } catch (e) { S.doc.print = undefined; }
   try { S.doc.colors = JSON.parse(P.root.getAttribute('data-colors') || 'null') || undefined; } catch (e) { S.doc.colors = undefined; }
+  try { S.doc.meta = JSON.parse(P.root.getAttribute('data-meta') || 'null') || readForeignMeta(P.root); } catch (e) { S.doc.meta = undefined; }
   const ours = [...P.root.children].some(c => c.hasAttribute && c.hasAttribute('data-layer'));
   if (ours) {
     for (const c of [...P.root.children]) {
@@ -8084,7 +8263,7 @@ function newDoc() {
   newTab(); // a new tab, unless the current one is empty
   finishPen(); setSel([]);
   content.innerHTML = '<defs></defs>'; S.activeLayer = null; newLayer('Layer 1');
-  S.doc.abs = [{ name: 'Artboard 1', x: 0, y: 0, w: 800, h: 600 }]; S.doc.ab = 0; S.doc.guideLines = []; S.doc.print = undefined; S.doc.colors = undefined;
+  S.doc.abs = [{ name: 'Artboard 1', x: 0, y: 0, w: 800, h: 600 }]; S.doc.ab = 0; S.doc.guideLines = []; S.doc.print = undefined; S.doc.colors = undefined; S.doc.meta = undefined;
   S.doc.name = 'Untitled'; $('#docName').textContent = 'Untitled.svg';
   S.history = []; S.future = []; commit();
   S.filePath = null; setDirty(false);
@@ -8126,7 +8305,7 @@ function ctxItems() {
     { label: 'Zoom', items: [it('Fit Artboard in Window', 'fit', 'Ctrl+0'), it('Fit All', 'fitAll', 'Ctrl+Alt+0'), it('Actual Size', 'actual', 'Ctrl+1'), it('Zoom In', 'zoomIn', 'Ctrl++'), it('Zoom Out', 'zoomOut', 'Ctrl+−')] },
     { label: 'View', items: [it('Rulers', 'rulers', 'Ctrl+R'), it('Guides', 'guides', 'Ctrl+;'), it('Grid', 'grid', "Ctrl+'"), it('Smart Guides', 'smart', 'Ctrl+U'), it('Snap to Grid', 'snap', "Ctrl+Shift+'"), it('Trim View', 'trimView', '')] },
     '-', it('Unlock All', 'unlockAll', 'Ctrl+Alt+2'), it('Show All', 'showAll', 'Ctrl+Alt+3'), '-',
-    it('Document Setup…', 'setup', 'Ctrl+Alt+P'), it('Fit Artboard to Artwork', 'abFitArt', ''),
+    it('Document Setup…', 'setup', 'Ctrl+Alt+P'), it('Document Properties…', 'docProps', 'Ctrl+Alt+Shift+I'), it('Fit Artboard to Artwork', 'abFitArt', ''),
   ];
   const items = [
     it('Undo', 'undo', 'Ctrl+Z', S.history.length > 1), it('Redo', 'redo', 'Ctrl+Shift+Z', S.future.length > 0), '-',
@@ -8299,7 +8478,7 @@ const CMD = {
   abSvg: exportAbSvg, pngAll: exportAll, outlines: () => createOutlines(), outlineStroke: () => outlineStroke(), offsetPath: () => openOffset(),
   smart: () => { S.smart = !S.smart; flash(S.smart ? 'Smart guides on' : 'Smart guides off'); status(); }, pdf: () => exportVector('pdf'), ai: () => exportVector('ai'), eps: () => exportVector('eps'), trace: openTrace, templates: () => openTemplates(), crop: () => { const im = S.sel.find(o => o.tagName === 'image'); if (im) startCrop(im); else flash('Select a placed photo first.'); }, makeSymbol: () => newSymbolFromSel(), breakSymbol: () => breakSelection(),
   pfUnite: () => pathfinder('unite'), pfMinusFront: () => pathfinder('minusFront'), pfIntersect: () => pathfinder('intersect'), pfExclude: () => pathfinder('exclude'), pfDivide: () => pathfinder('divide'),
-  setup: openSetup, undo, redo, cut: cutSel, copy: copySel, paste, duplicate, delete: deleteSel, selectAll, deselect: () => setSel([]),
+  setup: openSetup, docProps: () => openProps(), undo, redo, cut: cutSel, copy: copySel, paste, duplicate, delete: deleteSel, selectAll, deselect: () => setSel([]),
   group, ungroup, front: () => arrange('front'), forward: () => arrange('forward'), backward: () => arrange('backward'), back: () => arrange('back'),
   flipH: () => flip(true), flipV: () => flip(false), toPath: convertSel, clip: makeClip, unclip: releaseClip,
   lock: lockSel, unlockAll, hide: hideSel, showAll,
@@ -8345,6 +8524,7 @@ document.addEventListener('keydown', e => {
     else if (code === 'PageDown' && e.altKey) f = CMD.nextTab; else if (code === 'PageUp' && e.altKey) f = CMD.prevTab;
     else if (code === 'KeyT' && e.shiftKey && e.altKey) f = CMD.trimView;
     else if (k === 'p' && e.shiftKey) f = CMD.place;
+    else if (code === 'KeyI' && e.altKey && e.shiftKey) f = CMD.docProps;
     else if (k === 'p' && e.altKey) f = openSetup;
     else if (code === 'KeyN' && e.altKey) f = newDoc;
     else if (code === 'KeyT' && e.altKey) f = CMD.templates;
@@ -8397,7 +8577,7 @@ function status() {
 
 /* ---------- boot ---------- */
 function boot() {
-  buildToolbar(); wirePanel(); wireLayers(); wireArtboards(); wireBrushes(); wireSymbols(); wireTrace(); wireFonts(); wireOffset(); wireEffects(); wireKern(); wireTextExtras(); wireSections(); wireScrollbars(); wireZoomCtl(); wireAdjust(); wireLogoPack(); wireUnits(); wireRulers(); wirePrint(); wireUpdates(); wireCmyk(); wireRecolor();
+  buildToolbar(); wirePanel(); wireLayers(); wireArtboards(); wireBrushes(); wireSymbols(); wireTrace(); wireFonts(); wireOffset(); wireEffects(); wireKern(); wireTextExtras(); wireSections(); wireScrollbars(); wireZoomCtl(); wireProps(); wireAdjust(); wireLogoPack(); wireUnits(); wireRulers(); wirePrint(); wireUpdates(); wireCmyk(); wireRecolor();
   $$('[data-align]').forEach(b => b.onclick = () => alignSel(b.dataset.align));
   $('#btnRecolor').onclick = () => openRecolor(); wireCrop(); wireKit(); wireTemplates();
   let restored = false;
@@ -8410,7 +8590,7 @@ function boot() {
       S.doc.name = saved.name || 'Untitled'; restored = layers().length > 0;
       if (restored) setTimeout(() => flash('Recovered the work you hadn’t saved when Vector Studio closed unexpectedly. Save it with Ctrl+S.'), 600);
       if (Array.isArray(saved.others)) S.recoveredTabs = saved.others;
-      if (UNITS[saved.units]) S.doc.units = saved.units; if (Array.isArray(saved.guides)) S.doc.guideLines = saved.guides; if (saved.print) S.doc.print = saved.print; if (saved.colors) S.doc.colors = saved.colors;
+      if (UNITS[saved.units]) S.doc.units = saved.units; if (Array.isArray(saved.guides)) S.doc.guideLines = saved.guides; if (saved.print) S.doc.print = saved.print; if (saved.colors) S.doc.colors = saved.colors; if (saved.meta) S.doc.meta = saved.meta;
     }
   } catch (e) { /* ignore corrupt or unavailable storage */ }
   if (!restored) {
