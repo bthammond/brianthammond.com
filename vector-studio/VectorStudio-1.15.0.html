@@ -143,6 +143,11 @@ button,input,select{font:inherit;color:inherit}
 #overlay .wpt{fill:#fff;stroke:#4f8cff;stroke-width:1.2}
 #overlay .wpt.on{fill:#4f8cff}
 #overlay .knifetrail{fill:none;stroke:#ff3b30;stroke-width:1.5;stroke-dasharray:5 3;stroke-linecap:round;stroke-linejoin:round}
+.tsbtns{flex-wrap:nowrap!important;gap:2px!important}.tsbtns .btn{min-width:0;padding:1px 5px;font-family:Georgia,serif;font-size:11px}
+.tsbtns sup,.tsbtns sub{font-size:8px}
+.tshint{font-size:11px;margin:-2px 0 2px}
+#tOutW{width:44px;flex:none}#tOutMode{min-width:0;flex:1}#tOutColor{flex:none}#warpBendN{width:56px;flex:none}
+#saveToast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:#2b2b2b;border:1px solid #555;border-radius:6px;padding:8px 12px;display:none;gap:10px;align-items:center;z-index:50;box-shadow:0 6px 20px #0008;font-size:13px}
 .alignrow{display:flex;gap:3px;flex-wrap:wrap;align-items:center}
 .alignrow .sep{width:4px}
 #cmykRow input{width:100%;min-width:0;text-align:right}
@@ -169,7 +174,7 @@ button,input,select{font:inherit;color:inherit}
 #overlay .hline{stroke:var(--accent);stroke-width:1}
 #overlay .hdot{fill:var(--accent);stroke:none;cursor:move}
 #overlay .pen-start{fill:#fff;stroke:#e5a50a;stroke-width:2}
-#textEditor{position:absolute;display:none;background:rgba(255,255,255,.85);border:1px dashed var(--accent);outline:none;resize:none;padding:0;margin:0;line-height:1.2;white-space:pre;overflow:hidden;color:#000;z-index:5;min-width:40px}
+#textEditor{width:max-content;caret-color:#000;cursor:text;position:absolute;display:none;background:rgba(255,255,255,.85);border:1px dashed var(--accent);outline:none;resize:none;padding:0;margin:0;line-height:1.2;white-space:pre;overflow:hidden;color:#000;z-index:5;min-width:40px}
 #panels{background:var(--panel);border-left:1px solid #111;overflow-y:auto}
 .panel{border-bottom:1px solid #1a1a1a}
 .panel h3{margin:0;padding:7px 10px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:#bbb;background:var(--panel2);display:flex;justify-content:space-between;align-items:center}
@@ -416,7 +421,7 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
         <g id="abTop" pointer-events="none"></g>
         <g id="overlay"></g>
       </svg>
-      <textarea id="textEditor" spellcheck="false"></textarea>
+      <div id="textEditor" contenteditable="true" spellcheck="false"></div>
       <div id="eyeLoupe"><div class="sw"><i></i></div><div class="tx"></div></div>
       <canvas id="rulerH" class="ruler" title="Drag down to make a horizontal guide"></canvas><canvas id="rulerV" class="ruler" title="Drag right to make a vertical guide"></canvas>
       <div id="rulerCorner" title="Units"><span id="rulerUnitLbl">px</span><select id="rulerUnits"></select></div>
@@ -489,6 +494,11 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
             <div class="row"><label>Align</label><div class="iconbtns">
               <button class="btn" data-anchor="start">Left</button><button class="btn" data-anchor="middle">Center</button><button class="btn" data-anchor="end">Right</button></div></div>
             <div class="row"><label>Tracking</label><input type="number" id="letterSpacing" step="0.5" value="0"></div>
+            <div class="row"><label>Case</label><div class="iconbtns tsbtns"><button class="btn mini" data-ts="caps" title="ALL CAPS">AA</button><button class="btn mini" data-ts="smallcaps" title="Small Caps" style="font-variant:small-caps">Aa</button><button class="btn mini" data-ts="sup" title="Superscript">X<sup>2</sup></button><button class="btn mini" data-ts="sub" title="Subscript">X<sub>2</sub></button><button class="btn mini" data-ts="underline" title="Underline" style="text-decoration:underline">U</button><button class="btn mini" data-ts="line-through" title="Strikethrough" style="text-decoration:line-through">S</button></div></div>
+            <div class="muted tshint">While typing, select letters first to style just those (font, size, color, case…).</div>
+            <div class="row"><label>Outline</label><input type="checkbox" id="tOutOn" title="Outline around the letters"><input type="color" id="tOutColor" value="#000000" title="Outline color"><input type="number" id="tOutW" min="0.5" step="0.5" value="4" title="Outline thickness"><select id="tOutMode" title="Outside: a sticker-style outline that never covers the letters · Center: on the edge · Hollow: outline only"><option value="outside">Outside</option><option value="center">Center</option><option value="hollow">Hollow</option></select></div>
+            <div class="row"><label>Warp</label><select id="warpStyle" title="Bend the text into a shape (it stays editable)"><option value="">None</option><option value="arc">Arc</option><option value="arcLower">Arc Lower</option><option value="arcUpper">Arc Upper</option><option value="arch">Arch</option><option value="bulge">Bulge</option><option value="flag">Flag</option><option value="wave">Wave</option><option value="fish">Fish</option><option value="rise">Rise</option><option value="fisheye">Fisheye</option><option value="inflate">Inflate</option><option value="squeeze">Squeeze</option></select></div>
+            <div class="row" id="warpBendRow"><label>Bend</label><input type="range" id="warpBend" min="-100" max="100" value="50"><input type="number" id="warpBendN" min="-100" max="100" step="5" value="50"><span class="muted">%</span></div>
             <div class="row"><label>Kerning</label><select id="kernMode" title="Auto uses the spacing pairs built into the font"><option value="auto">Auto (from the font)</option><option value="none">Off</option></select></div>
             <div id="kernBox">
               <div class="kstrip" id="kernStrip" title="Click a letter to adjust the space before it"></div>
@@ -833,6 +843,8 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
       <kbd>Shift+K</kbd><span>Knife: drag across shapes to cut them into pieces (Alt = straight line)</span>
       <kbd>Shift+W</kbd><span>Width tool: drag out from any stroke to make it thicker or thinner at that spot. Stroke ▸ profile menu has ready-made tapers</span>
       <kbd>C</kbd><span>Scissors: click a path to cut it there (a closed shape opens up)</span>
+      <kbd>Type + select letters</kbd><span>While typing, select some letters, then change font, size, color, tracking or Case to style just those</span>
+      <kbd>Warp</kbd><span>Text ▸ Warp bends text into an arc, arch, flag, wave… and it stays editable</span>
       <kbd>Alt+← / →</kbd><span>Kerning: tighten or loosen the space between two letters (put the text cursor between them, or pick the letter in Properties). Ctrl+Alt = bigger steps</span>
       <kbd>Fill ▸ Pattern</kbd><span>Stripes, dots, checks and more, or your own: select art and choose Object ▸ Make Pattern from Selection</span>
       <kbd>Glow / Blur</kbd><span>Outer glow, inner glow and blur in Properties. "Neon" makes a glow in the object's own color</span>
@@ -935,7 +947,7 @@ const r3 = n => Math.round(n * 1000) / 1000, r6 = n => Math.round(n * 1e6) / 1e6
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 // Text-entry controls keep their own keys; checkboxes, color wells, sliders and buttons don't block app shortcuts.
-const isEditable = el => el && (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || (el.tagName === 'INPUT' && !['checkbox', 'radio', 'range', 'color', 'button', 'file'].includes(el.type)));
+const isEditable = el => el && (el.isContentEditable || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || (el.tagName === 'INPUT' && !['checkbox', 'radio', 'range', 'color', 'button', 'file'].includes(el.type)));
 function getDefs() {
   let d = content.querySelector(':scope > defs');
   if (!d) { d = mk('defs'); content.prepend(d); }
@@ -990,15 +1002,38 @@ function toHex(c) {
   const m = v.match(/[\d.]+/g); if (!m) return '#000000';
   return '#' + m.slice(0, 3).map(n => (+n | 0).toString(16).padStart(2, '0')).join('');
 }
+const PICK_TYPES = { svg: ['SVG drawing', 'image/svg+xml'], png: ['PNG image', 'image/png'], jpg: ['JPEG image', 'image/jpeg'], pdf: ['PDF document', 'application/pdf'], ai: ['Illustrator file', 'application/postscript'], eps: ['EPS file', 'application/postscript'], zip: ['ZIP archive', 'application/zip'], json: ['Brand kit', 'application/json'] };
+S.picker = !navigator.webdriver; // automated test browsers get plain downloads
+async function writeBlob(fh, blob) { const w = await fh.createWritable(); await w.write(blob); await w.close(); }
+// In Chrome/Edge a "Save as" window lets you pick any folder and file name. Where that isn't possible the file
+// goes to Downloads and a note offers to save it somewhere else.
 async function download(blob, name, dir) {
   if (desk) {
     const data = new Uint8Array(await blob.arrayBuffer());
     return dir ? desk.writeInto({ dir, name, data }) : desk.saveBinary({ defaultName: name, data });
   }
+  if (dir && dir.getFileHandle) { const fh = await dir.getFileHandle(name, { create: true }); await writeBlob(fh, blob); return fh; }
+  if (window.showSaveFilePicker && !dir && S.picker) {
+    const ext = (name.split('.').pop() || '').toLowerCase(), T = PICK_TYPES[ext];
+    try {
+      const fh = await window.showSaveFilePicker({ suggestedName: name, ...(T ? { types: [{ description: T[0], accept: { [T[1]]: ['.' + ext] } }] } : {}) });
+      await writeBlob(fh, blob); return fh;
+    } catch (e) { if (e.name === 'AbortError') return null; /* the window couldn't open (e.g. the export took a while): use Downloads */ }
+  }
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = name;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  if (window.showSaveFilePicker && !dir && S.picker) saveToast(blob, name);
+}
+function saveToast(blob, name) {
+  let t = $('#saveToast');
+  if (!t) { t = document.createElement('div'); t.id = 'saveToast'; document.body.appendChild(t); }
+  t.innerHTML = '<span></span><button class="btn on">Save to a folder…</button><button class="btn">✕</button>';
+  t.firstChild.textContent = `${name} was saved to Downloads.`;
+  t.style.display = 'flex'; clearTimeout(t._h); t._h = setTimeout(() => (t.style.display = 'none'), 12000);
+  t.children[1].onclick = async () => { t.style.display = 'none'; try { const fh = await window.showSaveFilePicker({ suggestedName: name }); await writeBlob(fh, blob); flash('Saved ' + fh.name); } catch (e) { /* cancelled */ } };
+  t.children[2].onclick = () => (t.style.display = 'none');
 }
 
 /* ---------- layers & objects ---------- */
@@ -1058,7 +1093,7 @@ function objName(o) {
     case 'text': return 'Text: ' + textLines(o).join(' ').slice(0, 24);
     case 'image': return 'Image';
     case 'use': return 'Symbol: ' + ((symDef(symRef(o)) || { getAttribute: () => '?' }).getAttribute('data-symbol'));
-    case 'g': return o.getAttribute('data-brushed') === WIDTH_ID ? 'Variable-width stroke' : o.hasAttribute('data-brushed') ? 'Brush: ' + ((brushDef(o.getAttribute('data-brushed')) || { getAttribute: () => '?' }).getAttribute('data-name')) : o.hasAttribute('clip-path') ? 'Clip Group' : 'Group';
+    case 'g': return o.hasAttribute('data-warp') ? 'Warped text: ' + (((o.querySelector('text') || {}).textContent) || '').slice(0, 20) : o.getAttribute('data-brushed') === WIDTH_ID ? 'Variable-width stroke' : o.hasAttribute('data-brushed') ? 'Brush: ' + ((brushDef(o.getAttribute('data-brushed')) || { getAttribute: () => '?' }).getAttribute('data-name')) : o.hasAttribute('clip-path') ? 'Clip Group' : 'Group';
     default: return '<' + o.tagName + '>';
   }
 }
@@ -1595,7 +1630,7 @@ async function exportPress() {
   try {
     const bytes = await buildPDF(boards, fileBase(), press), name = safeName(fileBase() + (boards.length === 1 && S.doc.abs.length > 1 ? '-' + boards[0].name : '')) + '-print.pdf';
     const saved = await download(new Blob([bytes], { type: 'application/pdf' }), name);
-    if (desk && !saved) return flash('Export cancelled.');
+    if (saved === null || (desk && !saved)) return flash('Export cancelled.');
     flash(`Exported ${name}: ${boards.length} page(s), trim ${fmtU(boards[0].w)} × ${fmtU(boards[0].h)} ${uLabel()}${press.marks ? ', crop marks' : ''}${pr.bleed.t || pr.bleed.l ? ', with bleed' : ''}.`);
   } catch (e) { console.error(e); alert('Export failed: ' + (e && e.message || e)); } finally { RASTER_K = k0; PDF_COLOR = null; }
 }
@@ -1895,6 +1930,7 @@ function drawOverlay() {
   if (S.tool === 'eyedropper' && S.eyeHit && S.eyeHit.isConnected) { const b = bboxOf(S.eyeHit); if (b) mk('rect', { class: 'eyehl', x: b.x - 2 * px, y: b.y - 2 * px, width: b.w + 4 * px, height: b.h + 4 * px }, overlay); }
   drawGuideLines(px);
   if (d && d.mode === 'knife' && d.pts.length > 1) mk('path', { class: 'knifetrail', d: 'M' + knifePts(d).map(q => q.x + ' ' + q.y).join('L') }, overlay);
+  syncWarps();
   drawKernMark(px);
   if (S.tool === 'width') drawWidthUI(px);
   if (S.tool === 'scissors') drawScissors(px);
@@ -1986,6 +2022,7 @@ function setSel(arr) {
 /* ---------- history & autosave ---------- */
 function snapshot() { return { html: content.innerHTML, abs: JSON.stringify(S.doc.abs), ab: S.doc.ab, li: layers().indexOf(activeLayer()), gl: JSON.stringify(S.doc.guideLines || []), pr: JSON.stringify(S.doc.print || null), co: JSON.stringify(S.doc.colors || null) }; }
 function commit() {
+  if (S.editing) return; // the text being typed is committed (with everything else) when editing ends
   syncBrushes(); syncEffects();
   S.history.push(snapshot());
   if (S.history.length > 200) S.history.shift();
@@ -2362,6 +2399,7 @@ H.text = {
   down(e, p) {
     const o = objectOf(e.target);
     if (o && o.tagName === 'text' && !isLocked(o)) { openTextEditor(o); return; }
+    if (o && o.hasAttribute('data-warp') && !isLocked(o) && o.querySelector(':scope > text')) { openTextEditor(o.querySelector(':scope > text')); return; }
     if (o && e.altKey && !isLocked(o) && canTypeOnPath(o)) { const t = makeTypeOnPath(o); if (t) openTextEditor(t); return; }
     S.drag = { mode: 'tbox', start: p, cur: p };
   },
@@ -2480,7 +2518,7 @@ function wireKern() {
   $('#textEditor').addEventListener('keydown', e => {
     if (!e.altKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || !S.editing || !S.editing.el) return;
     e.preventDefault();
-    const ta = $('#textEditor'), o = nonWs(ta.value.slice(0, ta.selectionStart)).length + 1, el = S.editing.el;
+    const r0 = edSelection(), all = edModel().lines.map(runsText).join('\n'), o = nonWs(all.slice(0, r0 ? r0[0] : all.length)).length + 1, el = S.editing.el;
     commitText();
     if (!el.isConnected) return;
     setSel([el]); S.kernGap = { el, o: Math.max(2, o) }; refreshPanel();
@@ -2488,6 +2526,7 @@ function wireKern() {
   });
 }
 function setTextLines(el, lines) {
+  el.removeAttribute('data-rich');
   if (el.hasAttribute('data-onpath')) {
     const tp = el.querySelector('textPath'); if (tp) tp.textContent = lines.join(' ').replace(/\s+/g, ' ').trim() || ' ';
     if (el.hasAttribute('data-kern')) applyKern(el);
@@ -2499,29 +2538,34 @@ function setTextLines(el, lines) {
 // Wrap the paragraphs of a text box into lines no wider than the box (measured by the browser itself).
 function layoutText(el) {
   const W = +el.getAttribute('data-wrap'); if (!(W > 0)) return;
-  const paras = textLines(el), wx = +el.getAttribute('data-wx') || 0;
+  const paras = readRich(el), wx = +el.getAttribute('data-wx') || 0;
   const anc = el.getAttribute('text-anchor') || getComputedStyle(el).textAnchor || 'start';
   el.setAttribute('x', r3(anc === 'middle' ? wx + W / 2 : anc === 'end' ? wx + W : wx));
   el.textContent = ''; el.removeAttribute('dx');
-  const probe = mk('tspan', {}, el), width = str => { probe.textContent = str; return str ? probe.getComputedTextLength() : 0; };
-  const lines = [], fits = str => width(str) <= W + 0.01;
+  const probe = mk('tspan', {}, el), width = runs => { probe.textContent = ''; fillRuns(probe, runs); return runs.length ? probe.getComputedTextLength() : 0; };
+  const lines = [], fits = runs => width(runs) <= W + 0.01;
   for (const para of paras) {
-    if (!para.trim()) { lines.push(''); continue; }
-    let line = '';
-    for (let w of para.split(/ +/).filter(Boolean)) {
-      const cand = line ? line + ' ' + w : w;
+    const txt = runsText(para);
+    if (!txt.trim()) { lines.push([]); continue; }
+    // words with their styles; the space before a word takes the style of the word before it
+    const words = []; let k = 0;
+    for (const m of txt.matchAll(/ +|[^ ]+/g)) { if (m[0][0] !== ' ') words.push({ a: m.index, b: m.index + m[0].length }); k++; }
+    let line = null;
+    for (let wi = 0; wi < words.length; wi++) {
+      let w = sliceRuns(para, words[wi].a, words[wi].b);
+      const cand = line ? normRuns([...line, ...sliceRuns(para, words[wi - 1].b, words[wi - 1].b + 1).map(r => ({ t: ' ', st: r.st })), ...w]) : w;
       if (fits(cand)) { line = cand; continue; }
       if (line) lines.push(line);
-      while (w.length > 1 && !fits(w)) { // a single word wider than the box: break it
-        let k = w.length - 1; while (k > 1 && !fits(w.slice(0, k))) k--;
-        lines.push(w.slice(0, k)); w = w.slice(k);
+      while (runsText(w).length > 1 && !fits(w)) { // a single word wider than the box: break it
+        const L = runsText(w).length; let kk = L - 1; while (kk > 1 && !fits(sliceRuns(w, 0, kk))) kk--;
+        lines.push(sliceRuns(w, 0, kk)); w = sliceRuns(w, kk, L);
       }
       line = w;
     }
-    lines.push(line);
+    lines.push(line || []);
   }
   probe.remove();
-  writeLines(el, lines);
+  writeLinesRich(el, lines);
   // a document font is only fetched once it is first used: wrap again when it has arrived
   if (document.fonts && document.fonts.status === 'loading' && !el._relayout) { el._relayout = true; document.fonts.ready.then(() => { el._relayout = false; if (el.isConnected) { layoutText(el); drawOverlay(); } }); }
 }
@@ -2625,45 +2669,210 @@ function releaseTypePath() {
   }
   if (out.length) { setSel(out.filter(x => x.tagName === 'text')); commit(); refreshPanel(); }
 }
+/* ---------- rich text ----------
+   A text object can mix styles. In the SVG each line is a <tspan x dy> and a styled stretch inside it is a nested
+   <tspan> carrying only what differs from the text object (font, weight, size, color, tracking, case, decoration,
+   super/subscript). In memory a text is lines of runs: [[{t, st}]], where st holds those SVG attributes. */
+const RUN_KEYS = ['font-family', 'font-weight', 'font-style', 'font-size', 'fill', 'letter-spacing', 'text-decoration', 'text-transform', 'font-variant', 'baseline-shift'];
+const stKey = st => JSON.stringify(Object.keys(st).sort().map(k => [k, st[k]]));
+function normRuns(runs) { // merge neighbours with the same style, drop empty runs
+  const out = [];
+  for (const r of runs) { if (!r.t) continue; const L = out[out.length - 1]; if (L && stKey(L.st) === stKey(r.st)) L.t += r.t; else out.push({ t: r.t, st: { ...r.st } }); }
+  return out;
+}
+const runsText = runs => runs.map(r => r.t).join('');
+const isRich = lines => lines.some(l => l.some(r => Object.keys(r.st).length));
+function runsOf(node) { // runs from a line tspan / textPath / text
+  const out = [];
+  for (const c of node.childNodes) {
+    if (c.nodeType === 3) out.push({ t: c.data, st: {} });
+    else if (c.nodeType === 1 && c.tagName === 'tspan') { const st = {}; for (const k of RUN_KEYS) if (c.hasAttribute(k)) st[k] = c.getAttribute(k); out.push({ t: c.textContent, st }); }
+  }
+  return normRuns(out.map(r => ({ ...r, t: r.t.replace(/ /g, r.t === ' ' ? '' : ' ') })));
+}
+function readRich(el) { // the text's paragraphs as runs
+  if (el.hasAttribute('data-rich')) { try { const v = JSON.parse(el.getAttribute('data-rich')); if (Array.isArray(v)) return v.map(l => normRuns(l)); } catch (e) { /* fall back */ } }
+  if (el.hasAttribute('data-onpath')) { const tp = el.querySelector('textPath'); return [tp ? runsOf(tp) : [{ t: el.textContent, st: {} }]]; }
+  if (el.hasAttribute('data-wrap')) return textLines(el).map(t => (t ? [{ t, st: {} }] : []));
+  const ts = [...el.children].filter(c => c.tagName === 'tspan');
+  return ts.length ? ts.map(runsOf) : [[{ t: el.textContent, st: {} }]].map(normRuns);
+}
+function fillRuns(node, runs) { // write runs as text nodes / styled tspans into a line tspan or textPath
+  for (const r of runs) {
+    if (!Object.keys(r.st).length) { node.appendChild(document.createTextNode(r.t)); continue; }
+    const t = mk('tspan', {}, node); for (const [k, v] of Object.entries(r.st)) t.setAttribute(k, v); t.textContent = r.t;
+  }
+}
+function writeLinesRich(el, lines) {
+  const x = el.getAttribute('x') || 0, lh = textLH(el);
+  el.textContent = '';
+  lines.forEach((l, k) => { const ts = mk('tspan', { x, dy: k ? lh + 'em' : '0' }, el); if (runsText(l)) fillRuns(ts, l); else ts.textContent = ' '; });
+  if (el.hasAttribute('data-kern')) applyKern(el);
+}
+function setRich(el, lines) {
+  lines = lines.map(normRuns);
+  if (!isRich(lines)) { el.removeAttribute('data-rich'); return setTextLines(el, lines.map(runsText)); }
+  if (el.hasAttribute('data-onpath')) {
+    const tp = el.querySelector('textPath'); if (!tp) return;
+    const one = []; lines.forEach((l, k) => { if (k) one.push({ t: ' ', st: {} }); one.push(...l); });
+    tp.textContent = ''; fillRuns(tp, normRuns(one)); if (el.hasAttribute('data-kern')) applyKern(el); return;
+  }
+  if (el.hasAttribute('data-wrap')) { el.setAttribute('data-text', JSON.stringify(lines.map(runsText))); el.setAttribute('data-rich', JSON.stringify(lines)); layoutText(el); return; }
+  writeLinesRich(el, lines);
+}
+function sliceRuns(runs, a, b) { // characters a..b of a run list
+  const out = []; let pos = 0;
+  for (const r of runs) { const s0 = Math.max(a, pos), s1 = Math.min(b, pos + r.t.length); if (s1 > s0) out.push({ t: r.t.slice(s0 - pos, s1 - pos), st: { ...r.st } }); pos += r.t.length; }
+  return out;
+}
+/* editor: a contenteditable box showing the runs with their styles */
+function stCss(st, k) { // SVG run style → CSS for the editor (k = screen pixels per text unit)
+  const css = {};
+  if (st['font-family']) css.fontFamily = st['font-family'];
+  if (st['font-weight']) css.fontWeight = st['font-weight'];
+  if (st['font-style']) css.fontStyle = st['font-style'];
+  if (st['font-size']) css.fontSize = /%$/.test(st['font-size']) ? st['font-size'] : (parseFloat(st['font-size']) * k) + 'px';
+  if (st.fill && !/^url/.test(st.fill)) css.color = st.fill;
+  if (st['letter-spacing']) css.letterSpacing = (parseFloat(st['letter-spacing']) * k) + 'px';
+  if (st['text-decoration']) css.textDecoration = st['text-decoration'];
+  if (st['text-transform']) css.textTransform = st['text-transform'];
+  if (st['font-variant']) css.fontVariant = st['font-variant'];
+  if (st['baseline-shift']) css.verticalAlign = st['baseline-shift'] === 'sub' ? 'sub' : 'super';
+  return css;
+}
+function renderEditor(lines) {
+  const ed = $('#textEditor'), k = (S.editing && S.editing.k) || 1;
+  ed.textContent = '';
+  for (const l of (lines.length ? lines : [[]])) {
+    const div = document.createElement('div');
+    for (const r of normRuns(l)) {
+      if (!Object.keys(r.st).length) { div.appendChild(document.createTextNode(r.t)); continue; }
+      const sp = document.createElement('span'); sp.dataset.st = JSON.stringify(r.st); Object.assign(sp.style, stCss(r.st, k)); sp.textContent = r.t; div.appendChild(sp);
+    }
+    if (!div.childNodes.length) div.appendChild(document.createElement('br'));
+    ed.appendChild(div);
+  }
+}
+function edModel(points = []) { // read the editor back into lines of runs; points = DOM positions → character offsets
+  const ed = $('#textEditor'), lines = [[]], at = points.map(() => null);
+  let n = 0, started = false;
+  const mark = (node, off) => points.forEach((p, i) => { if (at[i] == null && p.node === node && p.offset === off) at[i] = n; });
+  const newLine = () => { lines.push([]); n++; };
+  const walk = (node, st) => {
+    const kids = [...node.childNodes];
+    kids.forEach((c, idx) => {
+      mark(node, idx);
+      if (c.nodeType === 3) {
+        points.forEach((p, i) => { if (at[i] == null && p.node === c) at[i] = n + Math.min(p.offset, c.data.length); });
+        const t = c.data.replace(/\n/g, ''); if (t) { lines[lines.length - 1].push({ t, st }); n += t.length; } started = true; return;
+      }
+      if (c.nodeType !== 1) return;
+      if (c.tagName === 'BR') { if (!(c.parentNode !== ed && c.parentNode.childNodes.length === 1)) newLine(); return; }
+      const block = c.tagName === 'DIV' || c.tagName === 'P';
+      if (block && started) newLine();
+      let st2 = st; if (c.dataset && c.dataset.st) { try { st2 = { ...st, ...JSON.parse(c.dataset.st) }; } catch (e) { /* plain */ } }
+      walk(c, st2); started = true;
+    });
+    mark(node, kids.length);
+  };
+  walk(ed, {});
+  return { lines: lines.map(normRuns), at };
+}
+function edPos(off) { // character offset → DOM position in the editor
+  const ed = $('#textEditor'); let n = 0, res = null;
+  const lines = [...ed.children];
+  for (let li = 0; li < lines.length && !res; li++) {
+    const div = lines[li], walker = document.createTreeWalker(div, NodeFilter.SHOW_TEXT);
+    let t, last = null;
+    while ((t = walker.nextNode())) { if (off <= n + t.data.length) { res = { node: t, offset: off - n }; break; } n += t.data.length; last = t; }
+    if (!res && off === n) res = last ? { node: last, offset: last.data.length } : { node: div, offset: 0 };
+    n++; // the line break
+  }
+  return res || { node: ed, offset: ed.childNodes.length };
+}
+function edSelection() { // [start, end] of the editor's text selection, or null
+  const sel = getSelection(), ed = $('#textEditor');
+  if (!sel.rangeCount || !ed.contains(sel.anchorNode)) return null;
+  const r = sel.getRangeAt(0), m = edModel([{ node: r.startContainer, offset: r.startOffset }, { node: r.endContainer, offset: r.endOffset }]);
+  return m.at[0] == null || m.at[1] == null ? null : [Math.min(m.at[0], m.at[1]), Math.max(m.at[0], m.at[1])];
+}
+document.addEventListener('selectionchange', () => { if (!S.editing) return; const r = edSelection(); if (r) S.editing.range = r; });
+const edHasRange = () => !!(S.editing && S.editing.range && S.editing.range[1] > S.editing.range[0]);
+function edMapRange(fn) { // change the style of the selected characters in the editor
+  if (!edHasRange()) return false;
+  const [a, b] = S.editing.range, { lines } = edModel();
+  let pos = 0;
+  const out = lines.map(l => {
+    const L = runsText(l).length, s0 = clamp(a - pos, 0, L), s1 = clamp(b - pos, 0, L); pos += L + 1;
+    if (s1 <= s0) return l;
+    return normRuns([...sliceRuns(l, 0, s0), ...sliceRuns(l, s0, s1).map(r => ({ t: r.t, st: fn({ ...r.st }) })), ...sliceRuns(l, s1, L)]);
+  });
+  renderEditor(out); autoSizeTA();
+  const p0 = edPos(a), p1 = edPos(b), rg = document.createRange();
+  try { rg.setStart(p0.node, p0.offset); rg.setEnd(p1.node, p1.offset); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(rg); } catch (e) { /* keep the saved range */ }
+  S.editing.range = [a, b];
+  return true;
+}
+function edRangeSet(k, v) { return edMapRange(st => { if (v == null || v === '') delete st[k]; else st[k] = String(v); return st; }); }
+function edRangeStyle() { // the style of the first selected character
+  if (!edHasRange()) return null;
+  const { lines } = edModel(); let pos = 0, a = S.editing.range[0];
+  for (const l of lines) { const L = runsText(l).length; if (a < pos + L) return sliceRuns(l, a - pos, a - pos + 1)[0].st; pos += L + 1; }
+  return {};
+}
+function edBase() { // the editor's own look follows the text object (or the defaults for new text)
+  const E = S.editing; if (!E) return;
+  const ed = $('#textEditor'), el = E.el, z = S.view.zoom;
+  const g = a => (el ? el.getAttribute(a) : null);
+  const size = (el ? parseFloat(g('font-size')) || 16 : S.font.size) * E.scale * z;
+  const f = el && g('fill'), color = f && !f.startsWith('url') && f !== 'none' ? f : el ? '#000' : (S.fill === 'none' ? '#000' : S.fill);
+  Object.assign(ed.style, {
+    fontSize: size + 'px', fontFamily: (el ? g('font-family') : S.font.family) || 'Arial', fontWeight: (el ? g('font-weight') : S.font.weight) || 'normal', fontStyle: (el ? g('font-style') : S.font.style) || 'normal', color,
+    letterSpacing: el && g('letter-spacing') ? parseFloat(g('letter-spacing')) * E.scale * z + 'px' : '', textDecoration: (el && g('text-decoration')) || '', textTransform: (el && g('text-transform')) || '', fontVariant: (el && g('font-variant')) || '',
+    lineHeight: String(el ? textLH(el) : (S.font.lh || 1.2)),
+  });
+  E.k = E.scale * z; autoSizeTA();
+}
 function openTextEditor(el, p, opt) {
   if (S.editing) commitText();
-  const ta = $('#textEditor'), r = svg.getBoundingClientRect(), sr = stage.getBoundingClientRect(), z = S.view.zoom;
-  let size = S.font.size, fam = S.font.family, x, y, weight = S.font.weight, style = S.font.style, color = S.fill === 'none' ? '#000' : S.fill;
-  let lh = S.font.lh || 1.2, wrap = opt && opt.wrap, scale = 1;
+  const ed = $('#textEditor'), r = svg.getBoundingClientRect(), sr = stage.getBoundingClientRect(), z = S.view.zoom;
+  let size = S.font.size, x, y, wrap = opt && opt.wrap, scale = 1;
   if (el) {
-    const b = bboxOf(el); size = parseFloat(el.getAttribute('font-size')) || 16; fam = el.getAttribute('font-family') || fam;
-    weight = el.getAttribute('font-weight') || 'normal'; style = el.getAttribute('font-style') || 'normal';
-    const f = el.getAttribute('fill'); if (f && !f.startsWith('url') && f !== 'none') color = f;
+    const b = bboxOf(el); size = parseFloat(el.getAttribute('font-size')) || 16;
     scale = Math.sqrt(Math.abs(getM(el).a * getM(el).d - getM(el).b * getM(el).c)) || 1;
-    x = b.x; y = b.y; size *= scale; lh = textLH(el);
+    const host = el.closest('[data-warp]'); if (host) scale *= Math.sqrt(Math.abs(getM(host).a * getM(host).d - getM(host).b * getM(host).c)) || 1;
+    x = b.x; y = b.y; size *= scale;
     if (el.hasAttribute('data-wrap')) wrap = +el.getAttribute('data-wrap');
-    ta.value = textLines(el).join('\n'); el.style.visibility = 'hidden';
-  } else if (wrap) { x = p.x; y = p.y; ta.value = ''; }
-  else { x = p.x; y = p.y - size * 0.85; ta.value = ''; }
-  Object.assign(ta.style, {
-    display: 'block', left: (r.left - sr.left + (x - S.view.x) * z) + 'px', top: (r.top - sr.top + (y - S.view.y) * z) + 'px',
-    fontSize: size * z + 'px', fontFamily: fam, fontWeight: weight, fontStyle: style, color, lineHeight: String(lh), whiteSpace: wrap ? 'pre-wrap' : '',
-  });
-  S.editing = { el, p: el || !wrap ? p : { x: p.x, y: p.y + size * 0.92 }, wrap: el ? null : wrap, wrapPx: wrap ? wrap * scale * z : 0 };
-  autoSizeTA(); ta.focus();
+    el.style.visibility = 'hidden';
+    if (!S.sel.includes(el) && !(el.closest('[data-warp]') && S.sel.includes(el.closest('[data-warp]')))) setSel([el.closest('[data-warp]') || el]);
+  } else if (wrap) { x = p.x; y = p.y; }
+  else { x = p.x; y = p.y - size * 0.85; }
+  Object.assign(ed.style, { display: 'block', left: (r.left - sr.left + (x - S.view.x) * z) + 'px', top: (r.top - sr.top + (y - S.view.y) * z) + 'px', whiteSpace: wrap ? 'pre-wrap' : 'pre' });
+  S.editing = { el, p: el || !wrap ? p : { x: p.x, y: p.y + size * 0.92 }, wrap: el ? null : wrap, wrapPx: wrap ? wrap * scale * z : 0, scale, k: scale * z, range: null };
+  edBase();
+  renderEditor(el ? readRich(el) : [[]]);
+  autoSizeTA(); ed.focus();
+  const end = edPos(runsText(edModel().lines.flat()).length + edModel().lines.length - 1), rg = document.createRange();
+  try { rg.setStart(end.node, end.offset); rg.collapse(true); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(rg); } catch (e) { /* empty */ }
 }
 function autoSizeTA() {
-  const ta = $('#textEditor'), W = S.editing && S.editing.wrapPx;
-  ta.style.width = W ? W + 'px' : '10px'; ta.style.height = '10px';
-  if (!W) ta.style.width = (ta.scrollWidth + 20) + 'px';
-  ta.style.height = (ta.scrollHeight + 2) + 'px';
+  const ed = $('#textEditor'), W = S.editing && S.editing.wrapPx;
+  ed.style.width = W ? W + 'px' : 'max-content'; ed.style.height = 'auto';
 }
 function commitText() {
   const E = S.editing; if (!E) return;
+  const { lines } = edModel();
   S.editing = null;
-  const ta = $('#textEditor'), lines = ta.value.replace(/\s+$/, '').split('\n');
-  ta.style.display = 'none'; ta.blur();
-  const empty = lines.every(l => !l.trim());
+  const ed = $('#textEditor');
+  ed.style.display = 'none'; ed.blur();
+  while (lines.length > 1 && !runsText(lines[lines.length - 1]).trim()) lines.pop();
+  const empty = lines.every(l => !runsText(l).trim());
   if (E.el) {
     E.el.style.visibility = '';
     if (!E.el.getAttribute('style')) E.el.removeAttribute('style');
-    if (empty) { E.el.remove(); setSel([]); commit(); return; }
-    setTextLines(E.el, lines); setSel([E.el]); commit(); return;
+    const host = E.el.closest('[data-warp]');
+    if (empty) { (host || E.el).remove(); setSel([]); commit(); return; }
+    setRich(E.el, lines); setSel([host || E.el]); commit(); return;
   }
   if (empty) return;
   const t = mk('text', {
@@ -2673,7 +2882,166 @@ function commitText() {
   }, activeLayer());
   if (S.font.lh && S.font.lh !== 1.2) t.setAttribute('data-lh', S.font.lh);
   if (E.wrap) { t.setAttribute('data-wrap', r3(E.wrap)); t.setAttribute('data-wx', r3(E.p.x)); }
-  setTextLines(t, lines); setSel([t]); commit();
+  setRich(t, lines); setSel([t]); commit();
+}
+$('#textEditor').addEventListener('paste', e => { e.preventDefault(); const t = (e.clipboardData || window.clipboardData).getData('text/plain'); document.execCommand('insertText', false, t); });
+$('#textEditor').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.execCommand('insertParagraph'); } });
+
+/* ---------- case, super/subscript, underline/strike ---------- */
+const TS = {
+  caps: { on: st => st['text-transform'] === 'uppercase', set: (st, on) => { if (on) st['text-transform'] = 'uppercase'; else delete st['text-transform']; } },
+  smallcaps: { on: st => /small-caps/.test(st['font-variant'] || ''), set: (st, on) => { if (on) st['font-variant'] = 'small-caps'; else delete st['font-variant']; } },
+  sup: { on: st => st['baseline-shift'] === 'super', set: (st, on) => { if (on) { st['baseline-shift'] = 'super'; st['font-size'] = '65%'; } else if (st['baseline-shift'] === 'super') { delete st['baseline-shift']; if (st['font-size'] === '65%') delete st['font-size']; } } },
+  sub: { on: st => st['baseline-shift'] === 'sub', set: (st, on) => { if (on) { st['baseline-shift'] = 'sub'; st['font-size'] = '65%'; } else if (st['baseline-shift'] === 'sub') { delete st['baseline-shift']; if (st['font-size'] === '65%') delete st['font-size']; } } },
+};
+const decoOn = (st, d) => (st['text-decoration'] || '').split(/\s+/).includes(d);
+function decoSet(st, d, on) { const set = new Set((st['text-decoration'] || '').split(/\s+/).filter(x => x && x !== 'none')); if (on) set.add(d); else set.delete(d); if (set.size) st['text-decoration'] = [...set].join(' '); else delete st['text-decoration']; }
+function tsState(key, st) { return TS[key] ? TS[key].on(st) : decoOn(st, key); }
+function toggleTextStyle(key) {
+  const apply = (st, on) => { if (TS[key]) TS[key].set(st, on); else decoSet(st, key, on); if (on && key === 'sup') TS.sub.set(st, false); if (on && key === 'sub') TS.sup.set(st, false); return st; };
+  if (edHasRange()) { const on = !tsState(key, edRangeStyle() || {}); edMapRange(st => apply(st, on)); renderTextStyleBtns(); return; }
+  const texts = S.editing && S.editing.el ? [S.editing.el] : selTexts();
+  if (!texts.length) return flash('Select some text (or letters while typing) first.');
+  const cur = {}; for (const k of RUN_KEYS) if (texts[0].hasAttribute(k)) cur[k] = texts[0].getAttribute(k);
+  const on = !tsState(key, cur);
+  for (const t of texts) { const st = {}; for (const k of RUN_KEYS) if (t.hasAttribute(k)) st[k] = t.getAttribute(k); apply(st, on); for (const k of ['text-transform', 'font-variant', 'baseline-shift', 'text-decoration', 'font-size']) setAttr(t, k, st[k] ?? (k === 'font-size' ? t.getAttribute('font-size') : null)); }
+  reflowSel(); edBase(); renderTextStyleBtns(); drawOverlay(); commit();
+}
+function renderTextStyleBtns() {
+  const t = (S.editing && S.editing.el) || selTexts()[0];
+  const st = edHasRange() ? edRangeStyle() || {} : (() => { const o = {}; if (t) for (const k of RUN_KEYS) if (t.hasAttribute(k)) o[k] = t.getAttribute(k); return o; })();
+  $$('[data-ts]').forEach(b => b.classList.toggle('on', tsState(b.dataset.ts, st)));
+}
+/* ---------- text outline (stroke around the letters) ---------- */
+function outlineOf(t) { try { return JSON.parse(t.getAttribute('data-outline')); } catch (e) { return null; } }
+function applyTextOutline() {
+  const on = $('#tOutOn').checked, O = { c: $('#tOutColor').value, w: Math.max(0.1, +$('#tOutW').value || 1), m: $('#tOutMode').value };
+  for (const t of selTexts()) {
+    const prev = outlineOf(t);
+    if (prev && prev.m === 'hollow' && (!on || O.m !== 'hollow')) setAttr(t, 'fill', t.getAttribute('data-fill0') || '#000000'), t.removeAttribute('data-fill0');
+    if (!on) { for (const a of ['stroke', 'stroke-width', 'paint-order', 'stroke-linejoin', 'data-outline']) t.removeAttribute(a); continue; }
+    t.setAttribute('data-outline', JSON.stringify(O));
+    setAttr(t, 'stroke', O.c); setAttr(t, 'stroke-linejoin', 'round');
+    setAttr(t, 'stroke-width', r3(O.m === 'outside' ? O.w * 2 : O.w));
+    setAttr(t, 'paint-order', O.m === 'outside' ? 'stroke' : null);
+    if (O.m === 'hollow' && (!prev || prev.m !== 'hollow')) { t.setAttribute('data-fill0', t.getAttribute('fill') || '#000000'); setAttr(t, 'fill', 'none'); }
+  }
+  drawOverlay();
+}
+/* ---------- text warp ----------
+   A warped text is <g data-warp='{"s":style,"b":bend}'> holding the editable <text> (hidden) and <g data-warp-art>
+   with the letters' outlines bent into the shape. Edit the text and the art follows. */
+const WARPS = {
+  arc: null, // special-cased: letters follow a circular arc
+  arcLower: (u, v, b, B) => [0, b * 0.5 * B.h * Math.sin(Math.PI * u) * v],
+  arcUpper: (u, v, b, B) => [0, -b * 0.5 * B.h * Math.sin(Math.PI * u) * (1 - v)],
+  arch: (u, v, b, B) => [0, -b * 0.5 * B.h * Math.sin(Math.PI * u)],
+  bulge: (u, v, b, B) => [0, -b * 0.5 * B.h * Math.sin(Math.PI * u) * (1 - 2 * v)],
+  flag: (u, v, b, B) => [0, -b * 0.3 * B.h * Math.sin(2 * Math.PI * u)],
+  wave: (u, v, b, B) => [0, -b * 0.25 * B.h * Math.sin(2 * Math.PI * u) + b * 0.3 * B.h * (v - 0.5) * Math.cos(2 * Math.PI * u)],
+  fish: (u, v, b, B) => [0, -b * 0.5 * B.h * Math.sin(Math.PI * u) * (1 - 2 * v) * (u < 0.5 ? 1 : 1 - (u - 0.5) * 1.6)],
+  rise: (u, v, b, B) => [0, -b * 0.6 * B.h * (u - 0.5) * 2 * (1 - 0.35 * v)],
+  fisheye: (u, v, b, B) => { const k = 0.6 * b * Math.sin(Math.PI * u) * Math.sin(Math.PI * v); return [(u - 0.5) * B.w * k * 0.25, (v - 0.5) * B.h * k]; },
+  inflate: (u, v, b, B) => { const k = 0.5 * b * Math.sin(Math.PI * u); return [0, (v - 0.5) * B.h * k * 2]; },
+  squeeze: (u, v, b, B) => { const k = -0.5 * b * Math.sin(Math.PI * u); return [0, (v - 0.5) * B.h * k * 2]; },
+};
+function warpParams(g) { try { const W = JSON.parse(g.getAttribute('data-warp')); return W && W.s ? W : null; } catch (e) { return null; } }
+function warpPoint(W, B, x, y) {
+  const u = (x - B.x) / (B.w || 1), v = (y - B.y) / (B.h || 1), b = clamp(W.b / 100, -1, 1);
+  if (W.s === 'arc') {
+    const phi = b * Math.PI; if (Math.abs(phi) < 1e-3) return [x, y];
+    const R = B.w / Math.abs(phi), cx = B.x + B.w / 2, th = (u - 0.5) * Math.abs(phi);
+    if (b > 0) { const yb = B.y + B.h, r = R + (yb - y); return [cx + r * Math.sin(th), yb + R - r * Math.cos(th)]; }
+    const r = R + (y - B.y); return [cx + r * Math.sin(th), B.y - R + r * Math.cos(th)];
+  }
+  const f = WARPS[W.s]; if (!f) return [x, y];
+  const [dx, dy] = f(u, v, b, B); return [x + dx, y + dy];
+}
+function cssPaint(v) { if (!v || v === 'none') return 'none'; const id = urlRef(v); return id ? `url(#${id})` : toHex(v); }
+async function textOutlineParts(t) { // the letters (and underlines) as filled paths, grouped by color: [{d, fill, stroke, sw, po}]
+  PJ();
+  const groups = new Map(), missing = new Set();
+  const add = (d, cs) => {
+    const fill = cssPaint(cs.fill), stroke = cssPaint(cs.stroke), sw = stroke !== 'none' ? parseFloat(cs.strokeWidth) || 0 : 0, po = /^stroke/.test(cs.paintOrder || '') ? 'stroke' : '';
+    const key = [fill, stroke, sw, po].join('|'); if (!groups.has(key)) groups.set(key, { d: '', fill, stroke, sw, po });
+    groups.get(key).d += d + ' ';
+  };
+  for (const r of textRuns(t)) {
+    const s2 = r.s.replace(/ /g, ' '); if (!s2.trim()) continue;
+    const ot = await fontFor(r.cs).catch(() => null);
+    if (!ot) { missing.add(cleanFamily(r.cs.fontFamily.split(',')[0])); continue; }
+    const size = r.sz || parseFloat(r.cs.fontSize) || 16, ls = r.cs.letterSpacing === 'normal' ? 0 : parseFloat(r.cs.letterSpacing) || 0;
+    const d = runD(ot, r, s2, size, ls); if (d) add(d, r.cs);
+  }
+  for (const R of textDecoRects(t)) add(R.d, R.cs);
+  return { parts: [...groups.values()].filter(p => p.d.trim()), missing };
+}
+const warpBusy = new WeakMap();
+async function renderWarp(g) {
+  const t = g.querySelector(':scope > text'), W = warpParams(g); if (!t || !W) return;
+  const sig = hashStr(t.outerHTML + g.getAttribute('data-warp'));
+  if (warpBusy.get(g) === sig) return; warpBusy.set(g, sig);
+  let art = g.querySelector(':scope > [data-warp-art]'); if (!art) art = mk('g', { 'data-warp-art': '1' }, g);
+  t.setAttribute('visibility', 'hidden');
+  let bb; try { const b = t.getBBox(); bb = { x: b.x, y: b.y, w: b.width, h: b.height }; } catch (e) { return; }
+  const { parts, missing } = await textOutlineParts(t);
+  if (!g.isConnected || warpBusy.get(g) !== sig) return;
+  art.textContent = '';
+  if (missing.size || !parts.length) { // no font file: show the text unbent and say why
+    t.removeAttribute('visibility'); g.setAttribute('data-sig', sig);
+    if (missing.size) flash(`To warp text, Vector Studio needs the font file for ${[...missing].join(', ')}. Click “Installed fonts” or “Add font file…”, then try again.`);
+    return;
+  }
+  for (const p of parts) {
+    let item; try { item = paper.PathItem.create(p.d); } catch (e) { continue; }
+    let d = '';
+    for (const c of (item instanceof paper.CompoundPath ? item.children : [item])) {
+      c.flatten(Math.max(0.05, bb.h / 400));
+      const pts = c.segments.map(sg => { const [x, y] = warpPoint(W, bb, sg.point.x, sg.point.y); return { x, y }; });
+      if (pts.length > 1) d += ptsD(pts, true) + ' ';
+    }
+    const el = mk('path', { d: d.trim(), fill: p.fill }, art);
+    if (p.stroke !== 'none' && p.sw) { el.setAttribute('stroke', p.stroke); el.setAttribute('stroke-width', r3(p.sw)); el.setAttribute('stroke-linejoin', 'round'); if (p.po) el.setAttribute('paint-order', 'stroke'); }
+  }
+  g.setAttribute('data-sig', sig);
+}
+function syncWarps() { for (const g of content.querySelectorAll('[data-warp]')) { if (g.closest('defs')) continue; const t = g.querySelector(':scope > text'); if (t && g.getAttribute('data-sig') !== hashStr(t.outerHTML + g.getAttribute('data-warp'))) renderWarp(g); } }
+function setWarp(o, style, bend) {
+  let g = o.hasAttribute('data-warp') ? o : null, t = g ? g.querySelector(':scope > text') : o;
+  if (!t || t.tagName !== 'text') return o;
+  if (!style) { // release: the plain text again
+    if (!g) return o;
+    t.removeAttribute('visibility'); setM(t, getM(g).multiply(getM(t))); if (g.getAttribute('opacity')) t.setAttribute('opacity', g.getAttribute('opacity'));
+    g.replaceWith(t); return t;
+  }
+  if (!g) {
+    g = mk('g', { id: uid(), 'data-name': 'Warped text' }); t.before(g); setM(g, getM(t)); t.removeAttribute('transform');
+    const op = t.getAttribute('opacity'); if (op) { g.setAttribute('opacity', op); t.removeAttribute('opacity'); }
+    for (const a of ['data-shadow', 'data-glow', 'data-blur']) if (t.getAttribute(a)) { g.setAttribute(a, t.getAttribute(a)); t.removeAttribute(a); }
+    t.removeAttribute('filter');
+    g.appendChild(t);
+  }
+  g.setAttribute('data-warp', JSON.stringify({ s: style, b: Math.round(bend) }));
+  renderWarp(g); return g;
+}
+function wireTextExtras() {
+  $$('[data-ts]').forEach(b => { b.addEventListener('mousedown', e => e.preventDefault()); b.onclick = () => toggleTextStyle(b.dataset.ts); });
+  const outCh = () => { if (refreshing) return; applyTextOutline(); };
+  $('#tOutOn').addEventListener('change', () => { outCh(); commit(); });
+  for (const id of ['#tOutColor', '#tOutW', '#tOutMode']) { $(id).addEventListener('input', () => { if (refreshing) return; $('#tOutOn').checked = true; outCh(); }); $(id).addEventListener('change', () => { if (!refreshing && S.sel.length) commit(); }); }
+  const warpTargets = () => S.sel.filter(o => o.tagName === 'text' || o.hasAttribute('data-warp'));
+  const doWarp = final => {
+    if (refreshing) return;
+    const style = $('#warpStyle').value, bend = +$('#warpBendN').value || 0;
+    const tg = warpTargets(); if (!tg.length) return flash('Select a text object first.');
+    setSel(tg.map(o => setWarp(o, style, bend)).concat(S.sel.filter(o => !tg.includes(o))));
+    if (final) commit();
+  };
+  $('#warpStyle').addEventListener('change', () => doWarp(true));
+  $('#warpBend').addEventListener('input', () => { $('#warpBendN').value = $('#warpBend').value; doWarp(false); });
+  $('#warpBend').addEventListener('change', () => doWarp(true));
+  $('#warpBendN').addEventListener('input', () => { $('#warpBend').value = $('#warpBendN').value; doWarp(false); });
+  $('#warpBendN').addEventListener('change', () => doWarp(true));
 }
 
 /* ---------- Shape Builder ----------
@@ -3283,6 +3651,7 @@ svg.addEventListener('dblclick', e => {
   if (o.hasAttribute('data-placeholder')) return pickForPlaceholder(o);
   if (o.tagName === 'image') return startCrop(o);
   if (o.tagName === 'text') { setTool('text'); openTextEditor(o); }
+  else if (o.hasAttribute('data-warp') && o.querySelector(':scope > text')) { setTool('text'); openTextEditor(o.querySelector(':scope > text')); }
   else if (o.hasAttribute('data-brushed') || ['path', 'rect', 'ellipse', 'circle', 'line', 'polygon', 'polyline'].includes(o.tagName)) { setSel([o]); setTool('direct'); }
 });
 stage.addEventListener('wheel', e => {
@@ -3291,7 +3660,7 @@ stage.addEventListener('wheel', e => {
   else { S.view.x += (e.shiftKey ? e.deltaY : e.deltaX) / S.view.zoom; S.view.y += (e.shiftKey ? 0 : e.deltaY) / S.view.zoom; updateView(); }
 }, { passive: false });
 $('#textEditor').addEventListener('input', autoSizeTA);
-$('#textEditor').addEventListener('blur', () => setTimeout(() => { if (S.editing && document.activeElement !== $('#textEditor')) commitText(); }, 0));
+$('#textEditor').addEventListener('blur', () => setTimeout(() => { const a = document.activeElement; if (S.editing && a !== $('#textEditor') && !(a && a.closest && a.closest('#panels'))) commitText(); }, 0));
 window.addEventListener('resize', updateView);
 
 /* ---------- style application ---------- */
@@ -3386,6 +3755,7 @@ function setPaintType(which, type) {
 }
 function applyFill() {
   const type = $('#fillType').value, c1 = $('#fillColor').value;
+  if (type === 'solid' && edRangeSet('fill', c1)) return;
   if (!S.sel.length && type === 'pattern') { flash('Select a shape first, then choose a pattern.'); refreshPanel(); return; }
   if (!S.sel.length) { S.fill = type === 'none' ? 'none' : c1; updateWells(); refreshPanel(); return; }
   if (type === 'linear' || type === 'radial') setPaintType('fill', type);
@@ -3789,7 +4159,10 @@ function refreshPanel(geomOnly) {
   const anc = (t ? t.getAttribute('text-anchor') : S.font.anchor) || 'start';
   $$('[data-anchor]').forEach(b => b.classList.toggle('on', b.dataset.anchor === anc));
   $('#letterSpacing').value = t ? parseFloat(t.getAttribute('letter-spacing')) || 0 : 0;
-  renderKern();
+  renderKern(); renderTextStyleBtns();
+  const tO = t && outlineOf(t); $('#tOutOn').checked = !!tO; if (tO) { $('#tOutColor').value = tO.c; $('#tOutW').value = tO.w; $('#tOutMode').value = tO.m; }
+  const wg = sel.find(o => o.hasAttribute('data-warp')), wp = wg && warpParams(wg);
+  $('#warpStyle').value = wp ? wp.s : ''; $('#warpBendRow').classList.toggle('hidden', !wp); if (wp) { $('#warpBend').value = wp.b; $('#warpBendN').value = wp.b; }
   $('#lineHeight').value = t ? textLH(t) : (S.font.lh || 1.2);
   const onPath = !!(t && t.hasAttribute('data-onpath')), wr = !!(t && t.hasAttribute('data-wrap'));
   $('#wrapOn').checked = wr; $('#wrapOn').disabled = !t || onPath; $('#wrapW').disabled = !wr;
@@ -3820,11 +4193,11 @@ function wirePanel() {
   live('#opacity', () => { const v = +$('#opacity').value; $('#opacityVal').textContent = v + '%'; S.sel.forEach(el => setAttr(el, 'opacity', v === 100 ? null : v / 100)); });
   live('#blend', () => S.sel.forEach(el => { el.style.mixBlendMode = $('#blend').value === 'normal' ? '' : $('#blend').value; if (!el.getAttribute('style')) el.removeAttribute('style'); }));
   live('#pRadius', () => applyStyle('rx', +$('#pRadius').value || null, s => s.tagName === 'rect'));
-  const fontSet = (k, v, key) => { S.font[key] = v; applyStyle(k, v, s => s.tagName === 'text'); reflowSel(); drawOverlay(); };
+  const fontSet = (k, v, key) => { if (edRangeSet(k, v)) return; S.font[key] = v; applyStyle(k, v, s => s.tagName === 'text'); reflowSel(); edBase(); drawOverlay(); };
   live('#fontFamily', () => fontSet('font-family', cssFamily($('#fontFamily').value), 'family'));
   live('#fontWeight', () => fontSet('font-weight', $('#fontWeight').value, 'weight'));
   live('#fontSize', () => { const v = +$('#fontSize').value; if (v > 0) fontSet('font-size', v, 'size'); });
-  live('#letterSpacing', () => { applyStyle('letter-spacing', +$('#letterSpacing').value || null, s => s.tagName === 'text'); reflowSel(); });
+  live('#letterSpacing', () => { if (edRangeSet('letter-spacing', +$('#letterSpacing').value || null)) return; applyStyle('letter-spacing', +$('#letterSpacing').value || null, s => s.tagName === 'text'); reflowSel(); edBase(); });
   live('#lineHeight', () => {
     const v = r3(clamp(+$('#lineHeight').value || 1.2, 0.3, 10));
     if (!S.sel.length) { S.font.lh = v; return; }
@@ -3843,7 +4216,7 @@ function wirePanel() {
   });
   $('#tpFlip').onclick = () => { selTexts().filter(t => t.hasAttribute('data-onpath')).forEach(flipTypePath); refreshPanel(); drawOverlay(); commit(); };
   $('#tpRelease').onclick = () => releaseTypePath();
-  $('#fontItalic').onclick = () => { const v = $('#fontItalic').classList.contains('on') ? 'normal' : 'italic'; fontSet('font-style', v, 'style'); refreshPanel(); if (S.sel.length) commit(); };
+  $('#fontItalic').onclick = () => { const cur = edHasRange() ? (edRangeStyle()['font-style'] || ($('#textEditor').style.fontStyle)) : null, v = (cur ? cur === 'italic' : $('#fontItalic').classList.contains('on')) ? 'normal' : 'italic'; fontSet('font-style', v, 'style'); refreshPanel(); if (S.sel.length) commit(); };
   $$('[data-anchor]').forEach(b => b.onclick = () => { fontSet('text-anchor', b.dataset.anchor, 'anchor'); refreshPanel(); if (S.sel.length) commit(); });
   $('#toolOptVal').addEventListener('change', () => { const v = clamp(Math.round(+$('#toolOptVal').value) || 3, 3, 64); if (S.tool === 'star') S.points = v; else S.sides = v; });
   // geometry
@@ -4573,27 +4946,55 @@ function glyphPath(ot, str, x, y, size, ls, anchor) {
   const x0 = anchor === 'middle' ? x - w / 2 : anchor === 'end' ? x - w : x;
   return ot.getPath(str, x0, y, size, opts).toPathData(3);
 }
+function charStyles(el) { // the computed style of every character (with the underline/strike it inherits)
+  const css = [];
+  const walk = (node, cs, deco) => { for (const c of node.childNodes) { if (c.nodeType === 3) for (let k = 0; k < c.data.length; k++) css.push(Object.assign(Object.create(null), { cs, deco })); else if (c.nodeType === 1 && c.tagName !== 'title') { const cc = getComputedStyle(c), d = new Set(deco); for (const x of (cc.textDecorationLine || '').split(/\s+/)) if (x && x !== 'none') d.add(x); walk(c, cc, d); } } };
+  const cs0 = getComputedStyle(el), d0 = new Set((cs0.textDecorationLine || '').split(/\s+/).filter(x => x && x !== 'none'));
+  walk(el, cs0, d0);
+  return css.map(o => { const cs = o.cs; cs.__deco = o.deco; return cs; });
+}
+function textNeedsLetters(el) { return !!el.querySelector('tspan tspan, textPath tspan') || ['text-transform', 'font-variant', 'text-decoration', 'baseline-shift'].some(a => el.hasAttribute(a) || el.querySelector('[' + a + ']')); }
+function letterOf(ch, cs) { // the glyph to draw for one character (ALL CAPS / small caps)
+  const tt = cs.textTransform, sc = /small-caps/.test(cs.fontVariantCaps || cs.fontVariant || '');
+  if (tt === 'uppercase') return { s: ch.toUpperCase(), cs };
+  if (tt === 'lowercase') return { s: ch.toLowerCase(), cs };
+  if (sc && ch !== ch.toUpperCase()) return { s: ch.toUpperCase(), cs, sz: (parseFloat(cs.fontSize) || 16) * 0.72 };
+  return { s: ch, cs };
+}
+function textDecoRects(el) { // underline / strikethrough bars as path data, with the style that colors them
+  const out = []; if (el.hasAttribute('data-onpath')) return out;
+  const str = el.textContent, css = charStyles(el);
+  let n = 0; try { n = el.getNumberOfChars(); } catch (e) { return out; }
+  let cur = null;
+  const flush = () => { if (cur) { for (const k of cur.kinds) { const y = k === 'underline' ? cur.y + cur.size * 0.12 : cur.y - cur.size * 0.28, h = Math.max(0.5, cur.size * 0.065); out.push({ d: `M${r3(cur.x0)} ${r3(y)}H${r3(cur.x1)}V${r3(y + h)}H${r3(cur.x0)}Z`, cs: cur.cs }); } } cur = null; };
+  for (let i = 0; i < n && i < str.length; i++) {
+    const cs = css[i], deco = cs && cs.__deco; if (!deco || !deco.size) { flush(); continue; }
+    let ext, pos; try { ext = el.getExtentOfChar(i); pos = el.getStartPositionOfChar(i); } catch (e) { flush(); continue; }
+    const size = parseFloat(cs.fontSize) || 16, kinds = [...deco].sort().join();
+    if (cur && Math.abs(cur.y - pos.y) < 0.01 && cur.k === kinds && cur.fill === cs.fill && Math.abs(ext.x - cur.x1) < size * 0.6) { cur.x1 = ext.x + ext.width; continue; }
+    flush(); cur = { x0: ext.x, x1: ext.x + ext.width, y: pos.y, size, k: kinds, kinds: [...deco], cs, fill: cs.fill };
+  }
+  flush(); return out;
+}
 function textRuns(el) {
   if (el.hasAttribute('data-onpath')) { // one run per character, placed and rotated exactly as the browser lays it out
-    const tp = el.querySelector('textPath'), cs = getComputedStyle(tp || el), str = el.textContent, runs = [];
+    const tp = el.querySelector('textPath'), str = el.textContent, runs = [], css = charStyles(el), cs = getComputedStyle(tp || el);
     let n = 0; try { n = el.getNumberOfChars(); } catch (e) { return runs; }
     for (let i = 0; i < n && i < str.length; i++) {
       let pos, rot, ext;
       try { pos = el.getStartPositionOfChar(i); rot = el.getRotationOfChar(i); ext = el.getExtentOfChar(i); } catch (e) { continue; }
       if (!ext || (ext.width === 0 && ext.height === 0)) continue; // past the end of the path
-      runs.push({ x: pos.x, y: pos.y, s: str[i], cs, rot });
+      runs.push({ x: pos.x, y: pos.y, ...letterOf(str[i], css[i] || cs), rot });
     }
     return runs;
   }
-  if (el.hasAttribute('data-kern') || el.style.fontKerning === 'none') { // exact per-letter positions, as laid out on screen
-    const runs = [], str = el.textContent, css = [];
-    const walk = (node, cs) => { for (const c of node.childNodes) { if (c.nodeType === 3) for (let k = 0; k < c.data.length; k++) css.push(cs); else if (c.nodeType === 1) walk(c, getComputedStyle(c)); } };
-    walk(el, getComputedStyle(el));
+  if (el.hasAttribute('data-kern') || el.style.fontKerning === 'none' || textNeedsLetters(el)) { // exact per-letter positions, as laid out on screen
+    const runs = [], str = el.textContent, css = charStyles(el);
     let n = 0; try { n = el.getNumberOfChars(); } catch (e) { return runs; }
     for (let i = 0; i < n && i < str.length; i++) {
       if (!str[i].trim() || str[i] === '\u00a0') continue;
       let pos; try { pos = el.getStartPositionOfChar(i); } catch (e) { continue; }
-      runs.push({ x: pos.x, y: pos.y, s: str[i], cs: css[i] || getComputedStyle(el), rot: 0 });
+      runs.push({ x: pos.x, y: pos.y, ...letterOf(str[i], css[i] || getComputedStyle(el)), rot: 0 });
     }
     return runs;
   }
@@ -4612,29 +5013,34 @@ function textRuns(el) {
 }
 async function createOutlines() {
   if (S.editing) commitText();
-  const texts = S.sel.filter(o => o.tagName === 'text');
+  const texts = S.sel.flatMap(o => (o.tagName === 'text' ? [o] : o.hasAttribute('data-warp') ? [o] : []));
   if (!texts.length) return flash('Select some text first, then choose Create Outlines.');
   PJ();
   const missing = new Set(), out = [];
-  for (const t of texts) {
-    let d = '';
-    for (const r of textRuns(t)) {
-      const s2 = r.s.replace(/ /g, ' '); if (!s2.trim()) continue;
-      const ot = await fontFor(r.cs);
-      if (!ot) { missing.add(cleanFamily(r.cs.fontFamily.split(',')[0])); continue; }
-      const size = parseFloat(r.cs.fontSize) || 16, ls = r.cs.letterSpacing === 'normal' ? 0 : parseFloat(r.cs.letterSpacing) || 0;
-      d += runD(ot, r, s2, size, ls) + ' ';
+  for (const o of texts) {
+    if (o.hasAttribute('data-warp')) { // a warped text: its bent outlines become the shapes
+      const art = o.querySelector(':scope > [data-warp-art]'); if (!art || !art.children.length) continue;
+      const g = mk('g', { id: uid(), 'data-name': 'Outlined: ' + (o.querySelector('text') || o).textContent.slice(0, 20) }); setM(g, getM(o));
+      if (o.getAttribute('opacity')) g.setAttribute('opacity', o.getAttribute('opacity'));
+      for (const c of [...art.children]) { c.id = uid(); g.appendChild(c); }
+      o.replaceWith(g); out.push(g); continue;
     }
-    if (!d.trim()) continue;
-    const p = mk('path', { id: uid(), 'data-name': 'Outlined: ' + textLines(t).join(' ').slice(0, 20) });
-    for (const a of ['fill', 'stroke', 'stroke-width', 'opacity', 'fill-opacity', 'stroke-opacity', 'transform', 'style']) if (t.getAttribute(a)) p.setAttribute(a, t.getAttribute(a));
-    if (!t.getAttribute('fill')) p.setAttribute('fill', getComputedStyle(t).fill);
-    p.style.removeProperty('visibility');
-    let item; try { item = paper.PathItem.create(d); } catch (e) { continue; }
-    setNodes(p, itemToNodes(item), true);
-    t.replaceWith(p); out.push(p);
+    const t = o, { parts, missing: miss } = await textOutlineParts(t);
+    miss.forEach(m => missing.add(m)); if (!parts.length) continue;
+    const mkPart = p => {
+      const el = mk('path', { id: uid() });
+      el.setAttribute('fill', p.fill); if (p.stroke !== 'none' && p.sw) { el.setAttribute('stroke', p.stroke); el.setAttribute('stroke-width', r3(p.sw)); el.setAttribute('stroke-linejoin', 'round'); if (p.po) el.setAttribute('paint-order', 'stroke'); }
+      let item; try { item = paper.PathItem.create(p.d); } catch (e) { return null; }
+      setNodes(el, itemToNodes(item), true); return el;
+    };
+    let res;
+    if (parts.length === 1) { res = mkPart(parts[0]); if (!res) continue; }
+    else { res = mk('g', { id: uid() }); for (const p of parts) { const e = mkPart(p); if (e) res.appendChild(e); } }
+    res.setAttribute('data-name', 'Outlined: ' + textLines(t).join(' ').slice(0, 20));
+    for (const a of ['opacity', 'transform', 'data-shadow', 'data-glow', 'data-blur']) if (t.getAttribute(a)) res.setAttribute(a, t.getAttribute(a));
+    t.replaceWith(res); out.push(res);
   }
-  if (out.length) { setSel(S.sel.map(o => o.isConnected ? o : out.shift() || o).filter(o => o.isConnected)); commit(); }
+  if (out.length) { setSel(out); commit(); }
   if (missing.size) flash(`Couldn’t find the font file for ${[...missing].join(', ')}. Click “Installed fonts” (Chrome/Edge or the desktop app) or “Add font file…”, then try again.`);
   else if (out.length) flash(`Converted ${texts.length} text object(s) to shapes.`);
 }
@@ -6390,6 +6796,7 @@ async function drawEl(el, B, alpha) {
   if (B instanceof PdfOut && !el.closest('defs') && (el.hasAttribute('data-shadow') || (glowParams(el) || {}).o)) await drawShadow(el, B, op);
   if (tag === 'g' || tag === 'svg' || tag === 'a' || tag === 'switch') { for (const c of el.children) await drawEl(c, B, op); }
   else if (tag === 'use') { const ref = document.getElementById(symRef(el)); if (ref && !ref.contains(el)) for (const c of ref.children) await drawEl(c, B, op); }
+  else if (tag === 'text' && cs.visibility === 'hidden') { /* the hidden source of a warped text */ }
   else if (tag === 'text') { const tg = B instanceof PdfOut && textGrad(el, cs); if ((tg && tg.alpha) || (B instanceof PdfOut && patEl(urlId(cs.fill)))) await rasterizeEl(el, B, op); else await drawText(el, cs, B, op); }
   else if (tag === 'image') await drawImage(el, B, op);
   else if (ARTSHAPES.includes(tag) && cs.visibility !== 'hidden') await drawShape(el, cs, B, op);
@@ -6434,8 +6841,8 @@ async function drawText(el, cs, B, op) {
     const s = r.s.replace(/ /g, ' ');
     if (!s.trim()) continue;
     const pt = patEl(urlId(r.cs.fill)), c = parseColor(r.cs.fill) || (pt && parseColor((patParams(el) || {}).c1 || '#000')) || (urlId(r.cs.fill) && (gradInfo(urlId(r.cs.fill), { x: 0, y: 0, w: 1, h: 1 }) || { stops: [{ c: null }] }).stops[0].c);
-    if (!c) continue;
-    const size = parseFloat(r.cs.fontSize) || 16, f = stdFont(r.cs), ls = r.cs.letterSpacing === 'normal' ? 0 : parseFloat(r.cs.letterSpacing) || 0;
+    if (!c && !(r.cs.stroke && r.cs.stroke !== 'none')) continue;
+    const size = r.sz || parseFloat(r.cs.fontSize) || 16, f = stdFont(r.cs), ls = r.cs.letterSpacing === 'normal' ? 0 : parseFloat(r.cs.letterSpacing) || 0;
     const ot = await fontFor(r.cs).catch(() => null);
     if (ot) { // draw the real glyph shapes so the PDF/EPS looks exactly like the screen
       const d = runD(ot, r, s, size, ls);
@@ -6446,17 +6853,22 @@ async function drawText(el, cs, B, op) {
     const x = anchor === 'middle' ? r.x - w / 2 : anchor === 'end' ? r.x - w : r.x;
     B.text({ x, y: r.y, s, size, font: f.name, color: c, a: op * parseFloat(r.cs.fillOpacity || 1) * (c.a ?? 1), ls });
   }
+  for (const R of textDecoRects(el)) { // underline / strikethrough
+    const c = parseColor(R.cs.fill); if (!c) continue;
+    B.fill(pathOps(paper.PathItem.create(R.d), B instanceof PdfOut), c, false, op * parseFloat(R.cs.fillOpacity || 1) * (c.a ?? 1));
+  }
 }
 function textGrad(el, cs) {
   const gid = urlId(cs.fill); if (!gid) return null;
   let bb; try { bb = el.getBBox(); } catch (e) { return null; }
   return gradInfo(gid, { x: bb.x, y: bb.y, w: bb.width, h: bb.height });
 }
-function drawGlyphs(el, B, d, cs, c, op) { // fill glyph outlines with the text's color or gradient
+function drawGlyphs(el, B, d, cs, c, op) { // fill glyph outlines with the text's color or gradient (and its outline)
   const pdf = B instanceof PdfOut, path = pathOps(paper.PathItem.create(d), pdf), a = op * parseFloat(cs.fillOpacity || 1);
-  const grad = textGrad(el, cs);
-  if (grad) B.shade(path, false, grad, a);
-  else B.fill(path, c, false, a * (c.a ?? 1));
+  const grad = textGrad(el, cs), sw = parseFloat(cs.strokeWidth) || 0, sc = cs.stroke && cs.stroke !== 'none' && sw > 0 ? parseColor(cs.stroke) || (urlId(cs.stroke) && (gradInfo(urlId(cs.stroke), { x: 0, y: 0, w: 1, h: 1 }) || { stops: [{ c: null }] }).stops[0].c) : null;
+  const stroke = () => { if (sc) B.stroke(path, sc, { w: sw, cap: CAP[cs.strokeLinecap] ?? 0, join: JOIN[cs.strokeLinejoin] ?? 1, miter: parseFloat(cs.strokeMiterlimit) || 4, dash: null, offset: 0 }, op * parseFloat(cs.strokeOpacity || 1) * (sc.a ?? 1)); };
+  const fill = () => { if (cs.fill === 'none') return; if (grad) B.shade(path, false, grad, a); else if (c) B.fill(path, c, false, a * (c.a ?? 1)); };
+  if (/^stroke/.test(cs.paintOrder || '')) { stroke(); fill(); } else { fill(); stroke(); }
 }
 async function drawImage(el, B, op) {
   let href = el.getAttribute('href') || el.getAttribute('xlink:href'); if (!href) return;
@@ -6601,7 +7013,7 @@ async function exportVector(kind) {
     else if (kind === 'ai') { bytes = await buildPDF([ab], base); name = safeName(base + (multi ? '-' + ab.name : '')) + '.ai'; type = 'application/postscript'; }
     else { bytes = await buildEPS(ab, base); name = safeName(base + (multi ? '-' + ab.name : '')) + '.eps'; type = 'application/postscript'; }
     const saved = await download(new Blob([bytes], { type }), name);
-    if (desk && !saved) return flash('Export cancelled.');
+    if (saved === null || (desk && !saved)) return flash('Export cancelled.');
     flash(kind === 'pdf' ? `Exported ${name} (${S.doc.abs.length} page${S.doc.abs.length > 1 ? 's' : ''}).` : `Exported ${name}${multi ? ' (current artboard)' : ''}.`);
   } catch (e) {
     console.error(e);
@@ -6799,7 +7211,7 @@ function wireLogoPack() {
     try {
       const r = await exportLogoPack(opt);
       const saved = await download(new Blob([r.bytes], { type: 'application/zip' }), r.name);
-      if (desk && !saved) return flash('Export cancelled.');
+      if (saved === null || (desk && !saved)) return flash('Export cancelled.');
       flash(`Exported ${r.name} (${r.count} files).`);
     } catch (e) { console.error(e); alert('Logo pack failed: ' + (e && e.message || e)); }
   };
@@ -7342,7 +7754,13 @@ async function save(saveAs) {
     if (!p) return;
     S.filePath = p; S.doc.name = p.split(/[\\/]/).pop().replace(/\.svg$/i, ''); $('#docName').textContent = S.doc.name + '.svg';
     autosave();
-  } else download(new Blob([serialize()], { type: 'image/svg+xml' }), fileBase() + '.svg');
+  } else {
+    const blob = new Blob([serialize()], { type: 'image/svg+xml' });
+    if (!saveAs && S.fh && S.fhDoc === S.doc) { try { await writeBlob(S.fh, blob); setDirty(false); return flash('Saved ' + S.fh.name); } catch (e) { S.fh = null; } }
+    const fh = await download(blob, fileBase() + '.svg');
+    if (fh === null) return flash('Save cancelled.');
+    if (fh && fh.createWritable) { S.fh = fh; S.fhDoc = S.doc; S.doc.name = fh.name.replace(/\.svg$/i, ''); $('#docName').textContent = fh.name; }
+  }
   setDirty(false); flash('Saved ' + fileBase() + '.svg');
 }
 async function openDialog() {
@@ -7374,8 +7792,9 @@ function exportRaster(scale, type = 'image/png', ab = AB(), dir) {
   });
 }
 async function exportAll() {
-  const dir = desk ? await desk.chooseFolder() : null;
+  let dir = desk ? await desk.chooseFolder() : null;
   if (desk && !dir) return;
+  if (!desk && window.showDirectoryPicker && S.picker) { try { dir = await window.showDirectoryPicker({ mode: 'readwrite' }); } catch (e) { if (e.name === 'AbortError') return; dir = null; } }
   for (const a of S.doc.abs) { await exportRaster(1, 'image/png', a, dir); if (!desk) await new Promise(r => setTimeout(r, 350)); }
   flash(`Exported ${S.doc.abs.length} artboard(s).`);
 }
@@ -7636,7 +8055,7 @@ function status() {
 
 /* ---------- boot ---------- */
 function boot() {
-  buildToolbar(); wirePanel(); wireLayers(); wireArtboards(); wireBrushes(); wireSymbols(); wireTrace(); wireFonts(); wireOffset(); wireEffects(); wireKern(); wireAdjust(); wireLogoPack(); wireUnits(); wireRulers(); wirePrint(); wireUpdates(); wireCmyk(); wireRecolor();
+  buildToolbar(); wirePanel(); wireLayers(); wireArtboards(); wireBrushes(); wireSymbols(); wireTrace(); wireFonts(); wireOffset(); wireEffects(); wireKern(); wireTextExtras(); wireAdjust(); wireLogoPack(); wireUnits(); wireRulers(); wirePrint(); wireUpdates(); wireCmyk(); wireRecolor();
   $$('[data-align]').forEach(b => b.onclick = () => alignSel(b.dataset.align));
   $('#btnRecolor').onclick = () => openRecolor(); wireCrop(); wireKit(); wireTemplates();
   let restored = false;
