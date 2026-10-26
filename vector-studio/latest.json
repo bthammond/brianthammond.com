@@ -1,7 +1,7 @@
 {
-  "version": "1.16.0",
-  "file": "VectorStudio-1.16.0.html",
-  "sha256": "cb7fa9e7eee948261fdff3cc08ca2f6f7c85d3b9908b9da3b99f8bf2791a6d13",
+  "version": "1.16.1",
+  "file": "VectorStudio-1.16.1.html",
+  "sha256": "e33e9307b224420f97648156a5247e61ce622f547b413683a0e26ffbf7d8d6b5",
   "minShell": "1.9.0",
-  "notes": "New: right-click menus, scroll bars on the canvas, update checks in the browser version, and clearer Brushes panel clicks."
+  "notes": "New: zoom controls in the status bar (− / + buttons, slider, type an exact zoom, and a menu with Fit Artboard, Fit Selection and preset sizes)."
 }
