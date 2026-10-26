@@ -1,0 +1,7 @@
+{
+  "version": "1.11.0",
+  "file": "VectorStudio-1.11.0.html",
+  "sha256": "b339d57fd54c414a79b249e82f491e6c8c4063cb33e829ba06826dfe0fae1927",
+  "minShell": "1.9.0",
+  "notes": "New: Shape Builder (Shift+M), documents in tabs, Align & Distribute, CMYK and spot colors, and Recolor Artwork."
+}
