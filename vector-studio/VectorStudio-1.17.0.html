@@ -331,14 +331,23 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
 .kitasset:hover{border-color:var(--accent)}
 .kitempty{color:var(--muted);font-size:11px;font-style:italic}
 #dlgTpl{width:min(1120px,96vw);max-width:none}
-.tplgrid{display:grid;grid-template-columns:230px 1fr;gap:14px;height:min(62vh,580px)}
+.tplgrid{display:grid;grid-template-columns:250px 1fr;gap:14px;height:min(62vh,600px)}
+#tplSearch{flex:1;min-width:0;height:28px;padding:0 9px;background:#1f1f1f;border:1px solid #4a4a4a;border-radius:5px;color:var(--text);font:inherit}
+#tplSearch:focus{border-color:var(--accent);outline:none}
+#tplPages{white-space:nowrap}
+.tplright{display:flex;flex-direction:column;gap:8px;min-height:0;min-width:0}
+#tplCustom input{width:70px}
+.tplcat{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;padding:9px 9px 2px}
+.tplcat:first-child{padding-top:2px}
+.tpldel{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:11px;border:none;background:#000a;color:#fff;cursor:pointer;display:none;font-size:12px}
+.tpl:hover .tpldel{display:block}.tpldel:hover{background:#d33}
 .tplfmts{overflow:auto;display:flex;flex-direction:column;gap:3px;padding-right:4px}
 .tplfmt{padding:6px 9px;border-radius:5px;cursor:pointer;border:1px solid transparent}
 .tplfmt:hover{background:#353535}
 .tplfmt.on{background:#24476b;border-color:var(--accent)}
 .tplfmt small{display:block;color:var(--muted);font-size:11px}
-.tpllist{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;overflow:auto;height:100%;align-content:start;padding-right:4px}
-.tpl{background:#1f1f1f;border:2px solid #3a3a3a;border-radius:7px;padding:6px;cursor:pointer}
+.tpllist{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;overflow:auto;flex:1;min-height:0;align-content:start;padding-right:4px}
+.tpl{position:relative;background:#1f1f1f;border:2px solid #3a3a3a;border-radius:7px;padding:6px;cursor:pointer}
 .tpl:hover{border-color:#666}.tpl.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
 .tpl .thumb{height:160px;display:grid;place-items:center;background:repeating-conic-gradient(#2a2a2a 0 25%,#262626 0 50%) 0 0/14px 14px;border-radius:4px;overflow:hidden}
 .tpl img{max-width:100%;max-height:160px;display:block;box-shadow:0 2px 8px #0008}
@@ -362,6 +371,7 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
     <div class="menu"><button>File</button><div class="items">
       <button data-cmd="new">New… <span>Ctrl+Alt+N</span></button>
       <button data-cmd="templates">New from Template… <span>Ctrl+Alt+T</span></button>
+      <button data-cmd="saveTpl">Save as Template…</button>
       <button data-cmd="open">Open… (SVG, PDF, AI, EPS, images) <span>Ctrl+O</span></button>
       <button data-cmd="closeTab">Close Document <span>Ctrl+W (desktop) · Ctrl+Alt+W</span></button>
       <button data-cmd="save">Save <span>Ctrl+S</span></button>
@@ -791,6 +801,12 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
   <div class="dfoot"><button class="btn" id="dsProps" style="margin-right:auto" title="Title, author, copyright, keywords and document info">Properties &amp; Metadata…</button><button class="btn" id="dsCancel">Cancel</button><button class="btn on" id="dsOk">OK</button></div>
 </dialog>
 
+<dialog id="dlgAsk">
+  <h2 id="askTitle">Name</h2>
+  <div class="dbody"><div id="askMsg" class="muted" style="white-space:pre-line;max-width:440px"></div><input type="text" id="askVal" spellcheck="false" style="width:100%;box-sizing:border-box"></div>
+  <div class="dfoot"><button class="btn" id="askCancel">Cancel</button><button class="btn on" id="askOk">OK</button></div>
+</dialog>
+
 <dialog id="dlgProps">
   <h2>Document Properties</h2>
   <div class="ptabs"><button class="on" data-ptab="meta">Description</button><button data-ptab="rights">Copyright</button><button data-ptab="info">Document Info</button></div>
@@ -873,13 +889,17 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
 <dialog id="dlgTpl">
   <h2>New from Template</h2>
   <div class="dbody">
+    <div class="row"><input type="search" id="tplSearch" placeholder="Search: business card, flyer, menu, banner, logo, ad, slides…" spellcheck="false" autocomplete="off"><span class="muted" id="tplPages"></span></div>
     <div class="tplgrid">
       <div class="tplfmts" id="tplFormats"></div>
-      <div id="tplList" class="tpllist"></div>
+      <div class="tplright">
+        <div id="tplCustom" class="row hidden"><label style="min-width:0">Width</label><input type="text" inputmode="decimal" id="tcW"><label style="min-width:0">Height</label><input type="text" inputmode="decimal" id="tcH"><select id="tcUnit"><option value="px">px</option><option value="in">in</option><option value="mm">mm</option><option value="cm">cm</option><option value="pt">pt</option></select><button class="btn" id="tcSwap" title="Swap width and height">⇄</button><span class="muted">in / mm / cm sizes get print bleed</span></div>
+        <div id="tplList" class="tpllist"></div>
+      </div>
     </div>
     <div class="row" style="justify-content:space-between"><label style="min-width:0"><input type="checkbox" id="tplUseKit"> Use my Brand Kit colors, fonts and logo</label><span class="muted" id="tplNote"></span></div>
   </div>
-  <div class="dfoot"><button class="btn" id="tplCancel">Cancel</button><button class="btn" id="tplAdd" title="Add the template as a new artboard in this document">Add as new artboard</button><button class="btn on" id="tplNew">Create new document</button></div>
+  <div class="dfoot"><button class="btn" id="tplSaveMine" style="margin-right:auto" title="Keep the current artboard's design in My Templates">Save current artboard as template…</button><button class="btn" id="tplCancel">Cancel</button><button class="btn" id="tplAdd" title="Add the template as a new artboard in this document">Add as new artboard</button><button class="btn on" id="tplNew">Create new document</button></div>
 </dialog>
 
 <dialog id="dlgPack">
@@ -1464,7 +1484,7 @@ function renderAbPanel() {
     r.innerHTML = `<span class="muted" style="width:18px;text-align:right">${k + 1}</span><span class="name"></span><span class="muted">${Math.round(a.w)} × ${Math.round(a.h)}</span>`;
     r.querySelector('.name').textContent = a.name;
     r.onclick = () => { setActiveAb(k); fit(); };
-    r.ondblclick = () => { const v = prompt('Artboard name', a.name); if (v && v.trim()) { a.name = v.trim(); commit(); } };
+    r.ondblclick = async () => { const v = await askText('Artboard name', a.name); if (v && v.trim()) { a.name = v.trim(); commit(); } };
     box.appendChild(r);
   });
   renderAbFields();
@@ -1778,7 +1798,7 @@ function wireUpdates() {
 }
 /* The browser version checks https://www.brianthammond.com/vector-studio/latest.json and offers the newest VectorStudio.html
    (checked against its SHA-256 before it is saved). The desktop app updates itself instead. */
-const VS_VERSION = '1.16.2', UPDATE_BASE = 'https://www.brianthammond.com/vector-studio/';
+const VS_VERSION = '1.17.0', UPDATE_BASE = 'https://www.brianthammond.com/vector-studio/';
 const vcmp = (a, b) => { const p = String(a).split('.').map(Number), q = String(b).split('.').map(Number); for (let i = 0; i < 3; i++) { const d = (p[i] || 0) - (q[i] || 0); if (d) return d; } return 0; };
 async function fetchLatest() {
   const r = await fetch(UPDATE_BASE + 'latest.json?t=' + Date.now(), { cache: 'no-store' });
@@ -1912,10 +1932,10 @@ function wireCmyk() {
     });
   }
   $('#cmHex').addEventListener('change', () => { const v = $('#cmHex').value.trim().replace(/^#?/, '#'); if (!/^#[0-9a-f]{6}$/i.test(v)) return refreshCmyk(); setTargetColor(v.toLowerCase()); if (S.sel.length) commit(); });
-  $('#cmSpot').onclick = () => {
+  $('#cmSpot').onclick = async () => {
     const hex = colorTargetHex(); if (!hex) return;
     const C = docColors(), cur = C.spots[hex];
-    const name = prompt(cur ? `“${cur.name}” is a spot color. Rename it, or clear the name to make it a normal (process) color again.` : 'Name this spot color exactly as your printer or ink book lists it, for example “PANTONE 185 C”.\n\nSet its CMYK values first in the C M Y K boxes: they are used where the ink is not available.', cur ? cur.name : 'PANTONE ');
+    const name = await askText(cur ? `“${cur.name}” is a spot color. Rename it, or clear the name to make it a normal (process) color again.` : 'Name this spot color exactly as your printer or ink book lists it, for example “PANTONE 185 C”.\n\nSet its CMYK values first in the C M Y K boxes: they are used where the ink is not available.', cur ? cur.name : 'PANTONE ');
     if (name === null) return;
     if (!name.trim()) delete C.spots[hex]; else C.spots[hex] = { name: name.trim().slice(0, 60), cmyk: rgbToCmyk(hex) };
     refreshCmyk(); commit();
@@ -4681,10 +4701,10 @@ function replaceWithInstance(objs, id, c) {
   top.after(u); objs.forEach(o => o.remove());
   return u;
 }
-function newSymbolFromSel() {
+async function newSymbolFromSel() {
   if (isoLayer()) return flash('Finish editing the current symbol first.');
   const objs = inDocOrder(S.sel); if (!objs.length) return flash('Select some artwork first, then make it a symbol.');
-  const name = prompt('Symbol name', 'Symbol ' + (docSymbols().filter(d => !d.hasAttribute('data-builtin')).length + 1));
+  const name = await askText('Symbol name', 'Symbol ' + (docSymbols().filter(d => !d.hasAttribute('data-builtin')).length + 1));
   if (name === null) return;
   const def = mk('g', { id: uid('sym-'), 'data-symbol': name.trim() || 'Symbol', 'data-v': '0' });
   const c = selectionToSymbolArt(def, objs);
@@ -5754,7 +5774,7 @@ function renderKit() {
   for (const c of KIT.colors) {
     const t = document.createElement('div'); t.className = 'kitcolor'; t.style.background = c.value; t.title = `${c.name} (${c.value})`;
     t.onclick = e => applyKitColor(c.value, e.shiftKey);
-    t.ondblclick = () => { const v = prompt('Color name', c.name); if (v && v.trim()) { c.name = v.trim(); saveKit(); } };
+    t.ondblclick = async () => { const v = await askText('Color name', c.name); if (v && v.trim()) { c.name = v.trim(); saveKit(); } };
     t.appendChild(kitX(() => { KIT.colors = KIT.colors.filter(x => x !== c); saveKit(); }));
     cb.appendChild(t);
   }
@@ -5767,7 +5787,7 @@ function renderKit() {
     const sm = document.createElement('small'); sm.textContent = `${cleanFamily(a['font-family'].split(',')[0])} ${a['font-weight']} · ${a['font-size']}px`; row.appendChild(sm);
     row.title = 'Click to apply to the selected text';
     row.onclick = () => applyKitStyle(st);
-    row.ondblclick = () => { const v = prompt('Style name', st.name); if (v && v.trim()) { st.name = v.trim(); saveKit(); } };
+    row.ondblclick = async () => { const v = await askText('Style name', st.name); if (v && v.trim()) { st.name = v.trim(); saveKit(); } };
     row.appendChild(kitX(() => { KIT.styles = KIT.styles.filter(x => x !== st); saveKit(); }));
     sb.appendChild(row);
   }
@@ -5812,7 +5832,7 @@ function ensureKitFonts(list) { // add any brand fonts this document doesn't hav
   }
   if (added) renderFontList();
 }
-function kitAddStyle() {
+async function kitAddStyle() {
   const t = S.sel.find(o => o.tagName === 'text');
   if (!t) return flash('Select a text object first, then click “Save from text”.');
   const cs = getComputedStyle(t), g = a => t.getAttribute(a);
@@ -5820,7 +5840,7 @@ function kitAddStyle() {
     'font-family': g('font-family') || cs.fontFamily, 'font-weight': normWeight(g('font-weight') || cs.fontWeight), 'font-style': g('font-style') || cs.fontStyle || 'normal',
     'font-size': parseFloat(g('font-size') || cs.fontSize) || 16, fill: g('fill') && !g('fill').startsWith('url') ? g('fill') : toHex(cs.fill), 'letter-spacing': g('letter-spacing') ? parseFloat(g('letter-spacing')) : 0,
   };
-  const name = prompt('Name this text style (e.g. Heading, Body, Caption)', KIT.styles.length ? 'Body' : 'Heading');
+  const name = await askText('Name this text style (e.g. Heading, Body, Caption)', KIT.styles.length ? 'Body' : 'Heading');
   if (name === null) return;
   KIT.styles.push({ id: kitId(), name: name.trim() || 'Text style', attrs, fonts: fontMarkupFor(attrs['font-family']) });
   saveKit(); flash(`Saved text style “${name}”.`);
@@ -5848,10 +5868,10 @@ function collectDeps(nodes) { // defs (gradients, symbols, filters, clip paths�
   nodes.forEach(scan);
   return out.map(d => d.outerHTML);
 }
-function kitAddAsset() {
+async function kitAddAsset() {
   const objs = inDocOrder(S.sel); if (!objs.length) return flash('Select your logo or graphic first, then click “Save selection”.');
   const B = unionBox(objs); if (!B) return;
-  const name = prompt('Name this logo or graphic', 'Logo ' + (KIT.assets.length + 1)); if (name === null) return;
+  const name = await askText('Name this logo or graphic', 'Logo ' + (KIT.assets.length + 1)); if (name === null) return;
   const wrap = mk('g');
   for (const o of objs) { const c = o.cloneNode(true); setM(c, T(-B.x, -B.y).multiply(getM(c))); wrap.appendChild(c); }
   const families = new Set([...wrap.querySelectorAll('text, tspan')].map(t => (t.getAttribute('font-family') || '')).filter(Boolean));
@@ -5898,22 +5918,221 @@ function wireKit() {
   loadKit();
 }
 
-/* ---------- social media templates ---------- */
-// Each template is a small layout function that adapts to the chosen format (square, portrait, story, wide post,
-// banner) and to the Brand Kit (colors, fonts, logo). Everything it creates is ordinary editable artwork.
+/* ---------- template library ----------
+   Formats are grouped by category. Each format has a "kind" (business card, flyer, banner, slides…) and every
+   design lists the kinds it is drawn for, so a business card gets business-card layouts. Print formats are in
+   points (72 per inch) and come with bleed, safety lines, fold guides and a CutContour die line where needed;
+   multi-page formats (front/back, brochure, carousel, slides) become several artboards in one document. */
+const PT = 72, MM = 72 / 25.4;
+const TPL_CATS = ['Social Media', 'Print', 'Signs & Large Format', 'Logo & Brand', 'Ads & Web', 'Presentation'];
 const TPL_FORMATS = [
-  { id: 'ig-square', name: 'Instagram post', note: 'Square 1080 × 1080', w: 1080, h: 1080 },
-  { id: 'ig-portrait', name: 'Instagram portrait post', note: '4:5 · 1080 × 1350', w: 1080, h: 1350 },
-  { id: 'story', name: 'Story / Reel / TikTok', note: '9:16 · 1080 × 1920', w: 1080, h: 1920 },
-  { id: 'fb-post', name: 'Facebook / LinkedIn post', note: '1200 × 630', w: 1200, h: 630 },
-  { id: 'x-post', name: 'X (Twitter) post', note: '16:9 · 1600 × 900', w: 1600, h: 900 },
-  { id: 'yt-thumb', name: 'YouTube thumbnail', note: '1280 × 720', w: 1280, h: 720 },
-  { id: 'pin', name: 'Pinterest pin', note: '2:3 · 1000 × 1500', w: 1000, h: 1500 },
-  { id: 'fb-cover', name: 'Facebook cover', note: '1640 × 624', w: 1640, h: 624 },
-  { id: 'li-banner', name: 'LinkedIn banner', note: '1584 × 396', w: 1584, h: 396 },
-  { id: 'x-header', name: 'X (Twitter) header', note: '1500 × 500', w: 1500, h: 500 },
+  // social (the original adaptive layouts)
+  { id: 'ig-square', cat: 'Social Media', name: 'Instagram post', note: 'Square 1080 × 1080', w: 1080, h: 1080, kind: 'social' },
+  { id: 'ig-portrait', cat: 'Social Media', name: 'Instagram portrait post', note: '4:5 · 1080 × 1350', w: 1080, h: 1350, kind: 'social' },
+  { id: 'story', cat: 'Social Media', name: 'Story / Reel / TikTok', note: '9:16 · 1080 × 1920', w: 1080, h: 1920, kind: 'social' },
+  { id: 'ig-carousel', cat: 'Social Media', name: 'Instagram carousel', note: '5 slides · 1080 × 1350', w: 1080, h: 1350, kind: 'carousel', pages: ['Cover', 'Slide 2', 'Slide 3', 'Slide 4', 'Last slide'] },
+  { id: 'li-carousel', cat: 'Social Media', name: 'LinkedIn carousel', note: '5 pages · 1080 × 1350', w: 1080, h: 1350, kind: 'carousel', pages: ['Cover', 'Page 2', 'Page 3', 'Page 4', 'Last page'] },
+  { id: 'fb-post', cat: 'Social Media', name: 'Facebook / LinkedIn post', note: '1200 × 630', w: 1200, h: 630, kind: 'social' },
+  { id: 'x-post', cat: 'Social Media', name: 'X (Twitter) post', note: '16:9 · 1600 × 900', w: 1600, h: 900, kind: 'social' },
+  { id: 'yt-thumb', cat: 'Social Media', name: 'YouTube thumbnail', note: '1280 × 720', w: 1280, h: 720, kind: 'social' },
+  { id: 'pin', cat: 'Social Media', name: 'Pinterest pin', note: '2:3 · 1000 × 1500', w: 1000, h: 1500, kind: 'social' },
+  { id: 'fb-cover', cat: 'Social Media', name: 'Facebook cover', note: '1640 × 624', w: 1640, h: 624, kind: 'social' },
+  { id: 'fb-event', cat: 'Social Media', name: 'Facebook event cover', note: '1920 × 1005', w: 1920, h: 1005, kind: 'social' },
+  { id: 'li-banner', cat: 'Social Media', name: 'LinkedIn banner', note: '1584 × 396', w: 1584, h: 396, kind: 'social' },
+  { id: 'x-header', cat: 'Social Media', name: 'X (Twitter) header', note: '1500 × 500', w: 1500, h: 500, kind: 'social' },
+  { id: 'yt-banner', cat: 'Social Media', name: 'YouTube channel art', note: '2560 × 1440 · keep text in the middle', w: 2560, h: 1440, kind: 'social' },
+  { id: 'gbp-post', cat: 'Social Media', name: 'Google Business post', note: '1200 × 900', w: 1200, h: 900, kind: 'social' },
+  // print (with bleed)
+  { id: 'bc-us', cat: 'Print', name: 'Business card', note: '3.5 × 2 in · front & back', w: 3.5 * PT, h: 2 * PT, kind: 'card', unit: 'in', bleed: 9, pages: ['Front', 'Back'] },
+  { id: 'bc-eu', cat: 'Print', name: 'Business card (EU)', note: '85 × 55 mm · front & back', w: 85 * MM, h: 55 * MM, kind: 'card', unit: 'mm', bleed: 3 * MM, pages: ['Front', 'Back'] },
+  { id: 'fl-letter', cat: 'Print', name: 'Flyer — Letter', note: '8.5 × 11 in', w: 8.5 * PT, h: 11 * PT, kind: 'flyer', unit: 'in', bleed: 9 },
+  { id: 'fl-a4', cat: 'Print', name: 'Flyer — A4', note: '210 × 297 mm', w: 210 * MM, h: 297 * MM, kind: 'flyer', unit: 'mm', bleed: 3 * MM },
+  { id: 'fl-half', cat: 'Print', name: 'Flyer — half page', note: '5.5 × 8.5 in', w: 5.5 * PT, h: 8.5 * PT, kind: 'flyer', unit: 'in', bleed: 9 },
+  { id: 'po-11x17', cat: 'Print', name: 'Poster — tabloid', note: '11 × 17 in', w: 11 * PT, h: 17 * PT, kind: 'flyer', unit: 'in', bleed: 9 },
+  { id: 'po-18x24', cat: 'Print', name: 'Poster', note: '18 × 24 in', w: 18 * PT, h: 24 * PT, kind: 'flyer', unit: 'in', bleed: 9 },
+  { id: 'po-24x36', cat: 'Print', name: 'Poster — large', note: '24 × 36 in', w: 24 * PT, h: 36 * PT, kind: 'flyer', unit: 'in', bleed: 9 },
+  { id: 'pc-4x6', cat: 'Print', name: 'Postcard', note: '6 × 4 in · front & back', w: 6 * PT, h: 4 * PT, kind: 'postcard', unit: 'in', bleed: 9, pages: ['Front', 'Back'] },
+  { id: 'pc-5x7', cat: 'Print', name: 'Postcard — large', note: '7 × 5 in · front & back', w: 7 * PT, h: 5 * PT, kind: 'postcard', unit: 'in', bleed: 9, pages: ['Front', 'Back'] },
+  { id: 'rack', cat: 'Print', name: 'Rack card', note: '4 × 9 in · front & back', w: 4 * PT, h: 9 * PT, kind: 'rack', unit: 'in', bleed: 9, pages: ['Front', 'Back'] },
+  { id: 'trifold', cat: 'Print', name: 'Tri-fold brochure', note: '11 × 8.5 in · outside & inside', w: 11 * PT, h: 8.5 * PT, kind: 'trifold', unit: 'in', bleed: 9, pages: ['Outside', 'Inside'], folds: [1 / 3, 2 / 3] },
+  { id: 'letterhead', cat: 'Print', name: 'Letterhead', note: '8.5 × 11 in', w: 8.5 * PT, h: 11 * PT, kind: 'letterhead', unit: 'in', bleed: 9 },
+  { id: 'envelope', cat: 'Print', name: 'Envelope #10', note: '9.5 × 4.125 in', w: 9.5 * PT, h: 4.125 * PT, kind: 'envelope', unit: 'in' },
+  { id: 'menu', cat: 'Print', name: 'Menu', note: '8.5 × 11 in', w: 8.5 * PT, h: 11 * PT, kind: 'menu', unit: 'in', bleed: 9 },
+  { id: 'menu-legal', cat: 'Print', name: 'Menu — tall', note: '8.5 × 14 in', w: 8.5 * PT, h: 14 * PT, kind: 'menu', unit: 'in', bleed: 9 },
+  { id: 'gift', cat: 'Print', name: 'Gift certificate', note: '7 × 3 in · front & back', w: 7 * PT, h: 3 * PT, kind: 'giftcert', unit: 'in', bleed: 9, pages: ['Front', 'Back'] },
+  { id: 'cert', cat: 'Print', name: 'Certificate', note: '11 × 8.5 in', w: 11 * PT, h: 8.5 * PT, kind: 'certificate', unit: 'in', bleed: 9 },
+  { id: 'invite', cat: 'Print', name: 'Invitation', note: '5 × 7 in · front & back', w: 5 * PT, h: 7 * PT, kind: 'card57', unit: 'in', bleed: 9, pages: ['Front', 'Back'] },
+  { id: 'thanks', cat: 'Print', name: 'Thank-you card', note: '7 × 5 in · front & back', w: 7 * PT, h: 5 * PT, kind: 'card57', unit: 'in', bleed: 9, pages: ['Front', 'Back'] },
+  { id: 'sticker', cat: 'Print', name: 'Round sticker', note: '3 in circle · with cut line', w: 3 * PT, h: 3 * PT, kind: 'sticker', unit: 'in', bleed: 9, die: 'circle' },
+  { id: 'label', cat: 'Print', name: 'Product label', note: '4 × 2 in · with cut line', w: 4 * PT, h: 2 * PT, kind: 'label', unit: 'in', bleed: 9, die: 'round' },
+  { id: 'hanger', cat: 'Print', name: 'Door hanger', note: '4.25 × 11 in · front & back · with cut line', w: 4.25 * PT, h: 11 * PT, kind: 'hanger', unit: 'in', bleed: 9, pages: ['Front', 'Back'], die: 'hanger' },
+  { id: 'ticket', cat: 'Print', name: 'Event ticket', note: '5.5 × 2 in', w: 5.5 * PT, h: 2 * PT, kind: 'ticket', unit: 'in', bleed: 9 },
+  { id: 'badge', cat: 'Print', name: 'Name badge', note: '4 × 3 in', w: 4 * PT, h: 3 * PT, kind: 'badge', unit: 'in', bleed: 9 },
+  // signs & large format
+  { id: 'cling-12', cat: 'Signs & Large Format', name: 'Window cling', note: '12 × 12 in', w: 12 * PT, h: 12 * PT, kind: 'cling', unit: 'in', bleed: 9 },
+  { id: 'cling-18', cat: 'Signs & Large Format', name: 'Window cling — tall', note: '18 × 24 in', w: 18 * PT, h: 24 * PT, kind: 'cling', unit: 'in', bleed: 9 },
+  { id: 'yard', cat: 'Signs & Large Format', name: 'Yard sign', note: '24 × 18 in', w: 24 * PT, h: 18 * PT, kind: 'yard', unit: 'in', bleed: 9 },
+  { id: 'ban-2x6', cat: 'Signs & Large Format', name: 'Vinyl banner', note: '6 × 2 ft', w: 72 * PT, h: 24 * PT, kind: 'vbanner', unit: 'in', bleed: 18 },
+  { id: 'ban-3x6', cat: 'Signs & Large Format', name: 'Vinyl banner — tall', note: '6 × 3 ft', w: 72 * PT, h: 36 * PT, kind: 'vbanner', unit: 'in', bleed: 18 },
+  { id: 'tshirt', cat: 'Signs & Large Format', name: 'T-shirt graphic', note: '12 × 14 in · transparent', w: 12 * PT, h: 14 * PT, kind: 'tshirt', unit: 'in' },
+  { id: 'tshirt2', cat: 'Signs & Large Format', name: 'T-shirt front & back', note: '12 × 14 in · 2 prints', w: 12 * PT, h: 14 * PT, kind: 'tshirt', unit: 'in', pages: ['Front', 'Back'] },
+  // logo & brand
+  { id: 'logo-sq', cat: 'Logo & Brand', name: 'Logo — square', note: '1000 × 1000', w: 1000, h: 1000, kind: 'logo' },
+  { id: 'logo-wide', cat: 'Logo & Brand', name: 'Logo — horizontal', note: '1600 × 800', w: 1600, h: 800, kind: 'logo' },
+  { id: 'brandsheet', cat: 'Logo & Brand', name: 'Brand style sheet', note: '11 × 8.5 in', w: 11 * PT, h: 8.5 * PT, kind: 'brandsheet', unit: 'in' },
+  { id: 'emailsig', cat: 'Logo & Brand', name: 'Email signature', note: '600 × 200', w: 600, h: 200, kind: 'emailsig' },
+  { id: 'appicon', cat: 'Logo & Brand', name: 'App icon', note: '1024 × 1024', w: 1024, h: 1024, kind: 'appicon' },
+  { id: 'avatar', cat: 'Logo & Brand', name: 'Profile picture', note: '1080 × 1080 · circle-safe', w: 1080, h: 1080, kind: 'appicon' },
+  // ads & web
+  { id: 'ad-300x250', cat: 'Ads & Web', name: 'Ad — medium rectangle', note: '300 × 250', w: 300, h: 250, kind: 'ad' },
+  { id: 'ad-336x280', cat: 'Ads & Web', name: 'Ad — large rectangle', note: '336 × 280', w: 336, h: 280, kind: 'ad' },
+  { id: 'ad-728x90', cat: 'Ads & Web', name: 'Ad — leaderboard', note: '728 × 90', w: 728, h: 90, kind: 'ad' },
+  { id: 'ad-970x250', cat: 'Ads & Web', name: 'Ad — billboard', note: '970 × 250', w: 970, h: 250, kind: 'ad' },
+  { id: 'ad-160x600', cat: 'Ads & Web', name: 'Ad — skyscraper', note: '160 × 600', w: 160, h: 600, kind: 'ad' },
+  { id: 'ad-300x600', cat: 'Ads & Web', name: 'Ad — half page', note: '300 × 600', w: 300, h: 600, kind: 'ad' },
+  { id: 'ad-320x50', cat: 'Ads & Web', name: 'Ad — mobile banner', note: '320 × 50', w: 320, h: 50, kind: 'ad' },
+  { id: 'web-hero', cat: 'Ads & Web', name: 'Website hero', note: '1920 × 1080', w: 1920, h: 1080, kind: 'social' },
+  { id: 'og', cat: 'Ads & Web', name: 'Blog / link preview image', note: '1200 × 630', w: 1200, h: 630, kind: 'social' },
+  { id: 'email-header', cat: 'Ads & Web', name: 'Email newsletter header', note: '600 × 200', w: 600, h: 200, kind: 'ad' },
+  // presentation
+  { id: 'slides-169', cat: 'Presentation', name: 'Presentation 16:9', note: '1920 × 1080 · 6 slides', w: 1920, h: 1080, kind: 'slides', pages: ['Title', 'Section', 'Bullets', 'Image', 'Big number', 'Thank you'] },
+  { id: 'slides-43', cat: 'Presentation', name: 'Presentation 4:3', note: '1024 × 768 · 6 slides', w: 1024, h: 768, kind: 'slides', pages: ['Title', 'Section', 'Bullets', 'Image', 'Big number', 'Thank you'] },
 ];
 const hexRgb = h => { const v = toHex(h); return [parseInt(v.slice(1, 3), 16), parseInt(v.slice(3, 5), 16), parseInt(v.slice(5, 7), 16)]; };
+/* ---------- sample copy (one place to change the placeholder text) ---------- */
+const TX = { name: 'Jordan Rivera', title: 'Creative Director', company: 'Your Brand', phone: '(555) 123-4567', email: 'hello@yourbrand.com', web: 'www.yourbrand.com', addr: '123 Main Street, Your City, ST 12345', street: '123 Main Street', city: 'Your City, ST 12345', handle: '@yourbrand', tag: 'Your tagline goes here' };
+/* ---------- small icon set (24-unit paths) ---------- */
+const ICONS = {
+  phone: 'M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z',
+  mail: 'M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z',
+  web: 'M12 2a10 10 0 100 20 10 10 0 000-20zm6.9 6h-2.9a15.7 15.7 0 00-1.4-3.6A8 8 0 0118.9 8zM12 4c.8 1.2 1.5 2.5 1.9 4h-3.8c.4-1.5 1.1-2.8 1.9-4zM4.3 14a8.2 8.2 0 010-4h3.4a16.5 16.5 0 000 4H4.3zm.8 2h2.9c.3 1.3.8 2.5 1.4 3.6A8 8 0 015.1 16zM8 8H5.1a8 8 0 014.3-3.6C8.8 5.5 8.3 6.7 8 8zm4 12c-.8-1.2-1.5-2.5-1.9-4h3.8c-.4 1.5-1.1 2.8-1.9 4zm2.3-6H9.7a14.7 14.7 0 010-4h4.6a14.7 14.7 0 010 4zm.3 5.6c.6-1.1 1.1-2.3 1.4-3.6h2.9a8 8 0 01-4.3 3.6zm1.8-5.6a16.5 16.5 0 000-4h3.4a8.2 8.2 0 010 4h-3.4z',
+  pin: 'M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z',
+  clock: 'M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7z',
+  check: 'M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z',
+  cal: 'M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 16H5V9h14v11z',
+  arrow: 'M4 11h12.2l-5.6-5.6L12 4l8 8-8 8-1.4-1.4 5.6-5.6H4z',
+  user: 'M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z',
+  at: 'M12 2a10 10 0 000 20h5v-2h-5a8 8 0 118-8v1.4c0 .8-.7 1.6-1.5 1.6S17 14.2 17 13.4V12a5 5 0 10-1.5 3.5A3.5 3.5 0 0022 13.4V12A10 10 0 0012 2zm0 13a3 3 0 110-6 3 3 0 010 6z',
+  heart: 'M12 21.4l-1.5-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.6z',
+};
+/* ---------- logo marks (simple shapes for logo templates; replace with your own) ---------- */
+function tplMark(kind, cx, cy, r, c1, c2) {
+  const f = v => r3(v), p = (a, k) => `${f(cx + Math.cos(a) * r * k)} ${f(cy + Math.sin(a) * r * k)}`;
+  switch (kind) {
+    case 'rings': return `<circle cx="${f(cx - r * 0.32)}" cy="${f(cy)}" r="${f(r * 0.62)}" fill="none" stroke="${c1}" stroke-width="${f(r * 0.16)}"/><circle cx="${f(cx + r * 0.32)}" cy="${f(cy)}" r="${f(r * 0.62)}" fill="none" stroke="${c2}" stroke-width="${f(r * 0.16)}"/>`;
+    case 'peak': return `<circle cx="${f(cx + r * 0.42)}" cy="${f(cy - r * 0.45)}" r="${f(r * 0.2)}" fill="${c2}"/><path d="M${f(cx - r)} ${f(cy + r * 0.6)}L${f(cx - r * 0.25)} ${f(cy - r * 0.55)}L${f(cx + r * 0.2)} ${f(cy + r * 0.1)}L${f(cx + r * 0.42)} ${f(cy - r * 0.2)}L${f(cx + r)} ${f(cy + r * 0.6)}Z" fill="${c1}"/>`;
+    case 'leaf': return `<path d="M${f(cx - r * 0.75)} ${f(cy + r * 0.75)}C${f(cx - r * 0.9)} ${f(cy - r * 0.3)} ${f(cx - r * 0.2)} ${f(cy - r * 0.95)} ${f(cx + r * 0.85)} ${f(cy - r * 0.85)}C${f(cx + r * 0.9)} ${f(cy + r * 0.2)} ${f(cx + r * 0.2)} ${f(cy + r * 0.9)} ${f(cx - r * 0.75)} ${f(cy + r * 0.75)}Z" fill="${c1}"/><path d="M${f(cx - r * 0.75)} ${f(cy + r * 0.75)}L${f(cx + r * 0.35)} ${f(cy - r * 0.35)}" stroke="${c2}" stroke-width="${f(r * 0.09)}" stroke-linecap="round" fill="none"/>`;
+    case 'hex': { let d = '', d2 = ''; for (let i = 0; i < 6; i++) { const a = Math.PI / 6 + i * Math.PI / 3; d += (i ? 'L' : 'M') + p(a, 1); d2 += (i ? 'L' : 'M') + p(a, 0.55); } return `<path d="${d}Z" fill="${c1}"/><path d="${d2}Z" fill="${c2}"/>`; }
+    case 'spark': { let d = ''; for (let i = 0; i < 8; i++) { const a = -Math.PI / 2 + i * Math.PI / 4; d += (i ? 'L' : 'M') + p(a, i % 2 ? 0.3 : 1); } return `<path d="${d}Z" fill="${c1}"/><circle cx="${f(cx + r * 0.62)}" cy="${f(cy - r * 0.62)}" r="${f(r * 0.14)}" fill="${c2}"/>`; }
+    case 'drop': return `<path d="M${f(cx)} ${f(cy - r)}C${f(cx + r * 0.25)} ${f(cy - r * 0.5)} ${f(cx + r * 0.8)} ${f(cy)} ${f(cx + r * 0.8)} ${f(cy + r * 0.3)}A${f(r * 0.8)} ${f(r * 0.8)} 0 0 1 ${f(cx - r * 0.8)} ${f(cy + r * 0.3)}C${f(cx - r * 0.8)} ${f(cy)} ${f(cx - r * 0.25)} ${f(cy - r * 0.5)} ${f(cx)} ${f(cy - r)}Z" fill="${c1}"/><path d="M${f(cx - r * 0.42)} ${f(cy + r * 0.3)}A${f(r * 0.42)} ${f(r * 0.42)} 0 0 0 ${f(cx)} ${f(cy + r * 0.72)}" stroke="${c2}" stroke-width="${f(r * 0.1)}" fill="none" stroke-linecap="round"/>`;
+    case 'bolt': return `<path d="M${f(cx + r * 0.15)} ${f(cy - r)}L${f(cx - r * 0.6)} ${f(cy + r * 0.12)}H${f(cx - r * 0.02)}L${f(cx - r * 0.18)} ${f(cy + r)}L${f(cx + r * 0.62)} ${f(cy - r * 0.15)}H${f(cx + r * 0.05)}Z" fill="${c1}"/>`;
+    case 'chat': return `<path d="M${f(cx - r * 0.85)} ${f(cy - r * 0.6)}h${f(r * 1.7)}v${f(r * 1.05)}h${f(-r * 1.0)}l${f(-r * 0.45)} ${f(r * 0.4)}v${f(-r * 0.4)}h${f(-r * 0.25)}Z" fill="${c1}"/><circle cx="${f(cx - r * 0.4)}" cy="${f(cy - r * 0.07)}" r="${f(r * 0.1)}" fill="${c2}"/><circle cx="${f(cx)}" cy="${f(cy - r * 0.07)}" r="${f(r * 0.1)}" fill="${c2}"/><circle cx="${f(cx + r * 0.4)}" cy="${f(cy - r * 0.07)}" r="${f(r * 0.1)}" fill="${c2}"/>`;
+    default: return `<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(r)}" fill="${c1}"/>`;
+  }
+}
+const MARKS = ['rings', 'peak', 'leaf', 'hex', 'spark', 'drop', 'bolt', 'chat'];
+function tplPalette(useKit) {
+  const def = { primary: '#2d5bff', secondary: '#ff7a59', accent: '#ffc83d', dark: '#16161d', light: '#f7f4ef' };
+  if (!useKit || !KIT.colors.length) return def;
+  const L = h => lum(...hexRgb(h)) / 255, cs = KIT.colors.map(c => toHex(c.value));
+  const sorted = [...cs].sort((a, b) => L(a) - L(b)), mid = cs.filter(c => L(c) > 0.12 && L(c) < 0.88);
+  return {
+    primary: mid[0] || cs[0], secondary: mid[1] || def.secondary, accent: mid[2] || mid[1] || def.accent,
+    dark: L(sorted[0]) < 0.25 ? sorted[0] : def.dark, light: L(sorted[sorted.length - 1]) > 0.85 ? sorted[sorted.length - 1] : def.light,
+  };
+}
+function tplBuild(tpl, fmt, useKit, page = 0) {
+  const W = fmt.w, H = fmt.h, u = Math.min(W, H) / 1080, s = Math.min(W, H) / 100, ar = W / H, P2 = tplPalette(useKit), bl = fmt.bleed || 0;
+  const kh = useKit && KIT.styles[0], kb = useKit && (KIT.styles[1] || KIT.styles[0]);
+  const F = {
+    head: kh ? kh.attrs['font-family'] : '"Arial Black", "Helvetica Neue", Arial, sans-serif', headW: kh ? kh.attrs['font-weight'] : 900,
+    body: kb ? kb.attrs['font-family'] : 'Arial, Helvetica, sans-serif', bodyW: kb && kb !== kh ? kb.attrs['font-weight'] : 400, serif: 'Georgia, "Times New Roman", serif',
+    script: '"Brush Script MT", "Segoe Script", "Lucida Handwriting", cursive', display: 'Impact, "Arial Black", sans-serif',
+  };
+  const fonts = useKit ? [...(kh && kh.fonts || []), ...(kb && kb.fonts || [])] : [];
+  const asset = useKit && KIT.assets[0], defs = [], deps = [];
+  let n = 0; const gid = p => `tpl${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}${n++}${p}`;
+  const esc = v => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const C = {
+    W, H, u, s, b: bl, pg: page, pages: (fmt.pages || ['']).length, P: P2, F, TX, fmt,
+    wide: ar > 1.4, banner: ar > 2.4, tall: ar < 0.83, cls: ar > 4 ? 'strip' : ar > 1.4 ? 'wide' : ar < 0.6 ? 'tall' : 'box',
+    on: c => (lum(...hexRgb(c)) > 165 ? P2.dark : '#ffffff'),
+    shadow: (x, y, blur, op) => JSON.stringify({ x: r3(x), y: r3(y), blur: r3(blur), color: '#000000', opacity: op }),
+    R: (x, y, w, h, fill, ex = '') => `<rect x="${r3(x)}" y="${r3(y)}" width="${r3(w)}" height="${r3(h)}" fill="${fill}" ${ex}/>`,
+    // a rectangle that runs into the bleed wherever it touches the edge of the page
+    E: (x, y, w, h, fill, ex = '') => { let x0 = x, y0 = y, x1 = x + w, y1 = y + h; if (x0 <= 0.01) x0 = -bl; if (y0 <= 0.01) y0 = -bl; if (x1 >= W - 0.01) x1 = W + bl; if (y1 >= H - 0.01) y1 = H + bl; return C.R(x0, y0, x1 - x0, y1 - y0, fill, ex); },
+    bg: fill => C.R(-bl, -bl, W + 2 * bl, H + 2 * bl, fill, 'data-name="Background"'),
+    RR: (x, y, w, h, r, fill, ex = '') => C.R(x, y, w, h, fill, `rx="${r3(r)}" ${ex}`),
+    Ci: (cx, cy, r, fill, ex = '') => `<circle cx="${r3(cx)}" cy="${r3(cy)}" r="${r3(r)}" fill="${fill}" ${ex}/>`,
+    L: (x1, y1, x2, y2, stroke, w, ex = '') => `<line x1="${r3(x1)}" y1="${r3(y1)}" x2="${r3(x2)}" y2="${r3(y2)}" stroke="${stroke}" stroke-width="${r3(w)}" ${ex}/>`,
+    Pa: (d, fill, ex = '') => `<path d="${d}" fill="${fill}" ${ex}/>`,
+    star: (cx, cy, R, r, k, fill, ex = '') => { let d = ''; for (let i = 0; i < k * 2; i++) { const a = -Math.PI / 2 + i * Math.PI / k, q = i % 2 ? r : R; d += (i ? 'L' : 'M') + r3(cx + Math.cos(a) * q) + ' ' + r3(cy + Math.sin(a) * q); } return `<path d="${d}Z" fill="${fill}" ${ex}/>`; },
+    grad: (stops, x1, y1, x2, y2) => { const id = gid('g'); defs.push(`<linearGradient id="${id}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}">${stops}</linearGradient>`); return `url(#${id})`; },
+    grad2: (c1, c2, x1 = 0, y1 = 0, x2 = 1, y2 = 1) => C.grad(`<stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/>`, x1, y1, x2, y2),
+    T: (x, y, lines, o = {}) => {
+      const a = [`x="${r3(x)}"`, `y="${r3(y)}"`, `font-family="${esc(o.family || (o.head ? F.head : F.body))}"`, `font-size="${r3(o.size)}"`, `font-weight="${o.weight || (o.head ? F.headW : F.bodyW)}"`, `fill="${o.fill || P2.dark}"`];
+      if (o.anchor && o.anchor !== 'start') a.push(`text-anchor="${o.anchor}"`);
+      if (o.ls) a.push(`letter-spacing="${r3(o.ls)}"`);
+      if (o.style) a.push(`font-style="${o.style}"`);
+      if (o.opacity) a.push(`opacity="${o.opacity}"`);
+      if (o.caps) a.push('text-transform="uppercase"');
+      if (o.maxw) a.push(`data-fit="${r3(o.maxw)}"`);
+      if (o.maxh) a.push(`data-fith="${r3(o.maxh)}"`);
+      if (o.lh && o.lh !== 1.2) a.push(`data-lh="${o.lh}"`);
+      // a blank line (an empty tspan would not advance) widens the gap before the next line instead
+      let gap = 0, first = true, out = '';
+      for (const l of lines) { if (!first) gap += o.lh || 1.15; if (l === '') { first = false; continue; } out += `<tspan x="${r3(x)}" dy="${first ? '0' : r3(gap) + 'em'}">${esc(l)}</tspan>`; first = false; gap = 0; }
+      return `<text ${a.join(' ')}>${out}</text>`;
+    },
+    // text along an arc: top = reads over the top of the circle, bottom = reads along the bottom (upright)
+    arc: (cx, cy, r, text, o = {}) => {
+      const tid = gid('t'), pid = gid('p');
+      const d = o.bottom ? `M${r3(cx - r)} ${r3(cy)}A${r3(r)} ${r3(r)} 0 0 0 ${r3(cx + r)} ${r3(cy)}` : `M${r3(cx - r)} ${r3(cy)}A${r3(r)} ${r3(r)} 0 0 1 ${r3(cx + r)} ${r3(cy)}`;
+      defs.push(`<path id="${pid}" data-guide-for="${tid}" d="${d}" fill="none"/>`);
+      const a = [`id="${tid}"`, 'data-onpath="1"', `font-family="${esc(o.family || (o.head ? F.head : F.body))}"`, `font-size="${r3(o.size)}"`, `font-weight="${o.weight || (o.head ? F.headW : 700)}"`, `fill="${o.fill || P2.dark}"`, 'text-anchor="middle"'];
+      if (o.ls) a.push(`letter-spacing="${r3(o.ls)}"`);
+      return `<text ${a.join(' ')}><textPath href="#${pid}" startOffset="50%">${esc(text)}</textPath></text>`;
+    },
+    icon: (k, x, y, sz, fill) => `<path d="${ICONS[k] || ICONS.check}" fill="${fill}" transform="matrix(${r3(sz / 24)} 0 0 ${r3(sz / 24)} ${r3(x)} ${r3(y)})"/>`,
+    // contact rows: [[icon, text], …]
+    rows: (x, y, items, o = {}) => {
+      const sz = o.size, gap = o.gap || sz * 1.75; let out = '';
+      items.forEach(([ic, t], i) => {
+        const yy = y + i * gap;
+        if (ic && o.icons !== false) out += C.icon(ic, x, yy - sz * 0.92, sz * 1.05, o.iconFill || P2.primary);
+        out += C.T(x + (ic && o.icons !== false ? sz * 1.6 : 0), yy, [t], { size: sz, fill: o.fill || P2.dark, weight: o.weight, maxw: o.maxw ? o.maxw - sz * 1.6 : undefined, family: o.family });
+      });
+      return out;
+    },
+    mark: (cx, cy, r, kind, c1, c2) => tplMark(kind || MARKS[0], cx, cy, r, c1 || P2.primary, c2 || P2.accent),
+    qr: (x, y, sz, fill) => { // a QR-code placeholder (replace with your real code)
+      let out = C.R(x, y, sz, sz, '#ffffff'); const m = sz / 25, sq = (ix, iy) => C.R(x + ix * m, y + iy * m, 7 * m, 7 * m, fill) + C.R(x + (ix + 1) * m, y + (iy + 1) * m, 5 * m, 5 * m, '#ffffff') + C.R(x + (ix + 2) * m, y + (iy + 2) * m, 3 * m, 3 * m, fill);
+      out += sq(1, 1) + sq(17, 1) + sq(1, 17);
+      let seed = 7; const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+      for (let iy = 1; iy < 24; iy++) for (let ix = 1; ix < 24; ix++) { if ((ix < 9 && iy < 9) || (ix > 15 && iy < 9) || (ix < 9 && iy > 15)) continue; if (rnd() > 0.55) out += C.R(x + ix * m, y + iy * m, m, m, fill); }
+      return `<g data-name="QR code placeholder (replace with yours)">${out}</g>`;
+    },
+    photo: (x, y, w, h, o = {}) => {
+      const shape = o.shape || 'rect', sz = Math.min(w, h) * 0.16, cx = x + w / 2, cy = shape === 'circle' ? y + h / 2 - sz * 0.25 : y + h * 0.36;
+      const bg = shape === 'circle' ? `<circle cx="${r3(cx)}" cy="${r3(y + h / 2)}" r="${r3(Math.min(w, h) / 2)}" fill="#cfd5dd"/>` : `<rect x="${r3(x)}" y="${r3(y)}" width="${r3(w)}" height="${r3(h)}" rx="${r3(o.r || 0)}" fill="#cfd5dd"/>`;
+      const icon = `<path d="M${r3(cx - sz)} ${r3(cy + sz * 0.6)}L${r3(cx - sz * 0.35)} ${r3(cy - sz * 0.2)}L${r3(cx + sz * 0.05)} ${r3(cy + sz * 0.3)}L${r3(cx + sz * 0.4)} ${r3(cy - sz * 0.05)}L${r3(cx + sz)} ${r3(cy + sz * 0.6)}Z" fill="#9aa4b1"/><circle cx="${r3(cx + sz * 0.55)}" cy="${r3(cy - sz * 0.55)}" r="${r3(sz * 0.2)}" fill="#9aa4b1"/>`;
+      const fs2 = Math.max(0.85 * s, Math.min(sz * 0.3, w * 0.05));
+      const label = Math.min(w, h) < 16 * s ? '' : `<text x="${r3(cx)}" y="${r3(cy + sz * 1.3)}" font-family="Arial, sans-serif" font-size="${r3(fs2)}" fill="#5f6875" text-anchor="middle"><tspan x="${r3(cx)}" dy="0">Double-click to add a photo</tspan></text>`;
+      return `<g data-placeholder="photo" data-name="Photo placeholder" data-box="${r3(x)} ${r3(y)} ${r3(w)} ${r3(h)}" data-shape="${shape}" data-r="${r3(o.r || 0)}"${o.shadow ? ` data-shadow='${o.shadow}'` : ''}>${bg}${icon}${label}</g>`;
+    },
+    logo: (x, y, w, h, o = {}) => {
+      if (asset) {
+        const sc = Math.min(w / asset.w, h / asset.h), dw = asset.w * sc, dx = o.align === 'left' ? x : o.align === 'right' ? x + w - dw : x + (w - dw) / 2;
+        deps.push(...(asset.deps || [])); fonts.push(...(asset.fonts || []));
+        return `<g data-name="${esc(asset.name)}" transform="matrix(${r3(sc)} 0 0 ${r3(sc)} ${r3(dx)} ${r3(y + (h - asset.h * sc) / 2)})">${asset.svg}</g>`;
+      }
+      const c = o.color || '#ffffff';
+      return `<g data-placeholder="logo" data-name="Logo placeholder" data-box="${r3(x)} ${r3(y)} ${r3(w)} ${r3(h)}" data-align="${o.align || 'center'}"><rect x="${r3(x)}" y="${r3(y)}" width="${r3(w)}" height="${r3(h)}" rx="${r3(h * 0.18)}" fill="none" stroke="${c}" stroke-opacity=".7" stroke-width="${r3(Math.max(0.15 * s, h * 0.03))}" stroke-dasharray="${r3(h * 0.1)} ${r3(h * 0.07)}"/><text x="${r3(x + w / 2)}" y="${r3(y + h / 2 + h * 0.12)}" font-family="Arial, sans-serif" font-weight="700" font-size="${r3(Math.min(h * 0.34, w * 0.17))}" fill="${c}" fill-opacity=".85" text-anchor="middle" letter-spacing="${r3(h * 0.04)}"><tspan x="${r3(x + w / 2)}" dy="0">LOGO</tspan></text></g>`;
+    },
+  };
+  return { W, H, body: tpl.render(C), defs, deps, fonts };
+}
+/* ---------- social media designs (adapt to any size) ---------- */
 const TEMPLATES = [
   { id: 'announce', name: 'Bold Announcement', render(C) {
     const { W, H, u, P } = C, m = Math.min(W, H), ink = C.on(P.primary), cy = C.banner ? H * 0.5 : H * 0.46;
@@ -6028,65 +6247,494 @@ const TEMPLATES = [
       + C.T(W / 2, ly + lh + 110 * u, ['Your tagline goes here'], { size: 44 * u, fill: '#ffffff', anchor: 'middle', ls: 2 * u, maxw: W * 0.8 });
   } },
 ];
-function tplPalette(useKit) {
-  const def = { primary: '#2d5bff', secondary: '#ff7a59', accent: '#ffc83d', dark: '#16161d', light: '#f7f4ef' };
-  if (!useKit || !KIT.colors.length) return def;
-  const L = h => lum(...hexRgb(h)) / 255, cs = KIT.colors.map(c => toHex(c.value));
-  const sorted = [...cs].sort((a, b) => L(a) - L(b)), mid = cs.filter(c => L(c) > 0.12 && L(c) < 0.88);
-  return {
-    primary: mid[0] || cs[0], secondary: mid[1] || def.secondary, accent: mid[2] || mid[1] || def.accent,
-    dark: L(sorted[0]) < 0.25 ? sorted[0] : def.dark, light: L(sorted[sorted.length - 1]) > 0.85 ? sorted[sorted.length - 1] : def.light,
-  };
-}
-function tplBuild(tpl, fmt, useKit) {
-  const W = fmt.w, H = fmt.h, u = Math.min(W, H) / 1080, ar = W / H, P2 = tplPalette(useKit);
-  const kh = useKit && KIT.styles[0], kb = useKit && (KIT.styles[1] || KIT.styles[0]);
-  const F = {
-    head: kh ? kh.attrs['font-family'] : '"Arial Black", "Helvetica Neue", Arial, sans-serif', headW: kh ? kh.attrs['font-weight'] : 900,
-    body: kb ? kb.attrs['font-family'] : 'Arial, Helvetica, sans-serif', bodyW: kb && kb !== kh ? kb.attrs['font-weight'] : 400, serif: 'Georgia, "Times New Roman", serif',
-  };
-  const fonts = useKit ? [...(kh && kh.fonts || []), ...(kb && kb.fonts || [])] : [];
-  const asset = useKit && KIT.assets[0], defs = [], deps = [];
-  let n = 0; const gid = p => `tpl${Date.now().toString(36)}${n++}${p}`;
-  const esc = v => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  const C = {
-    W, H, u, P: P2, F, wide: ar > 1.4, banner: ar > 2.4, tall: ar < 0.83,
-    on: c => (lum(...hexRgb(c)) > 165 ? P2.dark : '#ffffff'),
-    shadow: (x, y, blur, op) => JSON.stringify({ x: r3(x), y: r3(y), blur: r3(blur), color: '#000000', opacity: op }),
-    R: (x, y, w, h, fill, ex = '') => `<rect x="${r3(x)}" y="${r3(y)}" width="${r3(w)}" height="${r3(h)}" fill="${fill}" ${ex}/>`,
-    Ci: (cx, cy, r, fill, ex = '') => `<circle cx="${r3(cx)}" cy="${r3(cy)}" r="${r3(r)}" fill="${fill}" ${ex}/>`,
-    star: (cx, cy, R, r, k, fill) => { let d = ''; for (let i = 0; i < k * 2; i++) { const a = -Math.PI / 2 + i * Math.PI / k, q = i % 2 ? r : R; d += (i ? 'L' : 'M') + r3(cx + Math.cos(a) * q) + ' ' + r3(cy + Math.sin(a) * q); } return `<path d="${d}Z" fill="${fill}"/>`; },
-    grad: (stops, x1, y1, x2, y2) => { const id = gid('g'); defs.push(`<linearGradient id="${id}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}">${stops}</linearGradient>`); return `url(#${id})`; },
-    T: (x, y, lines, o = {}) => {
-      const a = [`x="${r3(x)}"`, `y="${r3(y)}"`, `font-family="${esc(o.family || (o.head ? F.head : F.body))}"`, `font-size="${r3(o.size)}"`, `font-weight="${o.weight || (o.head ? F.headW : F.bodyW)}"`, `fill="${o.fill || P2.dark}"`];
-      if (o.anchor && o.anchor !== 'start') a.push(`text-anchor="${o.anchor}"`);
-      if (o.ls) a.push(`letter-spacing="${r3(o.ls)}"`);
-      if (o.style) a.push(`font-style="${o.style}"`);
-      if (o.opacity) a.push(`opacity="${o.opacity}"`);
-      if (o.maxw) a.push(`data-fit="${r3(o.maxw)}"`);
-      if (o.maxh) a.push(`data-fith="${r3(o.maxh)}"`);
-      return `<text ${a.join(' ')}>` + lines.map((l, i) => `<tspan x="${r3(x)}" dy="${i ? (o.lh || 1.15) + 'em' : '0'}">${esc(l)}</tspan>`).join('') + '</text>';
-    },
-    photo: (x, y, w, h, o = {}) => {
-      const shape = o.shape || 'rect', s = Math.min(w, h) * 0.16, cx = x + w / 2, cy = shape === 'circle' ? y + h / 2 - s * 0.25 : y + h * 0.36;
-      const bg = shape === 'circle' ? `<circle cx="${r3(cx)}" cy="${r3(y + h / 2)}" r="${r3(Math.min(w, h) / 2)}" fill="#cfd5dd"/>` : `<rect x="${r3(x)}" y="${r3(y)}" width="${r3(w)}" height="${r3(h)}" rx="${r3(o.r || 0)}" fill="#cfd5dd"/>`;
-      const icon = `<path d="M${r3(cx - s)} ${r3(cy + s * 0.6)}L${r3(cx - s * 0.35)} ${r3(cy - s * 0.2)}L${r3(cx + s * 0.05)} ${r3(cy + s * 0.3)}L${r3(cx + s * 0.4)} ${r3(cy - s * 0.05)}L${r3(cx + s)} ${r3(cy + s * 0.6)}Z" fill="#9aa4b1"/><circle cx="${r3(cx + s * 0.45)}" cy="${r3(cy - s * 0.55)}" r="${r3(s * 0.18)}" fill="#9aa4b1"/>`;
-      const fs2 = Math.max(9, Math.min(s * 0.3, w * 0.05));
-      const label = Math.min(w, h) < 180 ? '' : `<text x="${r3(cx)}" y="${r3(cy + s * 1.3)}" font-family="Arial, sans-serif" font-size="${r3(fs2)}" fill="#5f6875" text-anchor="middle"><tspan x="${r3(cx)}" dy="0">Double-click to add a photo</tspan></text>`;
-      return `<g data-placeholder="photo" data-name="Photo placeholder" data-box="${r3(x)} ${r3(y)} ${r3(w)} ${r3(h)}" data-shape="${shape}" data-r="${r3(o.r || 0)}"${o.shadow ? ` data-shadow='${o.shadow}'` : ''}>${bg}${icon}${label}</g>`;
-    },
-    logo: (x, y, w, h, o = {}) => {
-      if (asset) {
-        const sc = Math.min(w / asset.w, h / asset.h), dw = asset.w * sc, dx = o.align === 'left' ? x : o.align === 'right' ? x + w - dw : x + (w - dw) / 2;
-        deps.push(...(asset.deps || [])); fonts.push(...(asset.fonts || []));
-        return `<g data-name="${esc(asset.name)}" transform="matrix(${r3(sc)} 0 0 ${r3(sc)} ${r3(dx)} ${r3(y + (h - asset.h * sc) / 2)})">${asset.svg}</g>`;
+/* ---------- designs for the other kinds ---------- */
+const D = (id, name, kinds, render) => ({ id, name, kinds, render });
+const PRINT_TEMPLATES = [
+  /* ===== business cards ===== */
+  D('card-classic', 'Classic', ['card'], C => {
+    const { W, H, s, P } = C, m = 8 * s;
+    if (C.pg) return C.bg(P.primary) + C.logo(W / 2 - 30 * s, H / 2 - 16 * s, 60 * s, 24 * s, { color: '#ffffff' }) + C.T(W / 2, H / 2 + 22 * s, [TX.tag], { size: 5 * s, fill: '#ffffff', anchor: 'middle', ls: 0.3 * s, maxw: W - 2 * m });
+    return C.bg('#ffffff') + C.E(0, H - 3 * s, W, 3 * s, P.primary) + C.logo(m, m, 32 * s, 13 * s, { color: P.primary, align: 'left' })
+      + C.T(m, 42 * s, [TX.name], { size: 10 * s, head: 1, fill: P.dark, maxw: W * 0.55 })
+      + C.T(m, 49 * s, [TX.title], { size: 5 * s, fill: P.primary, weight: 700, ls: 0.4 * s, caps: 1 })
+      + C.L(m, 55 * s, m + 22 * s, 55 * s, P.accent, 0.8 * s)
+      + C.rows(W * 0.5, 66 * s, [['phone', TX.phone], ['mail', TX.email], ['web', TX.web], ['pin', TX.street]], { size: 4.4 * s, gap: 7.4 * s, maxw: W * 0.5 - m });
+  }),
+  D('card-bold', 'Color Block', ['card'], C => {
+    const { W, H, s, P } = C, bw = W * 0.38, m = 8 * s, ink = C.on(P.primary);
+    if (C.pg) return C.bg(P.accent) + C.logo(W / 2 - 36 * s, H / 2 - 20 * s, 72 * s, 28 * s, { color: C.on(P.accent) }) + C.T(W / 2, H - 14 * s, [TX.web], { size: 5 * s, weight: 700, fill: C.on(P.accent), anchor: 'middle', ls: 0.4 * s });
+    return C.bg('#ffffff') + C.E(0, 0, bw, H, P.primary) + C.logo(bw / 2 - 14 * s, H / 2 - 14 * s, 28 * s, 28 * s, { color: ink })
+      + C.T(bw + m, 26 * s, [TX.name], { size: 9.5 * s, head: 1, fill: P.dark, maxw: W - bw - 2 * m })
+      + C.T(bw + m, 33 * s, [TX.title], { size: 4.8 * s, fill: P.primary, weight: 700, maxw: W - bw - 2 * m })
+      + C.rows(bw + m, 52 * s, [['phone', TX.phone], ['mail', TX.email], ['web', TX.web]], { size: 4.4 * s, gap: 8 * s, maxw: W - bw - 2 * m });
+  }),
+  D('card-minimal', 'Minimal', ['card'], C => {
+    const { W, H, s, P } = C;
+    if (C.pg) return C.bg(P.dark) + C.logo(W / 2 - 26 * s, H / 2 - 12 * s, 52 * s, 24 * s, { color: '#ffffff' });
+    return C.bg('#ffffff') + C.T(W / 2, H * 0.36, [TX.name], { size: 10 * s, family: C.F.serif, fill: P.dark, anchor: 'middle', maxw: W * 0.8 })
+      + C.T(W / 2, H * 0.36 + 8 * s, [TX.title], { size: 4.6 * s, fill: P.primary, anchor: 'middle', ls: 0.8 * s, caps: 1 })
+      + C.L(W / 2 - 8 * s, H * 0.36 + 14 * s, W / 2 + 8 * s, H * 0.36 + 14 * s, P.accent, 0.7 * s)
+      + C.T(W / 2, H - 22 * s, [`${TX.phone}  ·  ${TX.email}`], { size: 4.2 * s, fill: P.dark, anchor: 'middle', maxw: W * 0.9 })
+      + C.T(W / 2, H - 14 * s, [TX.web], { size: 4.2 * s, fill: P.dark, anchor: 'middle', weight: 700 });
+  }),
+  D('card-photo', 'Photo', ['card'], C => {
+    const { W, H, s, P } = C, px = W * 0.42, m = 8 * s;
+    if (C.pg) return C.bg(P.primary) + C.logo(W / 2 - 30 * s, H / 2 - 14 * s, 60 * s, 28 * s, { color: C.on(P.primary) });
+    return C.bg('#ffffff') + C.photo(-C.b, -C.b, px + C.b, H + 2 * C.b)
+      + C.T(px + m, 30 * s, [TX.name], { size: 9 * s, head: 1, fill: P.dark, maxw: W - px - 2 * m })
+      + C.T(px + m, 37 * s, [TX.title], { size: 4.6 * s, fill: P.primary, weight: 700, maxw: W - px - 2 * m })
+      + C.rows(px + m, 56 * s, [['phone', TX.phone], ['mail', TX.email], ['web', TX.web]], { size: 4.2 * s, gap: 7.6 * s, maxw: W - px - 2 * m });
+  }),
+  D('card-diagonal', 'Diagonal', ['card'], C => {
+    const { W, H, s, P, b } = C, m = 8 * s;
+    if (C.pg) return C.bg(P.primary) + C.Pa(`M${r3(-b)} ${r3(H + b)}L${r3(W * 0.55)} ${r3(H + b)}L${r3(W * 0.35)} ${r3(-b)}L${r3(-b)} ${r3(-b)}Z`, P.dark) + C.logo(W * 0.5, H / 2 - 12 * s, W * 0.42, 24 * s, { color: '#ffffff' });
+    return C.bg(P.dark) + C.Pa(`M${r3(W * 0.62)} ${r3(H + b)}L${r3(W + b)} ${r3(H + b)}L${r3(W + b)} ${r3(H * 0.15)}Z`, P.accent)
+      + C.T(m, 28 * s, [TX.name], { size: 10 * s, head: 1, fill: '#ffffff', maxw: W * 0.7 })
+      + C.T(m, 35 * s, [TX.title], { size: 4.6 * s, fill: P.accent, weight: 700, ls: 0.4 * s, caps: 1 })
+      + C.rows(m, 54 * s, [['phone', TX.phone], ['mail', TX.email], ['web', TX.web]], { size: 4.3 * s, gap: 7.6 * s, fill: '#ffffff', iconFill: P.accent, maxw: W * 0.6 });
+  }),
+  D('card-qr', 'With QR Code', ['card'], C => {
+    const { W, H, s, P } = C, m = 8 * s, q = H * 0.5;
+    if (C.pg) return C.bg(P.light) + C.logo(W / 2 - 30 * s, H / 2 - 13 * s, 60 * s, 26 * s, { color: P.dark });
+    return C.bg('#ffffff') + C.E(0, 0, W, 3 * s, P.primary) + C.logo(m, 10 * s, 30 * s, 12 * s, { color: P.primary, align: 'left' })
+      + C.T(m, 40 * s, [TX.name], { size: 9 * s, head: 1, fill: P.dark, maxw: W - q - 3 * m })
+      + C.T(m, 47 * s, [TX.title], { size: 4.6 * s, fill: P.primary, weight: 700, maxw: W - q - 3 * m })
+      + C.rows(m, 62 * s, [['phone', TX.phone], ['mail', TX.email], ['web', TX.web]], { size: 4.2 * s, gap: 7.4 * s, maxw: W - q - 3 * m })
+      + C.qr(W - m - q, H / 2 - q / 2 + 4 * s, q, P.dark) + C.T(W - m - q / 2, H / 2 + q / 2 + 9 * s, ['Scan me'], { size: 4 * s, anchor: 'middle', fill: P.dark, weight: 700 });
+  }),
+  /* ===== flyers & posters (portrait) ===== */
+  D('fl-event', 'Event', ['flyer'], C => {
+    const { W, H, s, P } = C, m = 8 * s, ink = C.on(P.primary), ph = Math.min(H * 0.5, H - 78 * s);
+    return C.bg(P.primary) + C.photo(-C.b, -C.b, W + 2 * C.b, ph + C.b) + C.RR(m, ph - 8 * s, 40 * s, 16 * s, 8 * s, P.accent)
+      + C.T(m + 20 * s, ph + 3 * s, ['JUNE 14'], { size: 6.5 * s, weight: 800, fill: C.on(P.accent), anchor: 'middle', ls: 0.5 * s })
+      + C.T(m, ph + 24 * s, ['Summer', 'Block Party'], { size: 15 * s, head: 1, fill: ink, lh: 1.0, maxw: W - 2 * m, maxh: 30 * s })
+      + C.rows(m, ph + 51 * s, [['clock', 'Saturday · 4 PM – 10 PM'], ['pin', TX.addr], ['web', TX.web]], { size: 4.8 * s, gap: 7.5 * s, fill: ink, iconFill: P.accent, maxw: W - 2 * m - 44 * s })
+      + C.logo(W - m - 40 * s, H - m - 16 * s, 40 * s, 16 * s, { color: ink, align: 'right' });
+  }),
+  D('fl-sale', 'Big Sale', ['flyer'], C => {
+    const { W, H, s, P } = C, m = 8 * s, bInk = C.on(P.accent), btnY = H - m - 24 * s, txtY = btnY - 7 * s, R = Math.min(W * 0.3, (txtY - 10 * s - 36 * s) / 2), cy = 36 * s + R + (txtY - 10 * s - 36 * s - 2 * R) / 2;
+    return C.bg(P.dark) + C.Ci(W * 0.1, H * 0.1, 4 * s, P.secondary) + C.Ci(W * 0.9, H * 0.55, 6 * s, P.primary) + C.Ci(W * 0.15, H * 0.6, 3 * s, P.accent)
+      + C.T(W / 2, H * 0.16, ['MEGA SALE'], { size: 22 * s, head: 1, fill: '#ffffff', anchor: 'middle', maxw: W - 2 * m })
+      + C.T(W / 2, H * 0.16 + 12 * s, ['This weekend only'], { size: 7 * s, fill: P.accent, anchor: 'middle', maxw: W - 2 * m })
+      + C.star(W / 2, cy, R, R * 0.84, 20, P.accent)
+      + C.T(W / 2, cy + R * 0.12, ['50%'], { size: R * 0.62, head: 1, fill: bInk, anchor: 'middle', maxw: R * 1.4 })
+      + C.T(W / 2, cy + R * 0.45, ['OFF'], { size: R * 0.24, head: 1, fill: bInk, anchor: 'middle', ls: R * 0.03 })
+      + C.T(W / 2, txtY, ['Everything in store · Online too'], { size: 6 * s, fill: '#ffffff', anchor: 'middle', maxw: W - 2 * m })
+      + C.RR(W / 2 - 34 * s, btnY, 68 * s, 14 * s, 7 * s, P.primary) + C.T(W / 2, btnY + 9.6 * s, ['SHOP NOW'], { size: 6 * s, weight: 800, fill: C.on(P.primary), anchor: 'middle', ls: 0.6 * s })
+      + C.T(W / 2, H - m, [`${TX.web}  ·  ${TX.phone}`], { size: 4.6 * s, fill: '#ffffff', anchor: 'middle', opacity: 0.8, maxw: W - 2 * m });
+  }),
+  D('fl-business', 'Services', ['flyer'], C => {
+    const { W, H, s, P } = C, m = 9 * s, hb = Math.max(H * 0.3, 54 * s), ink = C.on(P.primary);
+    const list = ['Free consultation', 'Fast, friendly service', 'Licensed & insured', 'Satisfaction guaranteed'];
+    let out = C.bg(P.light) + C.E(0, 0, W, hb, P.primary) + C.logo(m, m, 44 * s, 16 * s, { color: ink, align: 'left' })
+      + C.T(m, m + 30 * s, ['Professional Services', 'You Can Trust'], { size: 10 * s, head: 1, fill: ink, lh: 1.1, maxw: W - 2 * m, maxh: hb - m - 26 * s });
+    const lw = (W - 2 * m) * 0.52, top = hb + 10 * s, bot = H - 32 * s, step = Math.min(15 * s, (bot - top - 8 * s) / list.length);
+    list.forEach((t, i) => { const y = top + 10 * s + i * step; out += C.Ci(m + 5 * s, y - 2 * s, 5 * s, P.accent) + C.icon('check', m + 1.5 * s, y - 5.5 * s, 7 * s, C.on(P.accent)) + C.T(m + 14 * s, y, [t], { size: 5.4 * s, weight: 700, fill: P.dark, maxw: lw - 16 * s }); });
+    out += C.photo(m + lw, top, W - 2 * m - lw, bot - top, { r: 3 * s });
+    return out + C.E(0, H - 24 * s, W, 24 * s, P.dark) + C.T(m, H - 10 * s, [`Call ${TX.phone}`], { size: 6.5 * s, head: 1, fill: '#ffffff', maxw: W * 0.5 - m }) + C.T(W - m, H - 10 * s, [TX.web], { size: 4.6 * s, fill: P.accent, anchor: 'end', weight: 700, maxw: W * 0.5 - m - 4 * s });
+  }),
+  D('fl-minimal', 'Minimal Editorial', ['flyer'], C => {
+    const { W, H, s, P } = C, m = 10 * s;
+    return C.bg('#ffffff') + C.R(m, m, 2 * s, 34 * s, P.accent)
+      + C.T(m + 7 * s, m + 13 * s, ['Less, but', 'better.'], { size: 15 * s, family: C.F.serif, fill: P.dark, lh: 1.05, maxw: W - 2 * m })
+      + C.T(m + 7 * s, m + 46 * s, ['A short paragraph that explains what this is about,', 'who it is for and why it matters. Keep it short.'], { size: 4.6 * s, fill: P.dark, opacity: 0.8, lh: 1.5, maxw: W * 0.75 })
+      + C.photo(W * 0.3, m + 62 * s, W * 0.7 - m, H - m - 20 * s - (m + 62 * s))
+      + C.T(m, H - m, [TX.web], { size: 4.6 * s, weight: 700, fill: P.primary }) + C.logo(W - m - 34 * s, H - m - 12 * s, 34 * s, 12 * s, { color: P.dark, align: 'right' });
+  }),
+  D('fl-opening', 'Grand Opening', ['flyer'], C => {
+    const { W, H, s, P } = C, m = 9 * s, ink = C.on(P.primary);
+    let out = C.bg(P.primary);
+    const cols = [P.accent, P.secondary, '#ffffff'];
+    for (let i = 0; i < 40; i++) { const x = (i * 37 % 100) / 100 * W, y = (i * 53 % 100) / 100 * H * 0.35; out += C.R(x, y, 3 * s, 1.4 * s, cols[i % 3], `transform="rotate(${(i * 47) % 180} ${r3(x)} ${r3(y)})" opacity=".9"`); }
+    const addrY = H - m - 26 * s, btnY = addrY - 28 * s, d = Math.max(0, (btnY - 70 * s) * 0.45); // the title block floats down on taller pages
+    return out + C.T(W / 2, 30 * s + d, ['GRAND'], { size: 24 * s, head: 1, fill: ink, anchor: 'middle', maxw: W - 2 * m })
+      + C.T(W / 2, 53 * s + d, ['OPENING'], { size: 24 * s, head: 1, fill: P.accent, anchor: 'middle', maxw: W - 2 * m })
+      + C.T(W / 2, btnY - 8 * s, ['Join us for food, music & giveaways'], { size: 6 * s, fill: ink, anchor: 'middle', maxw: W - 2 * m })
+      + C.RR(W / 2 - 40 * s, btnY, 80 * s, 17 * s, 4 * s, '#ffffff') + C.T(W / 2, btnY + 11.5 * s, ['SAT · MAY 3 · 10 AM'], { size: 6.5 * s, weight: 800, fill: P.primary, anchor: 'middle', maxw: 74 * s })
+      + C.T(W / 2, addrY, [TX.addr], { size: 4.6 * s, fill: ink, anchor: 'middle', maxw: W - 2 * m })
+      + C.logo(W / 2 - 25 * s, H - m - 18 * s, 50 * s, 18 * s, { color: ink });
+  }),
+  D('fl-feature', 'Feature Showcase', ['flyer'], C => {
+    const { W, H, s, P } = C, m = 8 * s, bw = (W - 2 * m - 8 * s) / 3;
+    let out = C.bg('#ffffff') + C.T(m, m + 14 * s, ['Introducing'], { size: 6 * s, fill: P.primary, weight: 700, ls: 0.6 * s, caps: 1 })
+      + C.T(m, m + 30 * s, ['The New Collection'], { size: 14 * s, head: 1, fill: P.dark, maxw: W - 2 * m })
+    const y = H - 26 * s - 28 * s;
+    out += C.photo(m, m + 40 * s, W - 2 * m, Math.max(10 * s, y - 6 * s - (m + 40 * s)), { r: 3 * s });
+    ['Quality', 'Design', 'Value'].forEach((t, i) => { const x = m + i * (bw + 4 * s); out += C.RR(x, y, bw, 28 * s, 3 * s, P.light) + C.T(x + bw / 2, y + 12 * s, [t], { size: 6 * s, head: 1, fill: P.primary, anchor: 'middle', maxw: bw - 4 * s }) + C.T(x + bw / 2, y + 21 * s, ['A short benefit'], { size: 4 * s, fill: P.dark, anchor: 'middle', maxw: bw - 4 * s }); });
+    return out + C.star(W - m - 20 * s, m + 54 * s, 18 * s, 15 * s, 16, P.accent) + C.T(W - m - 20 * s, m + 57 * s, ['$99'], { size: 9 * s, head: 1, fill: C.on(P.accent), anchor: 'middle' })
+      + C.E(0, H - 20 * s, W, 20 * s, P.primary) + C.T(W / 2, H - 8 * s, [`${TX.web}  ·  ${TX.phone}`], { size: 5 * s, fill: C.on(P.primary), anchor: 'middle', weight: 700, maxw: W - 2 * m });
+  }),
+  D('fl-concert', 'Bold Type Poster', ['flyer'], C => {
+    const { W, H, s, P } = C, m = 8 * s;
+    const words = ['LIVE', 'MUSIC', 'NIGHT'], cols = ['#ffffff', P.accent, P.secondary];
+    let out = C.bg(P.dark);
+    const foot = H - 24 * s, d = Math.max(0, (foot - 106 * s) * 0.5);
+    words.forEach((w, i) => { out += C.T(m, 30 * s + d + i * 25 * s, [w], { size: 28 * s, family: C.F.display, weight: 400, fill: cols[i], maxw: W - 2 * m }); });
+    out += C.L(m, 84 * s + d, W - m, 84 * s + d, P.accent, 0.8 * s);
+    out += C.T(m, 94 * s + d, ['THE HEADLINERS · SPECIAL GUEST DJ NIGHTFALL'], { size: 5 * s, weight: 800, fill: '#ffffff', ls: 0.3 * s, maxw: W - 2 * m });
+    return out + C.E(0, foot, W, H - foot, P.accent) + C.T(m, H - 9.5 * s, ['FRI 08.22 · DOORS 8 PM'], { size: 6 * s, head: 1, fill: C.on(P.accent), maxw: W * 0.55 - m }) + C.T(W - m, H - 9.5 * s, [TX.web], { size: 4.2 * s, weight: 700, fill: C.on(P.accent), anchor: 'end', maxw: W * 0.4 - m });
+  }),
+  /* ===== postcards (front / back) ===== */
+  ...[['pc-photo', 'Photo'], ['pc-split', 'Split'], ['pc-type', 'Bold Type'], ['pc-offer', 'Coupon Offer']].map(([id, name], vi) => D(id, name, ['postcard'], C => {
+    const { W, H, s, P } = C, m = 8 * s;
+    if (C.pg) { // back: message on the left, address area on the right
+      const mid = W * 0.55;
+      return C.bg('#ffffff') + C.E(0, 0, W, 3 * s, P.primary) + C.logo(m, m + 4 * s, 34 * s, 13 * s, { color: P.primary, align: 'left' })
+        + C.T(m, m + 32 * s, ['Thanks for being', 'a great customer!'], { size: 8 * s, head: 1, fill: P.dark, lh: 1.1, maxw: mid - 2 * m })
+        + C.T(m, m + 52 * s, ['Write a short message here — what is new, what is on', 'offer and how to get in touch.'], { size: 4 * s, fill: P.dark, lh: 1.5, maxw: mid - 2 * m, opacity: 0.85 })
+        + C.rows(m, H - m - 14 * s, [['web', TX.web], ['phone', TX.phone]], { size: 4 * s, gap: 7 * s, maxw: mid - 2 * m })
+        + C.L(mid, m, mid, H - m, '#cccccc', 0.5 * s) + C.R(W - m - 22 * s, m, 22 * s, 26 * s, 'none', `stroke="#999999" stroke-width="${r3(0.5 * s)}" stroke-dasharray="${r3(1.5 * s)} ${r3(1 * s)}"`)
+        + C.T(W - m - 11 * s, m + 15 * s, ['STAMP'], { size: 3.4 * s, fill: '#999999', anchor: 'middle' })
+        + [0, 1, 2, 3].map(i => C.L(mid + 8 * s, H * 0.55 + i * 10 * s, W - m, H * 0.55 + i * 10 * s, '#bbbbbb', 0.4 * s)).join('');
+    }
+    if (vi === 0) return C.bg('#000') + C.photo(-C.b, -C.b, W + 2 * C.b, H + 2 * C.b) + C.E(0, H - 30 * s, W, 30 * s, P.primary, 'opacity=".92"') + C.T(m, H - 12 * s, ['Greetings from Your City'], { size: 11 * s, head: 1, fill: C.on(P.primary), maxw: W - 2 * m - 40 * s }) + C.logo(W - m - 34 * s, H - 24 * s, 34 * s, 14 * s, { color: C.on(P.primary), align: 'right' });
+    if (vi === 1) return C.bg(P.primary) + C.photo(W * 0.48, -C.b, W * 0.52 + C.b, H + 2 * C.b) + C.T(m, H * 0.4, ['New', 'Arrivals'], { size: 15 * s, head: 1, fill: C.on(P.primary), lh: 1.0, maxw: W * 0.42 }) + C.T(m, H * 0.4 + 32 * s, ['Fresh styles in store now'], { size: 5 * s, fill: C.on(P.primary), maxw: W * 0.42 }) + C.logo(m, H - m - 12 * s, 30 * s, 12 * s, { color: C.on(P.primary), align: 'left' });
+    if (vi === 2) return C.bg(P.accent) + C.T(W / 2, H * 0.5, ['SEE YOU', 'THERE!'], { size: 22 * s, family: C.F.display, weight: 400, fill: P.dark, anchor: 'middle', lh: 0.95, maxw: W - 2 * m, maxh: H * 0.6 }) + C.T(W / 2, H - m, [TX.web], { size: 5 * s, weight: 700, fill: P.dark, anchor: 'middle' });
+    return C.bg(P.light) + C.RR(m, m, W - 2 * m, H - 2 * m, 4 * s, 'none', `stroke="${P.primary}" stroke-width="${r3(1 * s)}" stroke-dasharray="${r3(3 * s)} ${r3(2 * s)}"`)
+      + C.T(W / 2, H * 0.38, ['20% OFF'], { size: 22 * s, head: 1, fill: P.primary, anchor: 'middle', maxw: W - 4 * m }) + C.T(W / 2, H * 0.38 + 12 * s, ['your next visit'], { size: 6 * s, fill: P.dark, anchor: 'middle' })
+      + C.RR(W / 2 - 30 * s, H * 0.62, 60 * s, 13 * s, 6.5 * s, P.dark) + C.T(W / 2, H * 0.62 + 8.8 * s, ['CODE: SAVE20'], { size: 5 * s, weight: 800, fill: '#ffffff', anchor: 'middle' })
+      + C.T(W / 2, H - m - 6 * s, ['Expires 12/31 · One per customer'], { size: 3.6 * s, fill: P.dark, anchor: 'middle', opacity: 0.7 });
+  })),
+  /* ===== rack cards (front / back) ===== */
+  ...[['rack-photo', 'Photo Top'], ['rack-bold', 'Bold Color'], ['rack-list', 'Checklist']].map(([id, name], vi) => D(id, name, ['rack'], C => {
+    const { W, H, s, P } = C, m = 9 * s, ink = C.on(P.primary);
+    if (C.pg) {
+      return C.bg('#ffffff') + C.E(0, 0, W, 34 * s, P.primary) + C.T(m, 22 * s, ['Our Services'], { size: 10 * s, head: 1, fill: ink, maxw: W - 2 * m })
+        + ['Consultation', 'Design', 'Installation', 'Maintenance', 'Support'].map((t, i) => C.Ci(m + 3 * s, 52 * s + i * 16 * s - 2 * s, 3 * s, P.accent) + C.T(m + 10 * s, 52 * s + i * 16 * s, [t], { size: 6 * s, weight: 700, fill: P.dark, maxw: W - 2 * m - 10 * s })).join('')
+        + C.photo(m, H * 0.56, W - 2 * m, H * 0.2, { r: 3 * s })
+        + C.rows(m, H - 40 * s, [['phone', TX.phone], ['mail', TX.email], ['web', TX.web], ['pin', TX.street]], { size: 4.6 * s, gap: 8 * s, maxw: W - 2 * m });
+    }
+    if (vi === 0) return C.bg('#ffffff') + C.photo(-C.b, -C.b, W + 2 * C.b, H * 0.45 + C.b) + C.logo(m, H * 0.45 + 10 * s, 40 * s, 15 * s, { color: P.primary, align: 'left' }) + C.T(m, H * 0.45 + 46 * s, ['Explore', 'Something New'], { size: 12 * s, head: 1, fill: P.dark, lh: 1.05, maxw: W - 2 * m }) + C.T(m, H * 0.45 + 80 * s, ['A short line about what makes', 'you different.'], { size: 5 * s, fill: P.dark, lh: 1.4, maxw: W - 2 * m, opacity: 0.85 }) + C.E(0, H - 22 * s, W, 22 * s, P.primary) + C.T(W / 2, H - 9 * s, [TX.web], { size: 5.4 * s, weight: 700, fill: ink, anchor: 'middle' });
+    if (vi === 1) return C.bg(P.primary) + C.Ci(W, 0, W * 0.5, P.secondary, 'opacity=".5"') + C.logo(W / 2 - 30 * s, 22 * s, 60 * s, 22 * s, { color: ink }) + C.T(W / 2, H * 0.4, ['VISIT', 'US', 'TODAY'], { size: 22 * s, head: 1, fill: ink, anchor: 'middle', lh: 1.0, maxw: W - 2 * m }) + C.photo(m, H * 0.62, W - 2 * m, H * 0.24, { r: 4 * s }) + C.T(W / 2, H - 12 * s, [TX.phone], { size: 7 * s, head: 1, fill: P.accent, anchor: 'middle' });
+    return C.bg(P.light) + C.T(m, 26 * s, ['Why Choose Us?'], { size: 11 * s, head: 1, fill: P.primary, maxw: W - 2 * m }) + ['Trusted for 20 years', 'Local & family owned', 'Free estimates', 'Fast turnaround', '5-star reviews'].map((t, i) => C.icon('check', m, 46 * s + i * 18 * s - 6 * s, 8 * s, P.accent) + C.T(m + 12 * s, 46 * s + i * 18 * s, [t], { size: 6.4 * s, weight: 700, fill: P.dark, maxw: W - 2 * m - 12 * s })).join('') + C.photo(m, H * 0.58, W - 2 * m, H * 0.28, { r: 3 * s }) + C.logo(W / 2 - 25 * s, H - 24 * s, 50 * s, 16 * s, { color: P.dark });
+  })),
+  /* ===== tri-fold brochures (outside: flap | back | cover — inside: three panels); laid out on a 100-unit-tall page ===== */
+  ...[['tri-modern', 'Modern'], ['tri-photo', 'Photo Rich'], ['tri-clean', 'Clean']].map(([id, name], vi) => D(id, name, ['trifold'], C => {
+    const { W, H, s, P } = C, pw = W / 3, m = 7 * s, ink = C.on(P.primary), x = i => i * pw + m, w = pw - 2 * m, y = v => v * H / 100;
+    if (!C.pg) { // outside
+      let out = C.bg('#ffffff');
+      if (vi === 1) out += C.photo(2 * pw, -C.b, pw + C.b, y(64) + C.b) + C.E(2 * pw, y(64), pw, H - y(64), P.primary);
+      else out += C.E(2 * pw, 0, pw, H, vi === 2 ? P.light : P.primary);
+      const cInk = vi === 2 ? P.dark : ink;
+      out += C.logo(x(2), y(8), w * 0.7, y(12), { color: vi === 1 ? '#ffffff' : cInk, align: 'left' })
+        + C.T(x(2), y(76), ['Company', 'Brochure'], { size: y(9), head: 1, fill: cInk, lh: 1.05, maxw: w })
+        + C.T(x(2), y(93), [TX.tag], { size: y(3.6), fill: cInk, maxw: w });
+      if (vi === 0) out += C.photo(x(2), y(26), w, y(36), { r: 3 * s });
+      out += C.T(x(1), y(14), ['Get in Touch'], { size: y(6.5), head: 1, fill: P.primary, maxw: w })
+        + C.rows(x(1), y(26), [['phone', TX.phone], ['mail', TX.email], ['web', TX.web], ['pin', TX.street]], { size: y(3.6), gap: y(7), maxw: w })
+        + C.photo(x(1), y(56), w, y(28), { r: 3 * s }) + C.T(x(1), y(93), [TX.addr], { size: y(3), fill: P.dark, maxw: w, opacity: 0.7 });
+      out += C.T(x(0), y(14), ['What Our', 'Clients Say'], { size: y(6.5), head: 1, fill: P.dark, lh: 1.1, maxw: w }) + C.R(x(0), y(30), y(1.2), y(24), P.accent)
+        + C.T(x(0) + y(4), y(35), ['“Outstanding work from', 'start to finish. Highly', 'recommended!”'], { size: y(3.8), family: C.F.serif, style: 'italic', fill: P.dark, lh: 1.45, maxw: w - y(4) })
+        + C.T(x(0) + y(4), y(51), ['— Happy Client'], { size: y(3.4), weight: 700, fill: P.primary, maxw: w - y(4) }) + C.photo(x(0), y(60), w, y(32), { r: 3 * s });
+      return out;
+    }
+    let out = C.bg(vi === 2 ? '#ffffff' : P.light);
+    out += C.T(x(0), y(14), ['About Us'], { size: y(7), head: 1, fill: P.primary, maxw: w }) + C.T(x(0), y(24), ['Tell your story in a few', 'sentences: who you are,', 'what you do and why', 'people choose you.'], { size: y(3.8), fill: P.dark, lh: 1.5, maxw: w }) + C.photo(x(0), y(50), w, y(42), { r: 3 * s });
+    out += C.T(x(1), y(14), ['Our Services'], { size: y(7), head: 1, fill: P.primary, maxw: w }) + ['Service one', 'Service two', 'Service three', 'Service four', 'Service five'].map((t, i) => C.icon('check', x(1), y(26 + i * 8) - y(4), y(5), P.accent) + C.T(x(1) + y(7), y(26 + i * 8), [t], { size: y(4), weight: 700, fill: P.dark, maxw: w - y(7) })).join('') + C.photo(x(1), y(66), w, y(26), { r: 3 * s });
+    out += C.E(2 * pw, 0, pw, H, P.primary) + C.T(x(2), y(14), ['Special Offer'], { size: y(7), head: 1, fill: ink, maxw: w }) + C.T(x(2) + w / 2, y(42), ['20%'], { size: y(20), head: 1, fill: P.accent, anchor: 'middle', maxw: w }) + C.T(x(2) + w / 2, y(51), ['off your first order'], { size: y(4), fill: ink, anchor: 'middle', maxw: w })
+      + C.RR(x(2), y(60), w, y(11), y(5.5), P.accent) + C.T(x(2) + w / 2, y(67.3), ['BOOK TODAY'], { size: y(4.2), weight: 800, fill: C.on(P.accent), anchor: 'middle', maxw: w * 0.86 }) + C.T(x(2) + w / 2, y(90), [TX.phone], { size: y(5), head: 1, fill: ink, anchor: 'middle', maxw: w });
+    return out;
+  })),
+  /* ===== menus (two columns, four sections that share the height evenly) ===== */
+  ...[['menu-classic', 'Classic'], ['menu-photo', 'Photo Header'], ['menu-dark', 'Chalkboard']].map(([id, name], vi) => D(id, name, ['menu'], C => {
+    const { W, H, s, P } = C, m = 9 * s, dark = vi === 2, ink = dark ? '#ffffff' : P.dark, acc = dark ? P.accent : P.primary;
+    const sections = [['STARTERS', [['Garlic Bread', '6'], ['Soup of the Day', '7'], ['House Salad', '8']]], ['MAINS', [['Grilled Chicken', '16'], ['Pasta Primavera', '14'], ['Steak Frites', '24'], ['Fish Tacos', '15']]], ['DESSERTS', [['Chocolate Cake', '7'], ['Cheesecake', '7']]], ['DRINKS', [['Lemonade', '4'], ['Iced Tea', '3'], ['Coffee', '3']]]];
+    const ph = vi === 1 ? H * 0.2 : 0, titleY = vi === 1 ? ph + 16 * s : m + 15 * s, top = vi === 1 ? ph + 26 * s : m + 34 * s, bottom = H - m - 10 * s;
+    let out = C.bg(dark ? '#23272a' : (vi === 1 ? '#ffffff' : P.light));
+    if (vi === 1) out += C.photo(-C.b, -C.b, W + 2 * C.b, ph + C.b);
+    out += C.T(W / 2, titleY, [vi === 2 ? 'Today’s Menu' : 'Menu'], { size: 13 * s, family: vi === 0 ? C.F.serif : C.F.head, weight: vi === 0 ? 400 : C.F.headW, fill: acc, anchor: 'middle', maxw: W - 2 * m });
+    if (vi !== 1) out += C.T(W / 2, m + 23 * s, [TX.company], { size: 4 * s, fill: ink, anchor: 'middle', ls: 0.6 * s, caps: 1, opacity: 0.8 });
+    const colW = (W - 3 * m) / 2, cols = [[sections[0], sections[2]], [sections[1], sections[3]]];
+    const most = Math.max(...cols.map(c => c.reduce((n, [, it]) => n + it.length, 0))), step = Math.min(13 * s, (bottom - top - 2 * 13 * s - 6 * s) / most);
+    cols.forEach((col, ci) => {
+      const x = m + ci * (colW + m); let y = top + 6 * s;
+      for (const [title, items] of col) {
+        out += C.T(x, y, [title], { size: 5.4 * s, head: 1, fill: acc, ls: 0.5 * s, maxw: colW }) + C.L(x, y + 2.5 * s, x + colW, y + 2.5 * s, acc, 0.4 * s); y += 10 * s;
+        for (const [it, pr] of items) { out += C.T(x, y, [it], { size: 4.2 * s, weight: 700, fill: ink, maxw: colW - 12 * s }) + C.T(x + colW, y, ['$' + pr], { size: 4.2 * s, weight: 700, fill: acc, anchor: 'end' }); if (step >= 8 * s) out += C.T(x, y + 3.8 * s, ['Short description of the dish'], { size: 2.6 * s, fill: ink, opacity: 0.7, maxw: colW - 12 * s }); y += step; }
+        y += 5 * s;
       }
-      const c = o.color || '#ffffff', ax = o.align === 'left' ? x : o.align === 'right' ? x + w - w : x;
-      return `<g data-placeholder="logo" data-name="Logo placeholder" data-box="${r3(ax)} ${r3(y)} ${r3(w)} ${r3(h)}" data-align="${o.align || 'center'}"><rect x="${r3(ax)}" y="${r3(y)}" width="${r3(w)}" height="${r3(h)}" rx="${r3(h * 0.18)}" fill="none" stroke="${c}" stroke-opacity=".7" stroke-width="${r3(Math.max(1.5, h * 0.03))}" stroke-dasharray="${r3(h * 0.1)} ${r3(h * 0.07)}"/><text x="${r3(ax + w / 2)}" y="${r3(y + h / 2 + h * 0.13)}" font-family="Arial, sans-serif" font-weight="700" font-size="${r3(h * 0.36)}" fill="${c}" fill-opacity=".85" text-anchor="middle" letter-spacing="${r3(h * 0.05)}"><tspan x="${r3(ax + w / 2)}" dy="0">LOGO</tspan></text></g>`;
-    },
-  };
-  return { W, H, body: tpl.render(C), defs, deps, fonts };
-}
+    });
+    return out + C.T(W / 2, H - m, [`${TX.phone}  ·  ${TX.web}`], { size: 3.6 * s, fill: ink, anchor: 'middle', opacity: 0.8, maxw: W - 2 * m });
+  })),
+  /* ===== letterhead ===== */
+  ...[['lh-header', 'Header'], ['lh-side', 'Side Band'], ['lh-centered', 'Centered']].map(([id, name], vi) => D(id, name, ['letterhead'], C => {
+    const { W, H, s, P } = C, m = 11 * s;
+    const body = (x, y, w) => C.T(x, y, ['Month 00, 2026', '', 'Dear Name,', '', 'Start your letter here. This text is a placeholder — click it to', 'replace it with your own words, or delete it and type in a', 'new text box.', '', 'Sincerely,', '', TX.name, TX.title], { size: 1.9 * s, fill: P.dark, lh: 1.6, maxw: w });
+    if (vi === 0) return C.bg('#ffffff') + C.logo(m, m, 40 * s, 13 * s, { color: P.primary, align: 'left' }) + C.T(W - m, m + 4 * s, [TX.phone, TX.email, TX.web], { size: 2.2 * s, fill: P.dark, anchor: 'end', lh: 1.5 }) + C.L(m, m + 19 * s, W - m, m + 19 * s, P.primary, 0.5 * s) + body(m, m + 34 * s, W - 2 * m) + C.E(0, H - 5 * s, W, 5 * s, P.primary) + C.T(W / 2, H - 9 * s, [TX.addr], { size: 2 * s, fill: P.dark, anchor: 'middle', opacity: 0.7 });
+    if (vi === 1) return C.bg('#ffffff') + C.E(0, 0, 8 * s, H, P.primary) + C.E(8 * s, 0, 1.4 * s, H, P.accent) + C.logo(m + 8 * s, m, 40 * s, 13 * s, { color: P.primary, align: 'left' }) + body(m + 8 * s, m + 34 * s, W - 2 * m - 8 * s) + C.rows(m + 8 * s, H - 26 * s, [['phone', TX.phone], ['mail', TX.email], ['web', TX.web]], { size: 2.2 * s, gap: 4 * s });
+    return C.bg('#ffffff') + C.logo(W / 2 - 22 * s, m, 44 * s, 14 * s, { color: P.dark }) + C.T(W / 2, m + 21 * s, [`${TX.addr}  ·  ${TX.phone}  ·  ${TX.web}`], { size: 2 * s, fill: P.dark, anchor: 'middle', opacity: 0.75, maxw: W - 2 * m }) + C.L(W / 2 - 10 * s, m + 25 * s, W / 2 + 10 * s, m + 25 * s, P.accent, 0.5 * s) + body(m, m + 38 * s, W - 2 * m);
+  })),
+  /* ===== envelope ===== */
+  ...[['env-classic', 'Classic'], ['env-band', 'Color Band']].map(([id, name], vi) => D(id, name, ['envelope'], C => {
+    const { W, H, s, P } = C, m = 7 * s;
+    const ret = C.logo(m + (vi ? 10 * s : 0), m, 34 * s, 11 * s, { color: P.primary, align: 'left' }) + C.T(m + (vi ? 10 * s : 0), m + 18 * s, [TX.company, TX.street, TX.city], { size: 3.4 * s, fill: P.dark, lh: 1.4 });
+    const to = C.T(W * 0.45, H * 0.55, ['Recipient Name', 'Street Address', 'City, ST 00000'], { size: 4.4 * s, fill: P.dark, lh: 1.45 });
+    return C.R(0, 0, W, H, '#ffffff', 'data-name="Background"') + (vi ? C.R(0, 0, 4 * s, H, P.primary) + C.R(4 * s, 0, 1 * s, H, P.accent) : C.R(0, H - 2 * s, W, 2 * s, P.primary)) + ret + to;
+  })),
+  /* ===== gift certificates ===== */
+  ...[['gift-elegant', 'Elegant'], ['gift-bold', 'Bold'], ['gift-ribbon', 'Ribbon']].map(([id, name], vi) => D(id, name, ['giftcert'], C => {
+    const { W, H, s, P } = C, m = 6 * s;
+    if (C.pg) return C.bg('#ffffff') + C.logo(m, m + 3 * s, 40 * s, 14 * s, { color: P.primary, align: 'left' }) + C.T(m, H * 0.55, ['Terms: Valid for 12 months from the date of issue. Not redeemable', 'for cash. Lost or stolen certificates cannot be replaced.'], { size: 3.4 * s, fill: P.dark, lh: 1.5, maxw: W - 2 * m, opacity: 0.8 }) + C.T(m, H - m, [`${TX.addr}  ·  ${TX.phone}  ·  ${TX.web}`], { size: 3.2 * s, fill: P.dark, maxw: W - 2 * m });
+    const line = (x, y, w, label) => C.T(x, y, [label], { size: 4 * s, weight: 700, fill: vi === 1 ? '#ffffff' : P.dark }) + C.L(x + 14 * s, y + 0.8 * s, x + w, y + 0.8 * s, vi === 1 ? '#ffffff' : P.dark, 0.3 * s);
+    if (vi === 0) return C.bg(P.light) + C.RR(m, m, W - 2 * m, H - 2 * m, 2 * s, 'none', `stroke="${P.primary}" stroke-width="${r3(0.6 * s)}"`) + C.RR(m + 2 * s, m + 2 * s, W - 2 * m - 4 * s, H - 2 * m - 4 * s, 1.5 * s, 'none', `stroke="${P.accent}" stroke-width="${r3(0.3 * s)}"`)
+      + C.T(W * 0.38, H * 0.36, ['Gift Certificate'], { size: 14 * s, family: C.F.script, weight: 400, fill: P.primary, anchor: 'middle', maxw: W * 0.6 }) + line(W * 0.08, H * 0.6, W * 0.6, 'To:') + line(W * 0.08, H * 0.76, W * 0.6, 'From:')
+      + C.Ci(W * 0.82, H / 2, H * 0.3, P.primary) + C.T(W * 0.82, H / 2 + 4 * s, ['$50'], { size: 12 * s, head: 1, fill: C.on(P.primary), anchor: 'middle', maxw: H * 0.5 });
+    if (vi === 1) return C.bg(P.primary) + C.E(W * 0.68, 0, W * 0.32, H, P.dark) + C.T(m + 4 * s, H * 0.34, ['GIFT CARD'], { size: 13 * s, head: 1, fill: '#ffffff', maxw: W * 0.55 }) + line(m + 4 * s, H * 0.58, W * 0.6, 'To:') + line(m + 4 * s, H * 0.76, W * 0.6, 'From:') + C.T(W * 0.84, H * 0.48, ['$100'], { size: 13 * s, head: 1, fill: P.accent, anchor: 'middle', maxw: W * 0.28 }) + C.logo(W * 0.84 - 16 * s, H * 0.62, 32 * s, 12 * s, { color: '#ffffff' });
+    return C.bg('#ffffff') + C.E(W * 0.7, 0, 7 * s, H, P.primary) + C.E(0, H * 0.42, W, 7 * s, P.primary) + C.star(W * 0.7 + 3.5 * s, H * 0.42 + 3.5 * s, 9 * s, 4 * s, 4, P.accent)
+      + C.T(m + 2 * s, H * 0.3, ['A Gift For You'], { size: 10 * s, family: C.F.serif, fill: P.dark, maxw: W * 0.6 }) + line(m + 2 * s, H * 0.7, W * 0.6, 'To:') + line(m + 2 * s, H * 0.86, W * 0.6, 'From:') + C.T(W * 0.86, H * 0.28, ['$25'], { size: 10 * s, head: 1, fill: P.primary, anchor: 'middle' });
+  })),
+  /* ===== certificates ===== */
+  ...[['cert-classic', 'Classic'], ['cert-modern', 'Modern'], ['cert-minimal', 'Minimal']].map(([id, name], vi) => D(id, name, ['certificate'], C => {
+    const { W, H, s, P } = C, m = 7 * s;
+    const lines = (y) => C.L(W * 0.18, y, W * 0.42, y, P.dark, 0.3 * s) + C.L(W * 0.58, y, W * 0.82, y, P.dark, 0.3 * s) + C.T(W * 0.3, y + 5 * s, ['Signature'], { size: 3 * s, anchor: 'middle', fill: P.dark }) + C.T(W * 0.7, y + 5 * s, ['Date'], { size: 3 * s, anchor: 'middle', fill: P.dark });
+    if (vi === 0) return C.bg('#fffdf6') + C.R(m, m, W - 2 * m, H - 2 * m, 'none', `stroke="${P.primary}" stroke-width="${r3(1.6 * s)}"`) + C.R(m + 3 * s, m + 3 * s, W - 2 * m - 6 * s, H - 2 * m - 6 * s, 'none', `stroke="${P.accent}" stroke-width="${r3(0.5 * s)}"`)
+      + C.T(W / 2, H * 0.26, ['Certificate of Achievement'], { size: 9 * s, family: C.F.serif, fill: P.primary, anchor: 'middle', maxw: W * 0.8 }) + C.T(W / 2, H * 0.36, ['THIS CERTIFICATE IS PROUDLY PRESENTED TO'], { size: 2.8 * s, fill: P.dark, anchor: 'middle', ls: 0.5 * s })
+      + C.T(W / 2, H * 0.5, ['Recipient Name'], { size: 12 * s, family: C.F.script, weight: 400, fill: P.dark, anchor: 'middle', maxw: W * 0.7 }) + C.T(W / 2, H * 0.6, ['for outstanding performance and dedication'], { size: 3.6 * s, fill: P.dark, anchor: 'middle', style: 'italic' })
+      + lines(H * 0.78) + C.star(W / 2, H * 0.79, 9 * s, 7.5 * s, 16, P.accent) + C.Ci(W / 2, H * 0.79, 6 * s, P.primary);
+    if (vi === 1) return C.bg('#ffffff') + C.E(0, 0, W * 0.24, H, P.primary) + C.E(W * 0.24, 0, 1.5 * s, H, P.accent) + C.logo(W * 0.12 - 18 * s, m + 6 * s, 36 * s, 14 * s, { color: C.on(P.primary) })
+      + C.T(W * 0.3, H * 0.28, ['CERTIFICATE'], { size: 12 * s, head: 1, fill: P.dark, maxw: W * 0.65 }) + C.T(W * 0.3, H * 0.35, ['OF COMPLETION'], { size: 4.4 * s, fill: P.primary, weight: 700, ls: 1 * s })
+      + C.T(W * 0.3, H * 0.52, ['Recipient Name'], { size: 10 * s, family: C.F.serif, fill: P.dark, maxw: W * 0.62 }) + C.T(W * 0.3, H * 0.6, ['has successfully completed the course'], { size: 3.6 * s, fill: P.dark })
+      + C.L(W * 0.3, H * 0.8, W * 0.55, H * 0.8, P.dark, 0.3 * s) + C.T(W * 0.3, H * 0.8 + 5 * s, ['Instructor'], { size: 3 * s, fill: P.dark }) + C.L(W * 0.62, H * 0.8, W * 0.9, H * 0.8, P.dark, 0.3 * s) + C.T(W * 0.62, H * 0.8 + 5 * s, ['Date'], { size: 3 * s, fill: P.dark });
+    return C.bg('#ffffff') + C.T(W / 2, H * 0.3, ['Award of Excellence'], { size: 9 * s, family: C.F.serif, fill: P.dark, anchor: 'middle', maxw: W * 0.8 }) + C.L(W / 2 - 15 * s, H * 0.35, W / 2 + 15 * s, H * 0.35, P.accent, 0.6 * s)
+      + C.T(W / 2, H * 0.5, ['Recipient Name'], { size: 11 * s, head: 1, fill: P.primary, anchor: 'middle', maxw: W * 0.8 }) + C.T(W / 2, H * 0.58, ['in recognition of exceptional work'], { size: 3.6 * s, fill: P.dark, anchor: 'middle' }) + lines(H * 0.8);
+  })),
+  /* ===== invitations & thank-you cards (front / back) ===== */
+  ...[['inv-elegant', 'Elegant Invitation'], ['inv-party', 'Party'], ['inv-thanks', 'Thank You'], ['inv-corporate', 'Corporate Event']].map(([id, name], vi) => D(id, name, ['card57'], C => {
+    const { W, H, s, P } = C, m = 8 * s, ink = C.on(P.primary);
+    if (C.pg) return C.bg(vi === 1 ? P.accent : P.light) + (vi === 2 ? C.T(W / 2, H / 2, ['With love & gratitude'], { size: 6 * s, family: C.F.serif, style: 'italic', fill: P.dark, anchor: 'middle' }) : C.T(W / 2, H * 0.4, ['RSVP'], { size: 9 * s, head: 1, fill: P.dark, anchor: 'middle' }) + C.T(W / 2, H * 0.4 + 10 * s, ['by June 1 · ' + TX.phone], { size: 4.4 * s, fill: P.dark, anchor: 'middle', maxw: W - 2 * m })) + C.logo(W / 2 - 18 * s, H - m - 12 * s, 36 * s, 12 * s, { color: P.dark });
+    if (vi === 0) return C.bg('#fffdf8') + C.RR(m, m, W - 2 * m, H - 2 * m, 2 * s, 'none', `stroke="${P.accent}" stroke-width="${r3(0.6 * s)}"`) + C.T(W / 2, H * 0.22, ['TOGETHER WITH THEIR FAMILIES'], { size: 3 * s, fill: P.dark, anchor: 'middle', ls: 0.6 * s })
+      + C.T(W / 2, H * 0.38, ['Alex & Sam'], { size: 14 * s, family: C.F.script, weight: 400, fill: P.primary, anchor: 'middle', maxw: W - 3 * m }) + C.T(W / 2, H * 0.48, ['INVITE YOU TO CELEBRATE THEIR WEDDING'], { size: 3 * s, fill: P.dark, anchor: 'middle', ls: 0.5 * s, maxw: W - 3 * m })
+      + C.L(W / 2 - 10 * s, H * 0.53, W / 2 + 10 * s, H * 0.53, P.accent, 0.4 * s) + C.T(W / 2, H * 0.62, ['Saturday, June 21, 2026', 'at four o’clock in the afternoon', '', 'The Garden Venue', TX.city], { size: 4 * s, family: C.F.serif, fill: P.dark, anchor: 'middle', lh: 1.5, maxw: W - 3 * m });
+    if (vi === 1) { let out = C.bg(P.primary); for (let i = 0; i < 30; i++) out += C.Ci((i * 41 % 100) / 100 * W, (i * 67 % 100) / 100 * H * 0.4, (1 + i % 3) * s, [P.accent, P.secondary, '#ffffff'][i % 3]); const ty = H * 0.42, sz = Math.min(18 * s, H * 0.16); return out + C.T(W / 2, ty, ['You’re', 'Invited!'], { size: sz, head: 1, fill: ink, anchor: 'middle', lh: 1.0, maxw: W - 2 * m }) + C.T(W / 2, ty + sz + 9 * s, ['Sam is turning 30'], { size: 5.6 * s, fill: P.accent, anchor: 'middle', weight: 700 }) + C.T(W / 2, H - m - 9 * s, ['Friday, May 9 · 7 PM', TX.street], { size: 4.4 * s, fill: ink, anchor: 'middle', lh: 1.45, maxw: W - 2 * m }); }
+    if (vi === 2) return C.bg(P.light) + C.icon('heart', W / 2 - 6 * s, H * 0.12, 12 * s, P.secondary) + C.T(W / 2, H * 0.48, ['Thank', 'You'], { size: Math.min(20 * s, H * 0.2), family: C.F.script, weight: 400, fill: P.primary, anchor: 'middle', lh: 0.95, maxw: W - 2 * m }) + C.T(W / 2, H - m - 4 * s, ['for your support'], { size: 5 * s, fill: P.dark, anchor: 'middle', ls: 0.5 * s });
+    return C.bg(P.dark) + C.E(0, 0, W, H * 0.06, P.accent) + C.logo(W / 2 - 22 * s, m + 10 * s, 44 * s, 14 * s, { color: '#ffffff' }) + C.T(W / 2, H * 0.42, ['YOU ARE INVITED TO OUR'], { size: 3.6 * s, fill: P.accent, anchor: 'middle', ls: 0.6 * s })
+      + C.T(W / 2, H * 0.53, ['Annual Gala'], { size: 13 * s, head: 1, fill: '#ffffff', anchor: 'middle', maxw: W - 2 * m }) + C.T(W / 2, H * 0.68, ['Thursday, October 9, 2026', '6:30 PM · The Grand Hall'], { size: 4.4 * s, fill: '#ffffff', anchor: 'middle', lh: 1.5, maxw: W - 2 * m });
+  })),
+  /* ===== round stickers ===== */
+  D('st-badge', 'Badge Ring', ['sticker'], C => {
+    const { W, H, s, P } = C, cx = W / 2, cy = H / 2, R = W / 2;
+    return C.Ci(cx, cy, R + C.b, P.primary, 'data-name="Background"') + C.Ci(cx, cy, R * 0.62, '#ffffff') + C.Ci(cx, cy, R * 0.86, 'none', `stroke="#ffffff" stroke-width="${r3(0.8 * s)}" stroke-dasharray="${r3(1.6 * s)} ${r3(1.4 * s)}"`)
+      + C.arc(cx, cy, R * 0.7, 'HANDMADE GOODS', { size: 7.5 * s, fill: '#ffffff', ls: 0.8 * s }) + C.arc(cx, cy, R * 0.76, TX.city.split(',')[0].toUpperCase(), { size: 7.5 * s, fill: P.accent, ls: 1.2 * s, bottom: 1 })
+      + C.logo(cx - R * 0.45, cy - R * 0.2, R * 0.9, R * 0.4, { color: P.primary });
+  }),
+  D('st-thanks', 'Thank You', ['sticker'], C => {
+    const { W, s, P } = C, cx = W / 2, R = W / 2;
+    return C.Ci(cx, cx, R + C.b, P.light, 'data-name="Background"') + C.Ci(cx, cx, R * 0.9, 'none', `stroke="${P.primary}" stroke-width="${r3(1.2 * s)}"`)
+      + C.T(cx, cx - 2 * s, ['Thank', 'you!'], { size: 24 * s, family: C.F.script, weight: 400, fill: P.primary, anchor: 'middle', lh: 0.95, maxw: R * 1.4 }) + C.T(cx, cx + 36 * s, ['FOR YOUR ORDER'], { size: 6 * s, weight: 800, fill: P.dark, anchor: 'middle', ls: 0.8 * s }) + C.icon('heart', cx - 4 * s, cx - 38 * s, 8 * s, P.secondary);
+  }),
+  D('st-burst', 'Starburst', ['sticker'], C => {
+    const { W, s, P } = C, cx = W / 2, R = W / 2;
+    return C.Ci(cx, cx, R + C.b, P.dark, 'data-name="Background"') + C.star(cx, cx, R * 0.9, R * 0.76, 22, P.accent) + C.T(cx, cx + 2 * s, ['NEW'], { size: 30 * s, head: 1, fill: C.on(P.accent), anchor: 'middle', maxw: R * 1.2 }) + C.T(cx, cx + 18 * s, ['FLAVOR'], { size: 8 * s, weight: 800, fill: C.on(P.accent), anchor: 'middle', ls: 1 * s });
+  }),
+  /* ===== product labels ===== */
+  ...[['lb-product', 'Product'], ['lb-jar', 'Jar Label'], ['lb-ship', 'Return Address']].map(([id, name], vi) => D(id, name, ['label'], C => {
+    const { W, H, s, P } = C, m = 6 * s;
+    if (vi === 0) return C.bg(P.light) + C.E(0, 0, W * 0.34, H, P.primary) + C.logo(W * 0.17 - 22 * s, H / 2 - 9 * s, 44 * s, 18 * s, { color: C.on(P.primary) }) + C.T(W * 0.34 + m, H * 0.38, ['Product Name'], { size: 11 * s, head: 1, fill: P.dark, maxw: W * 0.62 - m }) + C.T(W * 0.34 + m, H * 0.38 + 10 * s, ['Lavender & Honey'], { size: 6 * s, fill: P.primary, weight: 700, maxw: W * 0.6 }) + C.T(W * 0.34 + m, H - m - 4 * s, ['NET WT 8 OZ (227 g)'], { size: 4.2 * s, fill: P.dark, ls: 0.4 * s });
+    if (vi === 1) return C.bg('#ffffff') + C.RR(m, m, W - 2 * m, H - 2 * m, 4 * s, 'none', `stroke="${P.primary}" stroke-width="${r3(0.8 * s)}"`) + C.T(W / 2, H * 0.42, ['Wildflower Honey'], { size: 12 * s, family: C.F.script, weight: 400, fill: P.primary, anchor: 'middle', maxw: W - 4 * m }) + C.T(W / 2, H * 0.62, ['RAW · LOCAL · PURE'], { size: 5 * s, weight: 800, fill: P.dark, anchor: 'middle', ls: 0.8 * s }) + C.T(W / 2, H - m - 4 * s, [TX.company], { size: 4 * s, fill: P.dark, anchor: 'middle', opacity: 0.8 });
+    return C.bg('#ffffff') + C.logo(m + 2 * s, H / 2 - 12 * s, 36 * s, 24 * s, { color: P.primary }) + C.L(m + 44 * s, m + 4 * s, m + 44 * s, H - m - 4 * s, P.accent, 0.6 * s) + C.T(m + 50 * s, H * 0.36, [TX.name, TX.street, TX.city], { size: 6 * s, fill: P.dark, lh: 1.4, maxw: W - m - 56 * s });
+  })),
+  /* ===== door hangers (front / back) ===== */
+  ...[['dh-promo', 'Promo'], ['dh-missed', 'Sorry We Missed You']].map(([id, name], vi) => D(id, name, ['hanger'], C => {
+    const { W, H, s, P } = C, m = 8 * s, ink = C.on(P.primary), top = H * 0.24;
+    if (C.pg) return C.bg('#ffffff') + C.E(0, top, W, 28 * s, P.primary) + C.T(W / 2, top + 18 * s, ['Our Services'], { size: 9 * s, head: 1, fill: ink, anchor: 'middle', maxw: W - 2 * m })
+      + ['Lawn care', 'Landscaping', 'Snow removal', 'Gutter cleaning', 'Power washing'].map((t, i) => C.icon('check', m, top + 46 * s + i * 14 * s - 6 * s, 7.5 * s, P.accent) + C.T(m + 11 * s, top + 46 * s + i * 14 * s, [t], { size: 6 * s, weight: 700, fill: P.dark, maxw: W - 2 * m - 11 * s })).join('')
+      + C.rows(m, H - 34 * s, [['phone', TX.phone], ['web', TX.web]], { size: 5.4 * s, gap: 10 * s, maxw: W - 2 * m });
+    if (vi === 0) return C.bg(P.primary) + C.photo(m, top, W - 2 * m, H * 0.26, { r: 4 * s }) + C.T(W / 2, top + H * 0.26 + 22 * s, ['SPRING', 'SPECIAL'], { size: 16 * s, head: 1, fill: ink, anchor: 'middle', lh: 1.0, maxw: W - 2 * m })
+      + C.star(W / 2, H * 0.8, 26 * s, 22 * s, 18, P.accent) + C.T(W / 2, H * 0.8 + 4 * s, ['$25 OFF'], { size: 9 * s, head: 1, fill: C.on(P.accent), anchor: 'middle', maxw: 40 * s }) + C.logo(W / 2 - 24 * s, H - m - 16 * s, 48 * s, 16 * s, { color: ink });
+    return C.bg(P.light) + C.T(W / 2, top + 22 * s, ['Sorry', 'we missed you!'], { size: 12 * s, family: C.F.script, weight: 400, fill: P.primary, anchor: 'middle', lh: 1.0, maxw: W - 2 * m }) + C.T(W / 2, top + 54 * s, ['We stopped by today to:'], { size: 5 * s, fill: P.dark, anchor: 'middle' })
+      + ['Deliver a package', 'Complete a service', 'Leave an estimate'].map((t, i) => C.R(m + 4 * s, top + 66 * s + i * 14 * s - 5 * s, 6 * s, 6 * s, 'none', `stroke="${P.dark}" stroke-width="${r3(0.5 * s)}"`) + C.T(m + 14 * s, top + 66 * s + i * 14 * s, [t], { size: 5.4 * s, fill: P.dark, maxw: W - 2 * m - 14 * s })).join('')
+      + C.T(W / 2, H - 40 * s, ['Please call us at'], { size: 4.6 * s, fill: P.dark, anchor: 'middle' }) + C.T(W / 2, H - 28 * s, [TX.phone], { size: 9 * s, head: 1, fill: P.primary, anchor: 'middle', maxw: W - 2 * m }) + C.logo(W / 2 - 22 * s, H - m - 12 * s, 44 * s, 12 * s, { color: P.dark });
+  })),
+  /* ===== tickets ===== */
+  ...[['tk-event', 'Event Ticket'], ['tk-admit', 'Admit One']].map(([id, name], vi) => D(id, name, ['ticket'], C => {
+    const { W, H, s, P } = C, m = 6 * s, stub = W * 0.74, ink = C.on(P.primary);
+    const perf = C.L(stub, -C.b, stub, H + C.b, vi ? P.dark : '#ffffff', 0.6 * s, `stroke-dasharray="${r3(1.5 * s)} ${r3(1.5 * s)}" data-name="Perforation (fold/tear line)"`);
+    if (vi === 0) return C.bg(P.primary) + C.E(stub, 0, W - stub, H, P.dark) + perf + C.T(m, H * 0.34, ['SUMMER FEST 2026'], { size: 12 * s, head: 1, fill: ink, maxw: stub - 2 * m }) + C.T(m, H * 0.34 + 12 * s, ['SAT · JULY 12 · GATES 4 PM'], { size: 5 * s, weight: 800, fill: P.accent, maxw: stub - 2 * m, ls: 0.4 * s })
+      + C.T(m, H - m - 2 * s, [TX.addr], { size: 3.8 * s, fill: ink, maxw: stub - 2 * m, opacity: 0.85 }) + C.T(stub + (W - stub) / 2, H * 0.4, ['ADMIT', 'ONE'], { size: 7 * s, head: 1, fill: '#ffffff', anchor: 'middle', lh: 1.0 }) + C.T(stub + (W - stub) / 2, H - m - 2 * s, ['No. 000123'], { size: 3.8 * s, fill: P.accent, anchor: 'middle' });
+    return C.bg(P.light) + C.E(0, 0, W, 5 * s, P.primary) + C.E(0, H - 5 * s, W, 5 * s, P.primary) + perf + C.T(stub / 2, H * 0.48, ['ADMIT ONE'], { size: 16 * s, family: C.F.display, weight: 400, fill: P.primary, anchor: 'middle', maxw: stub - 2 * m }) + C.T(stub / 2, H * 0.48 + 11 * s, ['General Admission · Row __ Seat __'], { size: 4.2 * s, fill: P.dark, anchor: 'middle', maxw: stub - 2 * m }) + C.T(stub + (W - stub) / 2, H / 2 + 2 * s, ['No. 000123'], { size: 4.2 * s, fill: P.dark, anchor: 'middle', weight: 700 });
+  })),
+  /* ===== name badges ===== */
+  ...[['bd-hello', 'Hello, my name is'], ['bd-event', 'Event Badge']].map(([id, name], vi) => D(id, name, ['badge'], C => {
+    const { W, H, s, P } = C, m = 6 * s;
+    if (vi === 0) return C.bg('#ffffff') + C.E(0, 0, W, H * 0.34, P.secondary) + C.T(W / 2, H * 0.17, ['HELLO'], { size: 13 * s, head: 1, fill: '#ffffff', anchor: 'middle' }) + C.T(W / 2, H * 0.29, ['my name is'], { size: 5 * s, fill: '#ffffff', anchor: 'middle' }) + C.E(0, H - 7 * s, W, 7 * s, P.secondary) + C.T(W / 2, H * 0.68, ['Your Name'], { size: 14 * s, family: C.F.script, weight: 400, fill: P.dark, anchor: 'middle', maxw: W - 2 * m });
+    return C.bg('#ffffff') + C.E(0, 0, W, H * 0.24, P.primary) + C.logo(m, H * 0.05, 34 * s, H * 0.14, { color: C.on(P.primary), align: 'left' }) + C.T(W - m, H * 0.15, ['CONFERENCE 2026'], { size: 4.4 * s, weight: 800, fill: C.on(P.primary), anchor: 'end', ls: 0.4 * s })
+      + C.photo(m, H * 0.32, H * 0.42, H * 0.42, { shape: 'circle' }) + C.T(m + H * 0.42 + 6 * s, H * 0.5, [TX.name], { size: 9 * s, head: 1, fill: P.dark, maxw: W - H * 0.42 - 3 * m }) + C.T(m + H * 0.42 + 6 * s, H * 0.5 + 8 * s, [TX.title], { size: 4.6 * s, fill: P.primary, weight: 700, maxw: W - H * 0.42 - 3 * m })
+      + C.E(0, H - 12 * s, W, 12 * s, P.accent) + C.T(W / 2, H - 4 * s, ['SPEAKER'], { size: 5.4 * s, weight: 800, fill: C.on(P.accent), anchor: 'middle', ls: 1 * s });
+  })),
+  /* ===== window clings ===== */
+  ...[['cl-hours', 'Store Hours'], ['cl-open', 'Welcome / Open'], ['cl-hiring', 'Now Hiring']].map(([id, name], vi) => D(id, name, ['cling'], C => {
+    const { W, H, s, P } = C, m = 8 * s, ink = C.on(P.primary);
+    if (vi === 0) {
+      const days = [['Monday – Friday', '9 AM – 6 PM'], ['Saturday', '10 AM – 4 PM'], ['Sunday', 'Closed']];
+      let out = C.bg('#ffffff') + C.logo(W / 2 - 30 * s, m + 2 * s, 60 * s, 20 * s, { color: P.primary }) + C.T(W / 2, m + 32 * s, ['STORE HOURS'], { size: 9 * s, head: 1, fill: P.dark, anchor: 'middle', ls: 0.6 * s, maxw: W - 2 * m }) + C.L(W * 0.3, m + 36 * s, W * 0.7, m + 36 * s, P.accent, 0.8 * s);
+      const avail = W - 2 * m - 12 * s;
+      days.forEach(([d, h], i) => { const y = m + 48 * s + i * Math.min(14 * s, (H - m - 14 * s - (m + 48 * s)) / 3); out += C.T(m + 6 * s, y, [d], { size: 6 * s, weight: 700, fill: P.dark, maxw: avail * 0.55 }) + C.T(W - m - 6 * s, y, [h], { size: 6 * s, fill: P.primary, anchor: 'end', weight: 700, maxw: avail * 0.4 }); });
+      return out + C.T(W / 2, H - m - 4 * s, [`${TX.phone}  ·  ${TX.web}`], { size: 4.6 * s, fill: P.dark, anchor: 'middle', maxw: W - 2 * m });
+    }
+    if (vi === 1) return C.bg(P.primary) + C.T(W / 2, H * 0.26, ['WELCOME'], { size: 16 * s, head: 1, fill: P.accent, anchor: 'middle', maxw: W - 2 * m }) + C.T(W / 2, H * 0.47, ['WE’RE', 'OPEN'], { size: 22 * s, family: C.F.display, weight: 400, fill: ink, anchor: 'middle', lh: 0.95, maxw: W - 2 * m }) + C.logo(W / 2 - 28 * s, H - m - 20 * s, 56 * s, 18 * s, { color: ink });
+    return C.bg(P.accent) + C.T(W / 2, H * 0.3, ['WE’RE'], { size: 12 * s, head: 1, fill: P.dark, anchor: 'middle' }) + C.T(W / 2, H * 0.47, ['NOW', 'HIRING'], { size: 22 * s, family: C.F.display, weight: 400, fill: P.dark, anchor: 'middle', lh: 0.95, maxw: W - 2 * m }) + C.T(W / 2, H * 0.47 + 34 * s, ['Apply inside or online'], { size: 6 * s, fill: P.dark, anchor: 'middle', weight: 700, maxw: W - 2 * m }) + C.T(W / 2, H - m - 2 * s, [TX.web], { size: 5 * s, fill: P.dark, anchor: 'middle' });
+  })),
+  /* ===== yard signs ===== */
+  ...[['yd-big', 'Big Message'], ['yd-contact', 'Logo & Phone'], ['yd-soon', 'Coming Soon']].map(([id, name], vi) => D(id, name, ['yard'], C => {
+    const { W, H, s, P } = C, m = 7 * s, ink = C.on(P.primary);
+    if (vi === 0) return C.bg(P.primary) + C.T(W / 2, H * 0.42, ['FOR SALE'], { size: 30 * s, family: C.F.display, weight: 400, fill: ink, anchor: 'middle', maxw: W - 2 * m }) + C.E(0, H * 0.58, W, H * 0.22, '#ffffff') + C.T(W / 2, H * 0.58 + H * 0.15, [TX.phone], { size: 16 * s, head: 1, fill: P.primary, anchor: 'middle', maxw: W - 2 * m }) + C.T(W / 2, H - m, [TX.web], { size: 6 * s, fill: ink, anchor: 'middle', weight: 700 });
+    if (vi === 1) return C.bg('#ffffff') + C.E(0, 0, W, 6 * s, P.primary) + C.E(0, H - 6 * s, W, 6 * s, P.primary) + C.logo(W / 2 - 45 * s, H * 0.14, 90 * s, 32 * s, { color: P.primary }) + C.T(W / 2, H * 0.62, ['Another happy customer!'], { size: 9 * s, head: 1, fill: P.dark, anchor: 'middle', maxw: W - 2 * m }) + C.T(W / 2, H * 0.8, [TX.phone], { size: 12 * s, head: 1, fill: P.primary, anchor: 'middle', maxw: W - 2 * m });
+    return C.bg(P.dark) + C.T(W / 2, H * 0.4, ['COMING', 'SOON'], { size: 24 * s, family: C.F.display, weight: 400, fill: P.accent, anchor: 'middle', lh: 0.95, maxw: W - 2 * m }) + C.icon('arrow', W / 2 - 14 * s, H * 0.62, 28 * s, '#ffffff') + C.T(W / 2, H - m - 4 * s, [TX.company + ' · ' + TX.web], { size: 6 * s, fill: '#ffffff', anchor: 'middle', maxw: W - 2 * m });
+  })),
+  /* ===== vinyl banners ===== */
+  ...[['vb-opening', 'Grand Opening'], ['vb-services', 'Logo & Services'], ['vb-event', 'Celebration']].map(([id, name], vi) => D(id, name, ['vbanner'], C => {
+    const { W, H, s, P } = C, m = 6 * s, ink = C.on(P.primary), gm = Math.min(W, H) * 0.04;
+    const grommets = [[gm, gm], [W - gm, gm], [gm, H - gm], [W - gm, H - gm], [W / 2, gm], [W / 2, H - gm]].map(([x, y]) => C.Ci(x, y, gm * 0.35, 'none', `stroke="#9aa0a6" stroke-width="${r3(gm * 0.08)}" data-name="Grommet position"`)).join('');
+    if (vi === 0) return C.bg(P.primary) + C.T(W / 2, H * 0.56, ['GRAND OPENING'], { size: 50 * s, family: C.F.display, weight: 400, fill: ink, anchor: 'middle', maxw: W * 0.86, maxh: H * 0.5 }) + C.T(W / 2, H * 0.82, ['THIS SATURDAY · FOOD · MUSIC · PRIZES'], { size: 12 * s, weight: 800, fill: P.accent, anchor: 'middle', maxw: W * 0.8, ls: 1 * s }) + grommets;
+    if (vi === 1) return C.bg('#ffffff') + C.E(0, 0, W * 0.3, H, P.primary) + C.logo(W * 0.15 - W * 0.11, H / 2 - H * 0.2, W * 0.22, H * 0.4, { color: ink }) + C.T(W * 0.34, H * 0.4, ['Landscaping · Lawn Care · Snow Removal'], { size: 18 * s, head: 1, fill: P.dark, maxw: W * 0.62 }) + C.T(W * 0.34, H * 0.7, [TX.phone], { size: 30 * s, head: 1, fill: P.primary, maxw: W * 0.62 }) + grommets;
+    let out = C.bg(P.dark); for (let i = 0; i < 40; i++) out += C.Ci((i * 37 % 100) / 100 * W, (i * 61 % 100) / 100 * H, (2 + i % 4) * s, [P.accent, P.secondary, P.primary][i % 3], 'opacity=".8"');
+    return out + C.T(W / 2, H * 0.55, ['CONGRATULATIONS CLASS OF 2026'], { size: 40 * s, head: 1, fill: '#ffffff', anchor: 'middle', maxw: W * 0.86, maxh: H * 0.4 }) + grommets;
+  })),
+  /* ===== t-shirts (transparent background) ===== */
+  ...[['ts-vintage', 'Vintage Badge'], ['ts-stack', 'Stacked Type'], ['ts-chest', 'Chest Logo']].map(([id, name], vi) => D(id, name, ['tshirt'], C => {
+    const { W, H, s, P } = C, cx = W / 2;
+    if (C.pg) return C.T(cx, H * 0.2, ['EST. 2026'], { size: 10 * s, weight: 800, fill: P.dark, anchor: 'middle', ls: 2 * s }) + C.T(cx, H * 0.4, ['TEAM', 'CREW'], { size: 30 * s, family: C.F.display, weight: 400, fill: P.primary, anchor: 'middle', lh: 0.95 }) + C.T(cx, H * 0.4 + 44 * s, [TX.web], { size: 6 * s, fill: P.dark, anchor: 'middle' });
+    if (vi === 0) { const cy = H * 0.42, R = W * 0.36; return C.Ci(cx, cy, R, 'none', `stroke="${P.dark}" stroke-width="${r3(1.6 * s)}"`) + C.Ci(cx, cy, R * 0.66, P.primary) + C.arc(cx, cy, R * 0.75, 'MOUNTAIN SUPPLY', { size: 6.5 * s, fill: P.dark, ls: 0.8 * s }) + C.arc(cx, cy, R * 0.86, 'EST 2026', { size: 7 * s, fill: P.dark, ls: 2 * s, bottom: 1 }) + C.mark(cx, cy, R * 0.42, 'peak', '#ffffff', P.accent) + C.T(cx, H * 0.86, ['ADVENTURE AWAITS'], { size: 9 * s, head: 1, fill: P.dark, anchor: 'middle', maxw: W * 0.8 }); }
+    if (vi === 1) return ['GOOD', 'VIBES', 'ONLY'].map((w, i) => C.T(cx, H * 0.28 + i * 26 * s, [w], { size: 30 * s, family: C.F.display, weight: 400, fill: [P.primary, P.secondary, P.accent][i], anchor: 'middle', maxw: W * 0.9 })).join('') + C.T(cx, H * 0.86, ['· SINCE 2026 ·'], { size: 6 * s, weight: 800, fill: P.dark, anchor: 'middle', ls: 1.2 * s });
+    return C.logo(cx - W * 0.13, H * 0.14, W * 0.26, H * 0.1, { color: P.dark }) + C.T(cx, H * 0.3, [TX.company], { size: 7 * s, weight: 800, fill: P.dark, anchor: 'middle', ls: 1 * s }) + C.R(W * 0.1, H * 0.6, W * 0.8, H * 0.3, 'none', `stroke="#9aa0a6" stroke-width="${r3(0.3 * s)}" stroke-dasharray="${r3(2 * s)} ${r3(2 * s)}" data-name="Guide: chest logo sits at the top · delete me"`);
+  })),
+];
+const BRAND_TEMPLATES = [
+  /* ===== logos ===== */
+  D('lg-wordmark', 'Wordmark', ['logo'], C => {
+    const { W, H, s, P } = C;
+    return C.T(W / 2, H / 2 + 6 * s, ['brandname'], { size: 24 * s, head: 1, fill: P.dark, anchor: 'middle', ls: -0.5 * s, maxw: W * 0.85 }) + C.Ci(W / 2 + W * 0.33, H / 2 + 6 * s, 2.6 * s, P.accent) + C.T(W / 2, H / 2 + 20 * s, ['TAGLINE HERE'], { size: 4.2 * s, fill: P.primary, anchor: 'middle', ls: 1.4 * s });
+  }),
+  D('lg-stacked', 'Stacked', ['logo'], C => {
+    const { W, H, s, P } = C;
+    return C.mark(W / 2, H * 0.36, 16 * s, 'rings') + C.T(W / 2, H * 0.68, ['BRAND NAME'], { size: 11 * s, head: 1, fill: P.dark, anchor: 'middle', ls: 0.8 * s, maxw: W * 0.85 }) + C.T(W / 2, H * 0.68 + 9 * s, ['TAGLINE HERE'], { size: 3.6 * s, fill: P.primary, anchor: 'middle', ls: 1.6 * s });
+  }),
+  D('lg-horizontal', 'Horizontal Lockup', ['logo'], C => {
+    const { W, H, s, P } = C, r = 14 * s, x0 = Math.max(W * 0.08, W / 2 - 62 * s), tx = x0 + 2 * r + 12 * s;
+    return C.mark(x0 + r, H / 2, r, 'peak') + C.L(x0 + 2 * r + 6 * s, H / 2 - 12 * s, x0 + 2 * r + 6 * s, H / 2 + 12 * s, P.accent, 0.8 * s) + C.T(tx, H / 2 + 2 * s, ['Brand Name'], { size: 11 * s, head: 1, fill: P.dark, maxw: W - x0 - tx }) + C.T(tx, H / 2 + 10 * s, ['TAGLINE HERE'], { size: 3.4 * s, fill: P.primary, ls: 1.2 * s, maxw: W - x0 - tx });
+  }),
+  D('lg-emblem', 'Emblem', ['logo'], C => {
+    const { W, H, s, P } = C, cx = W / 2, cy = H / 2, R = Math.min(W, H) * 0.4;
+    return C.Ci(cx, cy, R, P.primary) + C.Ci(cx, cy, R * 0.92, 'none', `stroke="#ffffff" stroke-width="${r3(0.5 * s)}"`) + C.Ci(cx, cy, R * 0.62, '#ffffff')
+      + C.arc(cx, cy, R * 0.7, 'BRAND NAME COMPANY', { size: R * 0.13, fill: '#ffffff', ls: R * 0.02 }) + C.arc(cx, cy, R * 0.8, '★ EST 2026 ★', { size: R * 0.1, fill: P.accent, ls: R * 0.02, bottom: 1 })
+      + C.mark(cx, cy, R * 0.36, 'leaf', P.primary, P.accent);
+  }),
+  D('lg-monogram', 'Monogram', ['logo'], C => {
+    const { W, H, s, P } = C, cx = W / 2, cy = H / 2 - 5 * s, R = Math.min(W, H) * 0.24;
+    let d = ''; for (let i = 0; i < 6; i++) { const a = Math.PI / 6 + i * Math.PI / 3; d += (i ? 'L' : 'M') + r3(cx + Math.cos(a) * R) + ' ' + r3(cy + Math.sin(a) * R); }
+    return C.Pa(d + 'Z', 'none', `stroke="${P.primary}" stroke-width="${r3(1.4 * s)}"`) + C.T(cx, cy + R * 0.32, ['BN'], { size: R * 0.9, family: C.F.serif, weight: 700, fill: P.dark, anchor: 'middle', ls: -R * 0.03 }) + C.T(cx, cy + R + 14 * s, ['BRAND NAME'], { size: 5 * s, fill: P.dark, anchor: 'middle', ls: 2 * s, weight: 700 });
+  }),
+  D('lg-shield', 'Badge / Shield', ['logo'], C => {
+    const { W, H, s, P } = C, cx = W / 2, top = H * 0.16, w = Math.min(W, H) * 0.5, h = w * 1.15;
+    const d = `M${r3(cx - w / 2)} ${r3(top)}H${r3(cx + w / 2)}V${r3(top + h * 0.55)}C${r3(cx + w / 2)} ${r3(top + h * 0.85)} ${r3(cx)} ${r3(top + h)} ${r3(cx)} ${r3(top + h)}C${r3(cx)} ${r3(top + h)} ${r3(cx - w / 2)} ${r3(top + h * 0.85)} ${r3(cx - w / 2)} ${r3(top + h * 0.55)}Z`;
+    return C.Pa(d, P.dark) + C.E(cx - w / 2 - 6 * s, top + h * 0.34, w + 12 * s, 10 * s, P.accent) + C.T(cx, top + h * 0.34 + 7.2 * s, ['BRAND NAME'], { size: 5.8 * s, weight: 800, fill: C.on(P.accent), anchor: 'middle', ls: 0.8 * s, maxw: w + 8 * s }) + C.mark(cx, top + h * 0.17, w * 0.13, 'spark', '#ffffff', P.accent) + C.T(cx, top + h * 0.72, ['2026'], { size: 7 * s, head: 1, fill: '#ffffff', anchor: 'middle' });
+  }),
+  D('lg-script', 'Script & Swoosh', ['logo'], C => {
+    const { W, H, s, P } = C;
+    return C.T(W / 2, H / 2 + 4 * s, ['Brand Name'], { size: 22 * s, family: C.F.script, weight: 400, fill: P.primary, anchor: 'middle', maxw: W * 0.85 }) + C.Pa(`M${r3(W * 0.22)} ${r3(H / 2 + 12 * s)}Q${r3(W / 2)} ${r3(H / 2 + 22 * s)} ${r3(W * 0.8)} ${r3(H / 2 + 9 * s)}`, 'none', `stroke="${P.accent}" stroke-width="${r3(1.4 * s)}" stroke-linecap="round"`) + C.T(W / 2, H / 2 + 26 * s, ['BAKERY · CAFE'], { size: 4 * s, fill: P.dark, anchor: 'middle', ls: 2 * s, weight: 700 });
+  }),
+  D('lg-lines', 'Minimal Lines', ['logo'], C => {
+    const { W, H, s, P } = C;
+    return C.L(W * 0.2, H / 2 - 12 * s, W * 0.8, H / 2 - 12 * s, P.dark, 0.5 * s) + C.T(W / 2, H / 2 + 4 * s, ['BRAND NAME'], { size: 12 * s, family: C.F.serif, fill: P.dark, anchor: 'middle', ls: 2.4 * s, maxw: W * 0.62 }) + C.L(W * 0.2, H / 2 + 10 * s, W * 0.8, H / 2 + 10 * s, P.dark, 0.5 * s) + C.T(W / 2, H / 2 + 18 * s, ['STUDIO'], { size: 3.6 * s, fill: P.primary, anchor: 'middle', ls: 2.4 * s });
+  }),
+  /* ===== brand style sheet ===== */
+  ...[['bs-light', 'Light'], ['bs-dark', 'Dark']].map(([id, name], vi) => D(id, name, ['brandsheet'], C => {
+    const { W, H, s, P } = C, m = 8 * s, bg = vi ? P.dark : '#ffffff', ink = vi ? '#ffffff' : P.dark;
+    const cols = [['Primary', P.primary], ['Secondary', P.secondary], ['Accent', P.accent], ['Dark', P.dark], ['Light', P.light]];
+    let out = C.bg(bg) + C.T(m, m + 8 * s, ['BRAND GUIDELINES'], { size: 6 * s, head: 1, fill: ink, ls: 0.8 * s }) + C.T(W - m, m + 8 * s, [TX.company], { size: 3.6 * s, fill: ink, anchor: 'end', opacity: 0.7 });
+    const bh = H * 0.3;
+    out += C.RR(m, m + 16 * s, W * 0.44, bh, 2 * s, vi ? '#ffffff' : P.light) + C.logo(m + W * 0.08, m + 16 * s + bh * 0.22, W * 0.28, bh * 0.56, { color: P.dark }) + C.T(m, m + 16 * s + bh + 5 * s, ['Primary logo · keep clear space around it'], { size: 2.6 * s, fill: ink, opacity: 0.7 });
+    out += C.RR(m + W * 0.46, m + 16 * s, W * 0.19, bh * 0.47, 2 * s, P.primary) + C.logo(m + W * 0.48, m + 16 * s + bh * 0.1, W * 0.15, bh * 0.27, { color: '#ffffff' }) + C.RR(m + W * 0.46, m + 16 * s + bh * 0.53, W * 0.19, bh * 0.47, 2 * s, P.dark) + C.logo(m + W * 0.48, m + 16 * s + bh * 0.63, W * 0.15, bh * 0.27, { color: '#ffffff' });
+    const sy = H * 0.66, sw = (W * 0.66 - m - 4 * 3 * s) / 5;
+    out += C.T(m, sy - 3 * s, ['COLORS'], { size: 3.6 * s, weight: 800, fill: ink, ls: 0.6 * s });
+    cols.forEach(([n, c], i) => { const x = m + i * (sw + 4 * s), cm = rgbToCmyk(c).map(v => Math.round(v)); out += C.RR(x, sy, sw, 11 * s, 1.5 * s, c, c === bg ? `stroke="${ink}" stroke-width="${r3(0.2 * s)}"` : '') + C.T(x, sy + 15 * s, [n], { size: 3 * s, weight: 700, fill: ink, maxw: sw }) + C.T(x, sy + 19 * s, [toHex(c).toUpperCase(), 'RGB ' + hexRgb(c).join(' '), 'CMYK ' + cm.join(' ')], { size: 2.2 * s, fill: ink, lh: 1.4, opacity: 0.8, maxw: sw }); });
+    out += C.L(W * 0.68, m + 16 * s, W * 0.68, H - m, ink, 0.15 * s, 'opacity=".3"') + C.T(m + W * 0.7, m + 22 * s, ['TYPOGRAPHY'], { size: 3.6 * s, weight: 800, fill: ink, ls: 0.6 * s }) + C.T(m + W * 0.7, m + 40 * s, ['Aa'], { size: 18 * s, head: 1, fill: P.primary }) + C.T(m + W * 0.7, m + 48 * s, ['Headlines'], { size: 3 * s, fill: ink, weight: 700 })
+      + C.T(m + W * 0.7, m + 66 * s, ['Aa'], { size: 14 * s, fill: ink }) + C.T(m + W * 0.7, m + 72 * s, ['Body text'], { size: 3 * s, fill: ink, weight: 700 });
+    return out;
+  })),
+  /* ===== email signatures ===== */
+  ...[['es-photo', 'With Photo'], ['es-logo', 'With Logo'], ['es-minimal', 'Minimal']].map(([id, name], vi) => D(id, name, ['emailsig'], C => {
+    const { W, H, P } = C, k = H / 200, m = 16 * k;
+    const icons = (x, y) => ['f', 'in', 'ig', 'x'].map((t, i) => C.Ci(x + i * 26 * k, y, 10 * k, P.primary) + C.T(x + i * 26 * k, y + 3.6 * k, [t], { size: 10 * k, weight: 700, fill: '#ffffff', anchor: 'middle' })).join('');
+    if (vi === 0) return C.R(0, 0, W, H, '#ffffff', 'data-name="Background"') + C.photo(m, H / 2 - 60 * k, 120 * k, 120 * k, { shape: 'circle' }) + C.R(152 * k, m, 3 * k, H - 2 * m, P.accent) + C.T(170 * k, 50 * k, [TX.name], { size: 24 * k, head: 1, fill: P.dark, maxw: W - 190 * k }) + C.T(170 * k, 72 * k, [`${TX.title} · ${TX.company}`], { size: 13 * k, fill: P.primary, weight: 700, maxw: W - 190 * k }) + C.rows(170 * k, 104 * k, [['phone', TX.phone], ['mail', TX.email]], { size: 12 * k, gap: 20 * k, maxw: W - 190 * k }) + icons(180 * k, 168 * k);
+    if (vi === 1) return C.R(0, 0, W, H, '#ffffff', 'data-name="Background"') + C.logo(m, H / 2 - 30 * k, 150 * k, 60 * k, { color: P.primary }) + C.L(186 * k, m, 186 * k, H - m, '#d0d4da', 1.5 * k) + C.T(204 * k, 52 * k, [TX.name], { size: 22 * k, head: 1, fill: P.dark, maxw: W - 220 * k }) + C.T(204 * k, 74 * k, [TX.title], { size: 13 * k, fill: P.primary, weight: 700 }) + C.rows(204 * k, 106 * k, [['phone', TX.phone], ['mail', TX.email], ['web', TX.web]], { size: 12 * k, gap: 20 * k, maxw: W - 220 * k });
+    return C.R(0, 0, W, H, '#ffffff', 'data-name="Background"') + C.T(m, 54 * k, [TX.name], { size: 24 * k, family: C.F.serif, fill: P.primary }) + C.T(m, 78 * k, [`${TX.title}  |  ${TX.company}`], { size: 13 * k, fill: P.dark }) + C.T(m, 112 * k, [`${TX.phone}  ·  ${TX.email}  ·  ${TX.web}`], { size: 12 * k, fill: P.dark, opacity: 0.85, maxw: W - 2 * m }) + icons(m + 10 * k, 158 * k);
+  })),
+  /* ===== app icon / profile picture ===== */
+  ...[['ai-gradient', 'Gradient Monogram'], ['ai-circle', 'Circle Initials'], ['ai-mark', 'Symbol']].map(([id, name], vi) => D(id, name, ['appicon'], C => {
+    const { W, H, s, P } = C;
+    if (vi === 0) return C.RR(0, 0, W, H, W * 0.22, C.grad2(P.primary, P.secondary), 'data-name="Icon background"') + C.T(W / 2, H / 2 + 14 * s, ['B'], { size: 52 * s, head: 1, fill: '#ffffff', anchor: 'middle' });
+    if (vi === 1) return C.R(0, 0, W, H, P.light, 'data-name="Background"') + C.Ci(W / 2, H / 2, W * 0.42, P.primary) + C.T(W / 2, H / 2 + 11 * s, ['BN'], { size: 32 * s, family: C.F.serif, weight: 700, fill: '#ffffff', anchor: 'middle' });
+    return C.RR(0, 0, W, H, W * 0.22, P.dark, 'data-name="Icon background"') + C.mark(W / 2, H / 2, W * 0.28, 'bolt', P.accent, P.primary);
+  })),
+];
+const AD_TEMPLATES = [
+  ...[['ad-offer', 'Offer + Button'], ['ad-photo', 'Photo + Button'], ['ad-brand', 'Brand Awareness'], ['ad-event', 'Event']].map(([id, name], vi) => D(id, name, ['ad'], C => {
+    const { W, H, P, cls } = C, k = Math.min(W, H) / 100, m = 6 * k, ink = C.on(P.primary);
+    const btn = (x, y, w, h, t, fill) => C.RR(x, y, w, h, h / 2, fill || P.accent) + C.T(x + w / 2, y + h * 0.68, [t], { size: h * 0.42, weight: 800, fill: C.on(fill || P.accent), anchor: 'middle', maxw: w * 0.86 });
+    const head = vi === 0 ? '30% OFF' : vi === 1 ? 'New Season' : vi === 2 ? TX.company : 'Join Us Live', sub = vi === 0 ? 'Limited time only' : vi === 1 ? 'Shop the collection' : vi === 2 ? TX.tag : 'Fri · June 14 · 7 PM', cta = vi === 2 ? 'LEARN MORE' : vi === 3 ? 'RSVP' : 'SHOP NOW';
+    const bg = vi === 1 ? '#ffffff' : vi === 3 ? P.dark : P.primary, tInk = vi === 1 ? P.dark : vi === 3 ? '#ffffff' : ink;
+    let out = C.R(0, 0, W, H, bg, 'data-name="Background"');
+    if (cls === 'strip') { // 728×90, 320×50
+      if (vi === 1) out += C.photo(0, 0, H * 1.6, H);
+      const x0 = vi === 1 ? H * 1.6 + m : m;
+      out += (vi === 2 ? C.logo(m, H * 0.2, H * 1.4, H * 0.6, { color: tInk, align: 'left' }) : '') + C.T(vi === 2 ? H * 1.6 + m : x0, H * 0.48, [head], { size: H * 0.36, head: 1, fill: tInk, maxw: W * 0.42 }) + C.T(vi === 2 ? H * 1.6 + m : x0, H * 0.8, [sub], { size: H * 0.2, fill: tInk, maxw: W * 0.42 });
+      return out + btn(W - m - W * 0.2, H * 0.24, W * 0.2, H * 0.52, cta);
+    }
+    if (cls === 'wide') { // 970×250, 600×200
+      if (vi === 1) out += C.photo(0, 0, W * 0.42, H);
+      const x0 = vi === 1 ? W * 0.42 + 2 * m : 2 * m;
+      out += C.T(x0, H * 0.42, [head], { size: H * 0.24, head: 1, fill: tInk, maxw: W * 0.45 }) + C.T(x0, H * 0.62, [sub], { size: H * 0.1, fill: tInk, maxw: W * 0.45 });
+      if (vi !== 1) out += C.logo(W - 2 * m - W * 0.18, H * 0.12, W * 0.18, H * 0.3, { color: tInk, align: 'right' });
+      return out + btn(W - 2 * m - W * 0.2, H * 0.58, W * 0.2, H * 0.24, cta);
+    }
+    if (cls === 'tall') { // 160×600, 300×600
+      if (vi === 1) out += C.photo(0, 0, W, H * 0.42);
+      out += C.logo(W * 0.2, vi === 1 ? H * 0.44 : H * 0.06, W * 0.6, W * 0.18, { color: tInk });
+      out += C.T(W / 2, H * 0.62, [head], { size: W * 0.17, head: 1, fill: tInk, anchor: 'middle', maxw: W - 2 * m }) + C.T(W / 2, H * 0.62 + W * 0.14, [sub], { size: W * 0.08, fill: tInk, anchor: 'middle', maxw: W - 2 * m });
+      return out + btn(W * 0.12, H * 0.82, W * 0.76, W * 0.2, cta);
+    }
+    // box: 300×250, 336×280
+    if (vi === 1) out += C.photo(0, 0, W, H * 0.46);
+    out += vi === 1 ? '' : C.logo(m, m, W * 0.32, H * 0.14, { color: tInk, align: 'left' });
+    const ty = vi === 1 ? H * 0.62 : H * 0.48;
+    out += C.T(W / 2, ty, [head], { size: H * 0.16, head: 1, fill: tInk, anchor: 'middle', maxw: W - 2 * m }) + C.T(W / 2, ty + H * 0.1, [sub], { size: H * 0.07, fill: tInk, anchor: 'middle', maxw: W - 2 * m });
+    return out + btn(W * 0.25, H * 0.8, W * 0.5, H * 0.13, cta);
+  })),
+];
+const MULTI_TEMPLATES = [
+  /* ===== carousels (5 pages) ===== */
+  ...[['car-tips', 'Tips Carousel'], ['car-steps', 'Step by Step']].map(([id, name], vi) => D(id, name, ['carousel'], C => {
+    const { W, H, u, P, pg, pages } = C, m = 80 * u, ink = C.on(P.primary), last = pg === pages - 1;
+    const bg = vi ? (pg % 2 ? P.light : '#ffffff') : (pg === 0 || last ? P.primary : P.light);
+    let out = C.R(0, 0, W, H, bg, 'data-name="Background"') + C.T(W - m, H - 60 * u, [`${pg + 1} / ${pages}`], { size: 30 * u, fill: pg === 0 || last ? (vi ? P.dark : ink) : P.dark, anchor: 'end', opacity: 0.7 });
+    if (pg === 0) return out + C.T(m, H * 0.4, vi ? ['How to', 'Get Started'] : ['5 Tips to', 'Grow Your', 'Business'], { size: 120 * u, head: 1, fill: vi ? P.dark : ink, lh: 1.0, maxw: W - 2 * m, maxh: H * 0.45 }) + C.T(m, H * 0.75, ['Swipe →'], { size: 44 * u, weight: 700, fill: vi ? P.primary : P.accent }) + C.logo(m, 70 * u, 220 * u, 80 * u, { color: vi ? P.dark : ink, align: 'left' });
+    if (last) return out + C.T(W / 2, H * 0.42, ['Found this useful?'], { size: 70 * u, head: 1, fill: vi ? P.dark : ink, anchor: 'middle', maxw: W - 2 * m }) + C.T(W / 2, H * 0.5, ['Follow for more · Save · Share'], { size: 40 * u, fill: vi ? P.dark : ink, anchor: 'middle', maxw: W - 2 * m }) + C.logo(W / 2 - 150 * u, H * 0.6, 300 * u, 110 * u, { color: vi ? P.dark : ink }) + C.T(W / 2, H * 0.75, [TX.handle], { size: 44 * u, weight: 700, fill: vi ? P.primary : P.accent, anchor: 'middle' });
+    const n = pg, title = vi ? ['Plan it', 'Build it', 'Share it'][(n - 1) % 3] : ['Know your customer', 'Show up every day', 'Tell real stories'][(n - 1) % 3];
+    out += C.Ci(m + 70 * u, H * 0.24, 70 * u, P.accent) + C.T(m + 70 * u, H * 0.24 + 30 * u, [String(n)], { size: 84 * u, head: 1, fill: C.on(P.accent), anchor: 'middle' })
+      + C.T(m, H * 0.42, [title], { size: 84 * u, head: 1, fill: P.dark, maxw: W - 2 * m }) + C.T(m, H * 0.5, ['Explain the idea in one or two short', 'sentences that people can act on today.'], { size: 40 * u, fill: P.dark, lh: 1.4, maxw: W - 2 * m, opacity: 0.85 });
+    if (vi) out += C.photo(m, H * 0.62, W - 2 * m, H * 0.26, { r: 24 * u });
+    return out;
+  })),
+  /* ===== presentations (6 slides) ===== */
+  ...[['sl-bold', 'Bold'], ['sl-clean', 'Clean'], ['sl-dark', 'Dark']].map(([id, name], vi) => D(id, name, ['slides'], C => {
+    const { W, H, P, pg } = C, k = H / 1080, m = 110 * k;
+    const bg = vi === 0 ? (pg === 0 || pg === 5 ? P.primary : '#ffffff') : vi === 1 ? '#ffffff' : P.dark, ink = vi === 2 ? '#ffffff' : (vi === 0 && (pg === 0 || pg === 5) ? C.on(P.primary) : P.dark), acc = vi === 2 ? P.accent : P.primary;
+    let out = C.R(0, 0, W, H, bg, 'data-name="Background"');
+    if (vi === 1) out += C.R(0, 0, W, 14 * k, P.primary);
+    if (pg > 0 && pg < 5) out += C.T(W - m, H - 50 * k, [String(pg + 1)], { size: 28 * k, fill: ink, anchor: 'end', opacity: 0.6 }) + C.logo(m, H - 90 * k, 160 * k, 56 * k, { color: ink, align: 'left' });
+    switch (pg) {
+      case 0: return out + C.T(m, H * 0.46, ['Presentation Title'], { size: 120 * k, head: 1, fill: ink, maxw: W - 2 * m }) + C.T(m, H * 0.46 + 80 * k, ['Subtitle or presenter name · Date'], { size: 44 * k, fill: ink, opacity: 0.85, maxw: W - 2 * m }) + C.R(m, H * 0.46 - 170 * k, 140 * k, 12 * k, vi === 0 ? P.accent : acc) + C.logo(W - m - 240 * k, 80 * k, 240 * k, 90 * k, { color: ink, align: 'right' });
+      case 1: return out + C.T(m, H * 0.4, ['01'], { size: 180 * k, head: 1, fill: acc, opacity: 0.9 }) + C.T(m, H * 0.4 + 110 * k, ['Section Title'], { size: 96 * k, head: 1, fill: ink, maxw: W - 2 * m });
+      case 2: return out + C.T(m, 200 * k, ['Three Key Points'], { size: 76 * k, head: 1, fill: ink, maxw: W - 2 * m }) + ['First point, short and clear', 'Second point with one supporting fact', 'Third point that leads to the next step'].map((t, i) => C.Ci(m + 14 * k, 340 * k + i * 120 * k - 14 * k, 14 * k, acc) + C.T(m + 50 * k, 340 * k + i * 120 * k, [t], { size: 48 * k, fill: ink, maxw: W - 2 * m - 50 * k })).join('');
+      case 3: return out + C.photo(W * 0.5, 0, W * 0.5, H) + C.T(m, H * 0.38, ['Image Slide'], { size: 76 * k, head: 1, fill: ink, maxw: W * 0.4 - m }) + C.T(m, H * 0.38 + 70 * k, ['Use a strong photo and one', 'short sentence that explains it.'], { size: 38 * k, fill: ink, lh: 1.4, maxw: W * 0.42 - m, opacity: 0.85 });
+      case 4: return out + C.T(W / 2, H * 0.52, ['87%'], { size: 300 * k, head: 1, fill: acc, anchor: 'middle' }) + C.T(W / 2, H * 0.52 + 90 * k, ['of customers say this one number matters'], { size: 44 * k, fill: ink, anchor: 'middle', maxw: W - 2 * m });
+      default: return out + C.T(W / 2, H * 0.44, ['Thank You'], { size: 130 * k, head: 1, fill: ink, anchor: 'middle', maxw: W - 2 * m }) + C.T(W / 2, H * 0.44 + 90 * k, [`${TX.email}  ·  ${TX.web}`], { size: 40 * k, fill: ink, anchor: 'middle', maxw: W - 2 * m, opacity: 0.9 }) + C.logo(W / 2 - 150 * k, H * 0.7, 300 * k, 110 * k, { color: ink });
+    }
+  })),
+];
+const ALL_TEMPLATES = [...TEMPLATES.map(t => ({ ...t, kinds: t.kinds || ['social'] })), ...PRINT_TEMPLATES, ...BRAND_TEMPLATES, ...AD_TEMPLATES, ...MULTI_TEMPLATES];
+const tplsFor = kind => ALL_TEMPLATES.filter(t => t.kinds.includes(kind));
 function fitTemplateTexts(root) {
   for (const t of root.querySelectorAll('text[data-fit], text[data-fith]')) {
     const maxw = +t.getAttribute('data-fit') || Infinity, maxh = +t.getAttribute('data-fith') || Infinity;
@@ -6096,8 +6744,8 @@ function fitTemplateTexts(root) {
     t.removeAttribute('data-fit'); t.removeAttribute('data-fith');
   }
 }
-async function tplRender(tpl, fmt, useKit) {
-  const B = tplBuild(tpl, fmt, useKit);
+async function tplRender(tpl, fmt, useKit, page = 0) {
+  const B = tpl.mine ? mineBuild(tpl) : tplBuild(tpl, fmt, useKit, page);
   const host = mk('svg', { width: 10, height: 10 });
   host.style.cssText = 'position:absolute;left:-10000px;top:0;visibility:hidden';
   document.body.appendChild(host);
@@ -6109,77 +6757,163 @@ async function tplRender(tpl, fmt, useKit) {
 }
 const tplThumbCache = new Map();
 async function tplThumb(tpl, fmt, useKit) {
-  const key = [tpl.id, fmt.id, useKit ? JSON.stringify(KIT).length : 0].join('|');
+  if (tpl.mine) return tpl.thumb;
+  const key = [tpl.id, fmt.id, fmt.w, fmt.h, useKit ? JSON.stringify(KIT).length : 0].join('|');
   if (tplThumbCache.has(key)) return tplThumbCache.get(key);
-  const R = await tplRender(tpl, fmt, useKit);
+  const R = await tplRender(tpl, fmt, useKit, 0);
   const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="${NS}" xmlns:xlink="${XLINK}" width="${R.W}" height="${R.H}" viewBox="0 0 ${R.W} ${R.H}"><defs>${R.d.innerHTML}</defs>${R.g.innerHTML}</svg>`);
   R.host.remove(); tplThumbCache.set(key, url); return url;
 }
-const TPLS = { fmt: TPL_FORMATS[0].id, tpl: TEMPLATES[0].id, tok: 0 };
-function openTemplates() {
+/* ---------- My Templates (saved in this browser / app) ---------- */
+const MINE_DB = 'vectorstudio-templates';
+function mineStore(mode) {
+  return new Promise((ok, no) => {
+    const rq = indexedDB.open(MINE_DB, 1);
+    rq.onupgradeneeded = () => rq.result.createObjectStore('t', { keyPath: 'id' });
+    rq.onerror = () => no(rq.error);
+    rq.onsuccess = () => ok(rq.result.transaction('t', mode).objectStore('t'));
+  });
+}
+const idbReq = r => new Promise((ok, no) => { r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); });
+async function mineList() { try { return (await idbReq((await mineStore('readonly')).getAll())).sort((a, b) => b.date - a.date); } catch (e) { return []; } }
+async function minePut(t) { return idbReq((await mineStore('readwrite')).put(t)); }
+async function mineDel(id) { return idbReq((await mineStore('readwrite')).delete(id)); }
+function mineBuild(t) { return { W: t.w, H: t.h, body: t.body, defs: [t.defs], deps: [], fonts: [] }; }
+async function saveAsTemplate() {
+  if (S.editing) commitText();
+  const ab = AB(), objs = layers().filter(L => !isHidden(L)).flatMap(L => [...L.children]).filter(o => { const b = bboxOf(o); return b && b.x < ab.x + ab.w && b.x + b.w > ab.x && b.y < ab.y + ab.h && b.y + b.h > ab.y; });
+  if (!objs.length) return flash('There is nothing on this artboard to save as a template.');
+  const name = await askText('Name for this template', S.doc.name || ab.name); if (name === null) return;
+  const g = mk('g'); for (const o of objs) { const c = o.cloneNode(true); g.appendChild(c); applyDoc(c, T(-ab.x, -ab.y)); }
+  const R = { x: ab.x, y: ab.y, w: ab.w, h: ab.h }, k = 360 / Math.max(ab.w, ab.h);
+  let thumb = '';
+  try { const im = await loadImg(svgUrl(packSVG(R, objs, null, Math.round(ab.w * k), Math.round(ab.h * k)))); const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(ab.w * k)); c.height = Math.max(1, Math.round(ab.h * k)); const x = c.getContext('2d'); x.fillStyle = '#ffffff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height); thumb = c.toDataURL('image/png'); } catch (e) { /* no preview */ }
+  const t = { id: 'mine-' + Date.now().toString(36), name: name.trim() || 'My template', w: ab.w, h: ab.h, unit: uKey(), print: S.doc.print ? JSON.parse(JSON.stringify(S.doc.print)) : null, body: g.innerHTML, defs: getDefs().innerHTML, thumb, date: Date.now() };
+  try { await minePut(t); flash(`Saved “${t.name}” to My Templates (File ▸ New from Template ▸ My Templates).`); } catch (e) { alert('Couldn’t save the template: ' + e.message); }
+}
+/* ---------- the New from Template dialog ---------- */
+const TPLS = { fmt: TPL_FORMATS[0].id, tpl: TEMPLATES[0].id, tok: 0, q: '', mine: [], custom: { w: 1080, h: 1080, unit: 'px' } };
+const CUSTOM_FMT = () => { const c = TPLS.custom, k = UNITS[c.unit] ? UNITS[c.unit][0] : 1; const w = Math.max(1, c.w * k), h = Math.max(1, c.h * k); return { id: 'custom', cat: 'Custom', name: 'Custom size', note: `${c.w} × ${c.h} ${c.unit}`, w, h, kind: 'social', unit: c.unit === 'px' ? null : c.unit, bleed: c.unit === 'in' || c.unit === 'mm' ? (c.unit === 'mm' ? 3 * MM : 9) : 0 }; };
+function curFmt() { return TPLS.fmt === 'custom' ? CUSTOM_FMT() : TPLS.fmt === 'mine' ? { id: 'mine', kind: 'mine', w: 100, h: 100 } : TPL_FORMATS.find(f => f.id === TPLS.fmt) || TPL_FORMATS[0]; }
+async function openTemplates() {
   if (S.editing) commitText();
   const hasKit = KIT.colors.length || KIT.styles.length || KIT.assets.length;
   $('#tplUseKit').checked = !!hasKit; $('#tplUseKit').disabled = !hasKit;
   $('#tplNote').textContent = hasKit ? '' : 'Tip: add colors, text styles or a logo to your Brand Kit and templates will use them.';
-  renderTplFormats(); $('#dlgTpl').showModal(); renderTplList();
+  TPLS.mine = await mineList();
+  $('#tplSearch').value = TPLS.q;
+  renderTplFormats(); $('#dlgTpl').showModal(); renderTplList(); setTimeout(() => $('#tplSearch').focus(), 50);
 }
+function fmtMatches(f, q) { if (!q) return true; const hay = (f.name + ' ' + f.note + ' ' + f.cat + ' ' + tplsFor(f.kind).map(t => t.name).join(' ')).toLowerCase(); return q.split(/\s+/).every(w => hay.includes(w)); }
 function renderTplFormats() {
-  const box = $('#tplFormats'); box.innerHTML = '';
-  for (const f of TPL_FORMATS) {
-    const d = document.createElement('div'); d.className = 'tplfmt' + (f.id === TPLS.fmt ? ' on' : '');
-    d.innerHTML = '<span></span><small></small>'; d.firstChild.textContent = f.name; d.lastChild.textContent = f.note;
-    d.onclick = () => { TPLS.fmt = f.id; renderTplFormats(); renderTplList(); };
-    box.appendChild(d);
+  const box = $('#tplFormats'), q = TPLS.q.trim().toLowerCase(); box.innerHTML = '';
+  const row = (id, name, note, extra = '') => { const d = document.createElement('div'); d.className = 'tplfmt' + (id === TPLS.fmt ? ' on' : '') + extra; d.innerHTML = '<span></span><small></small>'; d.firstChild.textContent = name; d.lastChild.textContent = note; d.onclick = () => { TPLS.fmt = id; const f = curFmt(); const list = id === 'mine' ? TPLS.mine : tplsFor(f.kind); if (list.length && !list.some(t => t.id === TPLS.tpl)) TPLS.tpl = list[0].id; renderTplFormats(); renderTplList(); }; box.appendChild(d); return d; };
+  const head = t => { const h = document.createElement('div'); h.className = 'tplcat'; h.textContent = t; box.appendChild(h); };
+  if (!q || 'my templates saved'.includes(q)) { head('My Templates'); row('mine', 'My Templates', TPLS.mine.length ? `${TPLS.mine.length} saved` : 'Save any design as a template'); }
+  let any = false;
+  for (const cat of TPL_CATS) {
+    const fs = TPL_FORMATS.filter(f => f.cat === cat && fmtMatches(f, q)); if (!fs.length) continue;
+    head(cat); any = true;
+    for (const f of fs) row(f.id, f.name, f.note);
   }
+  head('Custom'); row('custom', 'Custom size', `${TPLS.custom.w} × ${TPLS.custom.h} ${TPLS.custom.unit}`);
+  if (q && !any) { const e = document.createElement('div'); e.className = 'muted'; e.style.padding = '6px 9px'; e.textContent = 'No formats match. Try “card”, “banner”, “ad” or “logo”.'; box.insertBefore(e, box.firstChild); }
+  const on = box.querySelector('.tplfmt.on'); if (on) on.scrollIntoView({ block: 'nearest' });
 }
 async function renderTplList() {
-  const box = $('#tplList'), fmt = TPL_FORMATS.find(f => f.id === TPLS.fmt), useKit = $('#tplUseKit').checked, tok = ++TPLS.tok;
+  const box = $('#tplList'), fmt = curFmt(), useKit = $('#tplUseKit').checked, tok = ++TPLS.tok, q = TPLS.q.trim().toLowerCase();
   box.innerHTML = '';
-  const tiles = TEMPLATES.map(t => {
+  $('#tplCustom').classList.toggle('hidden', fmt.id !== 'custom');
+  let list = fmt.id === 'mine' ? TPLS.mine.map(t => ({ ...t, mine: true })) : tplsFor(fmt.kind);
+  if (q && fmt.id !== 'mine') { const hit = list.filter(t => t.name.toLowerCase().includes(q)); if (hit.length) list = hit; }
+  if (!list.length) { box.innerHTML = `<div class="muted" style="padding:20px">${fmt.id === 'mine' ? 'No saved templates yet. Make a design, then choose File ▸ Save as Template… (or the button below) to keep it here.' : 'No designs for this format yet.'}</div>`; return; }
+  if (!list.some(t => t.id === TPLS.tpl)) TPLS.tpl = list[0].id;
+  const pages = (fmt.pages || []).length;
+  $('#tplPages').textContent = pages > 1 ? `${pages} pages: ${fmt.pages.join(', ')}` : fmt.bleed ? 'Print-ready: bleed and safety lines are set up' : '';
+  const tiles = list.map(t => {
     const d = document.createElement('div'); d.className = 'tpl' + (t.id === TPLS.tpl ? ' on' : ''); d.title = t.name;
-    d.innerHTML = '<div class="thumb"><span class="muted">…</span></div><div class="tname"></div>'; d.lastChild.textContent = t.name;
+    d.innerHTML = '<div class="thumb"><span class="muted">…</span></div><div class="tname"></div>'; d.lastChild.textContent = t.name + (t.mine ? ` · ${Math.round(t.w)} × ${Math.round(t.h)}` : '');
+    if (t.mine) { const x = document.createElement('button'); x.className = 'tpldel'; x.title = 'Delete this template'; x.textContent = '✕'; x.onclick = async e => { e.stopPropagation(); if (!confirm(`Delete “${t.name}” from My Templates?`)) return; await mineDel(t.id); TPLS.mine = await mineList(); renderTplFormats(); renderTplList(); }; d.appendChild(x); }
     d.onclick = () => { TPLS.tpl = t.id; box.querySelectorAll('.tpl').forEach(x => x.classList.toggle('on', x === d)); };
     d.ondblclick = () => { TPLS.tpl = t.id; createFromTemplate('new'); };
     box.appendChild(d); return d;
   });
-  for (let i = 0; i < TEMPLATES.length; i++) {
-    const url = await tplThumb(TEMPLATES[i], fmt, useKit);
+  for (let i = 0; i < list.length; i++) {
+    const url = await tplThumb(list[i], fmt, useKit);
     if (tok !== TPLS.tok) return;
-    tiles[i].firstChild.innerHTML = `<img alt="" src="${url}">`;
+    tiles[i].firstChild.innerHTML = url ? `<img alt="" src="${url}">` : '<span class="muted">No preview</span>';
   }
 }
 async function createFromTemplate(mode) {
-  const tpl = TEMPLATES.find(t => t.id === TPLS.tpl), fmt = TPL_FORMATS.find(f => f.id === TPLS.fmt), useKit = $('#tplUseKit').checked;
+  const fmt0 = curFmt();
+  const mine = fmt0.id === 'mine' ? TPLS.mine.find(t => t.id === TPLS.tpl) : null;
+  const tpl = mine ? { ...mine, mine: true } : ALL_TEMPLATES.find(t => t.id === TPLS.tpl && t.kinds.includes(fmt0.kind));
+  if (!tpl) return flash('Pick a design first.');
+  const fmt = mine ? { id: 'mine', name: mine.name, w: mine.w, h: mine.h, unit: mine.unit, kind: 'mine', print: mine.print } : fmt0, useKit = $('#tplUseKit').checked;
   $('#dlgTpl').close();
   if (mode === 'new') newTab();
   finishPen(); if (isoLayer()) finishSymbolEdit(); setSel([]);
-  const R = await tplRender(tpl, fmt, useKit);
+  const pages = mine ? [''] : (fmt.pages || ['']), gap = Math.max(40, Math.min(fmt.w, fmt.h) * 0.12) + (fmt.bleed || 0) * 2;
   if (mode === 'new') {
     content.innerHTML = '<defs></defs>'; S.activeLayer = null; newLayer('Layer 1');
-    S.doc.abs = [{ name: fmt.name, x: 0, y: 0, w: fmt.w, h: fmt.h }]; S.doc.ab = 0;
+    S.doc.abs = []; S.doc.ab = 0; S.doc.guideLines = [];
     S.doc.name = `${tpl.name} - ${fmt.name}`.replace(/[\\/:*?"<>|]+/g, '-'); S.filePath = null; $('#docName').textContent = S.doc.name + '.svg';
     S.history = []; S.future = [];
-  } else {
-    const right = Math.max(...S.doc.abs.map(b => b.x + b.w));
-    S.doc.abs.push({ name: `${tpl.name} · ${fmt.name}`, x: r3(right + 80), y: AB().y, w: fmt.w, h: fmt.h }); S.doc.ab = S.doc.abs.length - 1;
+    if (fmt.print) S.doc.print = JSON.parse(JSON.stringify(fmt.print));
+    else if (fmt.bleed) S.doc.print = { bleed: { t: fmt.bleed, r: fmt.bleed, b: fmt.bleed, l: fmt.bleed }, safety: fmt.unit === 'mm' ? 3 * MM : 9, show: true, link: true };
+    else S.doc.print = null;
   }
-  const ab = AB();
-  ensureKitFonts(R.fonts);
-  for (const markup of [...R.deps, ...R.defs]) {
-    const tmp = mk('g'); tmp.innerHTML = markup; const el = tmp.firstElementChild;
-    if (el && (!el.id || !document.getElementById(el.id))) getDefs().appendChild(el);
+  const x0 = mode === 'new' ? 0 : r3(Math.max(...S.doc.abs.map(b => b.x + b.w)) + 80), y0 = mode === 'new' ? 0 : AB().y;
+  const first = S.doc.abs.length;
+  for (let p = 0; p < pages.length; p++) {
+    const ab = { name: pages.length > 1 ? `${pages[p]}` : (mode === 'new' ? fmt.name : `${tpl.name} · ${fmt.name}`), x: x0, y: r3(y0 + p * (fmt.h + gap)), w: fmt.w, h: fmt.h };
+    S.doc.abs.push(ab); S.doc.ab = S.doc.abs.length - 1;
+    const R = await tplRender(tpl, fmt, useKit, p), kids = [...R.g.children];
+    R.host.remove(); // the off-screen copy shares the defs' ids, so it has to go before those are looked up
+    ensureKitFonts(R.fonts);
+    for (const markup of [...R.deps, ...R.defs]) {
+      const tmp = mk('g'); tmp.innerHTML = markup;
+      for (const el of [...tmp.children]) if (!el.id || !document.getElementById(el.id)) getDefs().appendChild(el);
+    }
+    const L = activeLayer();
+    for (const c of kids) {
+      L.appendChild(c);
+      if (ab.x || ab.y) applyDoc(c, T(ab.x, ab.y));
+      // fresh ids only where they would clash (saved templates keep theirs, so pattern and effect links survive)
+      for (const x of [c, ...c.querySelectorAll('[id]')]) if (!x.id || document.querySelectorAll('#' + CSS.escape(x.id)).length > 1) x.id = uid();
+      // text on a path: point its guide at the text's (possibly new) id
+      for (const t of [c, ...c.querySelectorAll('text[data-onpath]')]) {
+        if (!t.hasAttribute('data-onpath')) continue;
+        const tp = t.querySelector('textPath'), gidv = tp && (tp.getAttribute('href') || '').slice(1), gd = gidv && document.getElementById(gidv);
+        if (gd) gd.setAttribute('data-guide-for', t.id);
+      }
+    }
+    if (fmt.folds) for (const f of fmt.folds) if (p === 0) S.doc.guideLines.push({ o: 'v', p: r3(ab.x + fmt.w * f) });
+    if (fmt.die) addDieLine(ab, fmt.die);
   }
-  const L = activeLayer();
-  for (const c of [...R.g.children]) {
-    L.appendChild(c);
-    if (ab.x || ab.y) applyDoc(c, T(ab.x, ab.y));
-    c.querySelectorAll('[id]').forEach(x => { x.id = uid(); });
-    if (!c.id) c.id = uid();
-  }
-  R.host.remove(); renderFontList();
-  setTool('select'); setSel([]); commit(); fit(ab);
+  renderFontList();
+  S.doc.ab = first;
+  if (mode === 'new') setUnits(fmt.unit && UNITS[fmt.unit] ? fmt.unit : 'px');
+  setTool('select'); setSel([]); commit(); fit(S.doc.abs.length - first > 1 ? unionAbs(first) : AB());
   if (mode === 'new') setDirty(false);
-  flash('Template ready. Double-click text to edit it; double-click a photo or logo placeholder (or drop an image on it) to fill it.');
+  flash(pages.length > 1 ? `Template ready with ${pages.length} pages (${pages.join(', ')}). Double-click text to edit it; double-click a photo or logo placeholder to fill it.` : 'Template ready. Double-click text to edit it; double-click a photo or logo placeholder (or drop an image on it) to fill it.');
+}
+function unionAbs(from) { const a = S.doc.abs.slice(from); const x = Math.min(...a.map(b => b.x)), y = Math.min(...a.map(b => b.y)); return { x, y, w: Math.max(...a.map(b => b.x + b.w)) - x, h: Math.max(...a.map(b => b.y + b.h)) - y }; }
+function addDieLine(ab, kind) { // a CutContour spot-color line on its own locked layer, as print shops expect
+  let L = layers().find(l => l.getAttribute('data-name') === 'CutContour');
+  const keep = S.activeLayer;
+  if (!L) { L = newLayer('CutContour'); L.setAttribute('data-locked', '1'); content.appendChild(L); }
+  const { x, y, w, h } = ab, k = Math.min(w, h);
+  let d;
+  if (kind === 'circle') d = `M${r3(x)} ${r3(y + h / 2)}A${r3(w / 2)} ${r3(h / 2)} 0 1 1 ${r3(x + w)} ${r3(y + h / 2)}A${r3(w / 2)} ${r3(h / 2)} 0 1 1 ${r3(x)} ${r3(y + h / 2)}Z`;
+  else if (kind === 'round') { const r = k * 0.08; d = `M${r3(x + r)} ${r3(y)}H${r3(x + w - r)}A${r3(r)} ${r3(r)} 0 0 1 ${r3(x + w)} ${r3(y + r)}V${r3(y + h - r)}A${r3(r)} ${r3(r)} 0 0 1 ${r3(x + w - r)} ${r3(y + h)}H${r3(x + r)}A${r3(r)} ${r3(r)} 0 0 1 ${r3(x)} ${r3(y + h - r)}V${r3(y + r)}A${r3(r)} ${r3(r)} 0 0 1 ${r3(x + r)} ${r3(y)}Z`; }
+  else { // door hanger: outline with a hole and a slit at the top
+    const cx = x + w / 2, hr = w * 0.22, hy = y + w * 0.36, r = w * 0.06;
+    d = `M${r3(x + r)} ${r3(y)}H${r3(x + w - r)}A${r3(r)} ${r3(r)} 0 0 1 ${r3(x + w)} ${r3(y + r)}V${r3(y + h)}H${r3(x)}V${r3(y + r)}A${r3(r)} ${r3(r)} 0 0 1 ${r3(x + r)} ${r3(y)}Z M${r3(cx - hr)} ${r3(hy)}A${r3(hr)} ${r3(hr)} 0 1 0 ${r3(cx + hr)} ${r3(hy)}A${r3(hr)} ${r3(hr)} 0 1 0 ${r3(cx - hr)} ${r3(hy)}Z M${r3(cx + hr * 0.7)} ${r3(hy + hr * 0.7)}L${r3(x + w * 0.92)} ${r3(y + w * 0.02)}`;
+  }
+  mk('path', { id: uid(), d, fill: 'none', stroke: '#ff00ff', 'stroke-width': 0.5, 'data-name': 'Cut line (CutContour spot color)' }, L);
+  docColors().spots['#ff00ff'] = { name: 'CutContour', cmyk: [0, 100, 0, 0] };
+  S.activeLayer = keep && keep.isConnected ? keep : layers()[0];
 }
 let phTarget = null;
 function pickForPlaceholder(ph) {
@@ -6233,6 +6967,28 @@ function wireTemplates() {
   $('#tplNew').onclick = () => createFromTemplate('new');
   $('#tplAdd').onclick = () => createFromTemplate('add');
   $('#tplUseKit').onchange = renderTplList;
+  let qt = 0;
+  $('#tplSearch').addEventListener('input', () => {
+    clearTimeout(qt); qt = setTimeout(() => {
+      TPLS.q = $('#tplSearch').value; const q = TPLS.q.trim().toLowerCase();
+      const vis = TPL_FORMATS.filter(f => fmtMatches(f, q));
+      if (q && vis.length && !['mine', 'custom'].includes(TPLS.fmt) && !vis.some(f => f.id === TPLS.fmt)) TPLS.fmt = vis[0].id;
+      renderTplFormats(); renderTplList();
+    }, 150);
+  });
+  $('#tplSearch').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); createFromTemplate('new'); } });
+  const syncCustom = () => { const c = TPLS.custom; $('#tcW').value = c.w; $('#tcH').value = c.h; $('#tcUnit').value = c.unit; };
+  let ct = 0;
+  const readCustom = () => {
+    const w = parseFloat(String($('#tcW').value).replace(',', '.')), h = parseFloat(String($('#tcH').value).replace(',', '.'));
+    if (w > 0) TPLS.custom.w = w; if (h > 0) TPLS.custom.h = h; TPLS.custom.unit = $('#tcUnit').value;
+    clearTimeout(ct); ct = setTimeout(() => { renderTplFormats(); renderTplList(); }, 250);
+  };
+  for (const id of ['#tcW', '#tcH']) $(id).addEventListener('input', readCustom);
+  $('#tcUnit').onchange = () => { const c = TPLS.custom, f0 = UNITS[c.unit][0], f1 = UNITS[$('#tcUnit').value][0], d = UNITS[$('#tcUnit').value][2]; c.w = +(c.w * f0 / f1).toFixed(d); c.h = +(c.h * f0 / f1).toFixed(d); c.unit = $('#tcUnit').value; syncCustom(); readCustom(); };
+  $('#tcSwap').onclick = () => { const c = TPLS.custom; [c.w, c.h] = [c.h, c.w]; syncCustom(); readCustom(); };
+  syncCustom();
+  $('#tplSaveMine').onclick = async () => { $('#dlgTpl').close(); await saveAsTemplate(); };
   $('#filePh').onchange = e => { const f = e.target.files[0]; if (f && phTarget) fillPlaceholder(phTarget, f); e.target.value = ''; };
 }
 async function rasterizeEl(el, B, op, fx) { // draw one element as a high-resolution image (gradients with transparency, effects)
@@ -6739,7 +7495,7 @@ function renderLayers() {
     const nm = document.createElement('span'); nm.className = 'name'; nm.textContent = name;
     eye.onclick = ev => { ev.stopPropagation(); if (isHidden(el)) el.removeAttribute('display'); else el.setAttribute('display', 'none'); setSel(S.sel.filter(s => !isHidden(s) && !isHidden(s.parentNode))); commit(); };
     lock.onclick = ev => { ev.stopPropagation(); el.toggleAttribute('data-locked'); setSel(S.sel.filter(s => !isLocked(s))); commit(); };
-    nm.ondblclick = ev => { ev.stopPropagation(); const v = prompt('Name', name); if (v !== null) { el.setAttribute('data-name', v); commit(); } };
+    nm.ondblclick = async ev => { ev.stopPropagation(); const v = await askText('Name', name); if (v !== null) { el.setAttribute('data-name', v); commit(); } };
     r.append(eye, lock, c, nm); box.appendChild(r); return r;
   };
   const colors = ['#2d8ceb', '#e5383b', '#2b9348', '#ffba08', '#9d4edd', '#00a6a6'];
@@ -7947,6 +8703,20 @@ async function convertPdfPage(ctx, page, vp, ops, ox) {
   return { svg, count };
 }
 
+// askText(message, default) → the typed text, or null when cancelled. Native prompt in the browser; an in-app box in the desktop app, which has no prompt.
+function askText(msg, def = '') {
+  if (!desk && !S.askInApp) return Promise.resolve(prompt(msg, def));
+  return new Promise(done => {
+    const d = $('#dlgAsk'), v = $('#askVal'), long = msg.length > 48 || msg.includes('\n');
+    $('#askTitle').textContent = long ? 'Name' : msg; $('#askMsg').textContent = long ? msg : ''; $('#askMsg').classList.toggle('hidden', !long);
+    v.value = def; let res = null;
+    const finish = ok => { res = ok ? v.value : null; d.close(); };
+    $('#askOk').onclick = () => finish(true); $('#askCancel').onclick = () => finish(false);
+    v.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); finish(true); } };
+    d.addEventListener('close', () => done(res), { once: true });
+    d.showModal(); v.focus(); v.select();
+  });
+}
 const escAttr = v => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 /* ---------- document properties & metadata ----------
    Kept in S.doc.meta and saved three ways: data-meta (exact round trip), <title>/<desc> (what browsers and file
@@ -8478,7 +9248,7 @@ const CMD = {
   abSvg: exportAbSvg, pngAll: exportAll, outlines: () => createOutlines(), outlineStroke: () => outlineStroke(), offsetPath: () => openOffset(),
   smart: () => { S.smart = !S.smart; flash(S.smart ? 'Smart guides on' : 'Smart guides off'); status(); }, pdf: () => exportVector('pdf'), ai: () => exportVector('ai'), eps: () => exportVector('eps'), trace: openTrace, templates: () => openTemplates(), crop: () => { const im = S.sel.find(o => o.tagName === 'image'); if (im) startCrop(im); else flash('Select a placed photo first.'); }, makeSymbol: () => newSymbolFromSel(), breakSymbol: () => breakSelection(),
   pfUnite: () => pathfinder('unite'), pfMinusFront: () => pathfinder('minusFront'), pfIntersect: () => pathfinder('intersect'), pfExclude: () => pathfinder('exclude'), pfDivide: () => pathfinder('divide'),
-  setup: openSetup, docProps: () => openProps(), undo, redo, cut: cutSel, copy: copySel, paste, duplicate, delete: deleteSel, selectAll, deselect: () => setSel([]),
+  saveTpl: () => saveAsTemplate(), setup: openSetup, docProps: () => openProps(), undo, redo, cut: cutSel, copy: copySel, paste, duplicate, delete: deleteSel, selectAll, deselect: () => setSel([]),
   group, ungroup, front: () => arrange('front'), forward: () => arrange('forward'), backward: () => arrange('backward'), back: () => arrange('back'),
   flipH: () => flip(true), flipV: () => flip(false), toPath: convertSel, clip: makeClip, unclip: releaseClip,
   lock: lockSel, unlockAll, hide: hideSel, showAll,

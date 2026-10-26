@@ -1,7 +1,7 @@
 {
-  "version": "1.16.2",
-  "file": "VectorStudio-1.16.2.html",
-  "sha256": "ecd27f5f3ec6268a43c4878a95fb2701f00cac784935e1fabff3a55891fffc55",
+  "version": "1.17.0",
+  "file": "VectorStudio-1.17.0.html",
+  "sha256": "99aae9012dddbed8711fd61743c5e217cb944cb679444f42bd10b69d06f0a54a",
   "minShell": "1.9.0",
-  "notes": "New: File > Document Properties & Metadata (Ctrl+Alt+Shift+I): title, author, description, keywords, client/project, version and status, copyright notice and usage terms, plus a Document Info tab (file, artboards, layers, fonts, colors, images). The metadata is saved in the SVG and written into PDF, EPS and PNG exports."
+  "notes": "New: a much bigger template library (File > New from Template). 65 formats and 100 designs in Social Media, Print (business cards, flyers, posters, postcards, rack cards, tri-fold brochures, letterhead, envelopes, menus, gift certificates, certificates, invitations, stickers, labels, door hangers, tickets, badges), Signs & Large Format (window clings, yard signs, vinyl banners, T-shirts), Logo & Brand (logos, brand style sheet, email signature, app icon), Ads & Web (display ads, website hero, link preview, email header) and Presentation. Print templates come with bleed, safety lines, fold guides and cut lines; front/back and multi-page designs open as several artboards. Plus search, any custom size, and My Templates (File > Save as Template)."
 }
