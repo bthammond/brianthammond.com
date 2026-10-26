@@ -259,6 +259,13 @@ input:disabled{opacity:.45}
 .lrow .chip{width:8px;height:8px;border-radius:2px;flex:none}
 #status{display:flex;align-items:center;gap:18px;background:#252525;border-top:1px solid #111;padding:0 10px;color:var(--muted)}
 #status b{color:var(--text);font-weight:500}
+.zoomctl{gap:3px!important}
+.zbtn{background:#333;border:1px solid #444;color:var(--text);border-radius:4px;width:20px;height:18px;padding:0;line-height:16px;font-size:13px;cursor:pointer}
+.zbtn:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+#zVal{width:52px;height:18px;padding:0 4px;background:#1f1f1f;border:1px solid #444;border-radius:4px;color:var(--text);text-align:right;font:inherit;font-weight:500}
+#zVal:focus{border-color:var(--accent);outline:none}
+#zSlide{width:90px;height:14px;accent-color:var(--accent);margin:0 2px}
+#zoomMenu{position:fixed;display:none;min-width:200px;background:#2f2f2f;border:1px solid #444;border-radius:6px;padding:4px;z-index:60;box-shadow:0 8px 24px #0009;font-size:13px}
 #status .hint{margin-left:auto}
 #status>span{white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:4px}
 #status .hint{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;text-align:right}
@@ -728,7 +735,7 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
     <span>Tool: <b id="stTool">Selection</b></span>
     <span>X <b id="stX">0</b> Y <b id="stY">0</b></span>
     <span title="Units for positions, sizes and rulers">Units <select id="stUnits"></select></span>
-    <span>Zoom <b id="stZoom">100%</b></span>
+    <span class="zoomctl" title="Zoom: type a size, use − / +, drag the slider, or pick from the menu (Ctrl+scroll zooms at the pointer)">Zoom <b id="stZoom" hidden>100%</b><button class="zbtn" id="zOut" title="Zoom out (Ctrl+−)">−</button><input type="range" id="zSlide" min="0" max="1000" step="1" title="Drag to zoom"><button class="zbtn" id="zIn" title="Zoom in (Ctrl++)">+</button><input type="text" id="zVal" spellcheck="false" title="Type a zoom such as 150 and press Enter"><button class="zbtn" id="zMenu" title="Zoom presets and fit options">▾</button></span>
     <span id="stSel"></span>
     <span class="hint" id="stHint"></span>
   </footer>
@@ -876,6 +883,7 @@ dialog .dfoot{padding:10px 16px;border-top:1px solid #444;display:flex;justify-c
 </dialog>
 
 <div id="ctxMenu" class="items" role="menu"></div>
+<div id="zoomMenu" class="items" role="menu"></div>
 <div id="updBar"><span id="updMsg"></span><button class="btn on" id="updRestart">Restart now</button><button class="btn" id="updLater">Later</button></div>
 
 <dialog id="dlgRecolor">
@@ -1725,7 +1733,7 @@ function wireUpdates() {
 }
 /* The browser version checks https://www.brianthammond.com/vector-studio/latest.json and offers the newest VectorStudio.html
    (checked against its SHA-256 before it is saved). The desktop app updates itself instead. */
-const VS_VERSION = '1.16.0', UPDATE_BASE = 'https://www.brianthammond.com/vector-studio/';
+const VS_VERSION = '1.16.1', UPDATE_BASE = 'https://www.brianthammond.com/vector-studio/';
 const vcmp = (a, b) => { const p = String(a).split('.').map(Number), q = String(b).split('.').map(Number); for (let i = 0; i < 3; i++) { const d = (p[i] || 0) - (q[i] || 0); if (d) return d; } return 0; };
 async function fetchLatest() {
   const r = await fetch(UPDATE_BASE + 'latest.json?t=' + Date.now(), { cache: 'no-store' });
@@ -8231,6 +8239,48 @@ function wireScrollbars() {
   updateScrollbars();
 }
 
+/* ---------- zoom control (status bar) ---------- */
+const Z_MIN = 0.03, Z_MAX = 64, zToSlide = z => Math.round(Math.log(z / Z_MIN) / Math.log(Z_MAX / Z_MIN) * 1000), zFromSlide = v => Z_MIN * Math.pow(Z_MAX / Z_MIN, v / 1000);
+const fmtZoom = z => (z < 0.1 ? r3(z * 100).toFixed(1) : Math.round(z * 100)) + '%';
+function setZoom(z) { zoomAt(clamp(z, Z_MIN, Z_MAX) / S.view.zoom); }
+function syncZoomCtl() {
+  const v = $('#zVal'), sl = $('#zSlide'); if (!v) return;
+  if (document.activeElement !== v) v.value = fmtZoom(S.view.zoom);
+  if (document.activeElement !== sl) sl.value = zToSlide(S.view.zoom);
+}
+function zoomFitSel() { const B = S.sel.length ? unionBox(S.sel) : null; if (!B) return flash('Select something first to zoom to it.'); fit({ x: B.x, y: B.y, w: Math.max(B.w, 1), h: Math.max(B.h, 1) }); }
+function wireZoomCtl() {
+  $('#zIn').onclick = () => zoomAt(1.25); $('#zOut').onclick = () => zoomAt(0.8);
+  const v = $('#zVal');
+  let fresh = false;
+  v.addEventListener('focus', () => { v.select(); fresh = true; });
+  v.addEventListener('mouseup', e => { if (fresh) { e.preventDefault(); v.select(); } fresh = false; });
+  v.addEventListener('change', () => { const n = parseFloat(String(v.value).replace(',', '.').replace(/[^0-9.]/g, '')); if (n > 0) setZoom(n / 100); syncZoomCtl(); });
+  v.addEventListener('keydown', e => { if (e.key === 'Escape') { v.value = fmtZoom(S.view.zoom); v.blur(); } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); zoomAt(e.key === 'ArrowUp' ? 1.25 : 0.8); v.value = fmtZoom(S.view.zoom); } });
+  $('#zSlide').addEventListener('input', () => setZoom(zFromSlide(+$('#zSlide').value)));
+  $('#zSlide').addEventListener('change', () => $('#zSlide').blur());
+  const menu = $('#zoomMenu');
+  $('#zMenu').onclick = e => {
+    e.stopPropagation();
+    if (menu.style.display === 'block') { menu.style.display = 'none'; return; }
+    const items = [['Fit Artboard', 'Ctrl+0', () => fit()], ['Fit All Artboards', 'Ctrl+Alt+0', () => fitAll()], ['Fit Selection', '', zoomFitSel], null,
+      ...[6400, 3200, 1600, 800, 400, 300, 200, 150, 100, 75, 50, 33, 25, 12.5].map(p => [p + '%', p === 100 ? 'Ctrl+1' : '', () => setZoom(p / 100)])];
+    menu.innerHTML = '';
+    for (const it of items) {
+      if (!it) { menu.appendChild(document.createElement('hr')); continue; }
+      const b = document.createElement('button'); b.type = 'button'; b.innerHTML = '<b style="font-weight:400"></b><span></span>'; b.firstChild.textContent = it[0]; b.lastChild.textContent = it[1];
+      if (it[0] === fmtZoom(S.view.zoom)) b.style.fontWeight = '600';
+      b.onclick = () => { menu.style.display = 'none'; it[2](); };
+      menu.appendChild(b);
+    }
+    menu.style.display = 'block';
+    const r = $('#zMenu').getBoundingClientRect(), m = menu.getBoundingClientRect();
+    menu.style.left = Math.max(4, Math.min(r.left, innerWidth - m.width - 4)) + 'px'; menu.style.top = Math.max(4, r.top - m.height - 6) + 'px';
+  };
+  document.addEventListener('pointerdown', e => { if (!e.target.closest('#zoomMenu,#zMenu')) menu.style.display = 'none'; }, true);
+  syncZoomCtl();
+}
+
 /* ---------- menus & commands ---------- */
 const CMD = {
   new: newDoc, open: openDialog, save: () => save(), saveAs: () => save(true), place: () => $('#filePlace').click(),
@@ -8340,13 +8390,14 @@ function status() {
   const t = TOOLS.find(x => x[0] === S.tool);
   $('#stTool').textContent = t ? t[1] : S.tool;
   $('#stZoom').textContent = Math.round(S.view.zoom * 100) + '%';
+  syncZoomCtl();
   $('#stSel').textContent = (S.sel.length ? S.sel.length + ' selected' : '') + (S.grid ? '  · Grid' : '') + (S.snap ? ' · Snap' : '') + (S.smart ? ' · Smart guides' : '');
   $('#stHint').textContent = HINTS[S.tool] || '';
 }
 
 /* ---------- boot ---------- */
 function boot() {
-  buildToolbar(); wirePanel(); wireLayers(); wireArtboards(); wireBrushes(); wireSymbols(); wireTrace(); wireFonts(); wireOffset(); wireEffects(); wireKern(); wireTextExtras(); wireSections(); wireScrollbars(); wireAdjust(); wireLogoPack(); wireUnits(); wireRulers(); wirePrint(); wireUpdates(); wireCmyk(); wireRecolor();
+  buildToolbar(); wirePanel(); wireLayers(); wireArtboards(); wireBrushes(); wireSymbols(); wireTrace(); wireFonts(); wireOffset(); wireEffects(); wireKern(); wireTextExtras(); wireSections(); wireScrollbars(); wireZoomCtl(); wireAdjust(); wireLogoPack(); wireUnits(); wireRulers(); wirePrint(); wireUpdates(); wireCmyk(); wireRecolor();
   $$('[data-align]').forEach(b => b.onclick = () => alignSel(b.dataset.align));
   $('#btnRecolor').onclick = () => openRecolor(); wireCrop(); wireKit(); wireTemplates();
   let restored = false;
